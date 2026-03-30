@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+   :root {
+      --color-matheo-red: #C41E3A;
+      --color-matheo-blue: #2B5F9E;
+      --color-matheo-dark: #1a1a1a;
+      --color-matheo-gray: #6b7280;
+   }
+
+   html,
+   body {
+      overflow-x: hidden;
+      width: 100%;
+   }
+
+   body {
+      font-family: 'Inter', sans-serif;
+      @apply antialiased;
+   }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer utilities {
+   .text-matheo-red {
+      color: var(--color-matheo-red);
+   }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+   .bg-matheo-red {
+      background-color: var(--color-matheo-red);
+   }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+   .text-matheo-blue {
+      color: var(--color-matheo-blue);
+   }
+
+   .bg-matheo-blue {
+      background-color: var(--color-matheo-blue);
+   }
+
+   .border-matheo-red {
+      border-color: var(--color-matheo-red);
+   }
+
+   .border-matheo-blue {
+      border-color: var(--color-matheo-blue);
+   }
+
+   .animate-marquee {
+      animation: marquee var(--duration) linear infinite;
+   }
+
+   .animate-marquee-vertical {
+      animation: marquee-vertical var(--duration) linear infinite;
+   }
+
+   @keyframes marquee {
+      from {
+         transform: translateX(0);
+      }
+
+      to {
+         transform: translateX(calc(-100% - var(--gap)));
+      }
+   }
+
+   @keyframes marquee-vertical {
+      from {
+         transform: translateY(0);
+      }
+
+      to {
+         transform: translateY(calc(-100% - var(--gap)));
+      }
+   }
+
+   .animate-bounce-slow {
+      animation: bounce-slow 3s infinite;
+   }
+
+   @keyframes bounce-slow {
+
+      0%,
+      100% {
+         transform: translateY(-5%);
+         animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+      }
+
+      50% {
+         transform: translateY(0);
+         animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+      }
+   }
 }
