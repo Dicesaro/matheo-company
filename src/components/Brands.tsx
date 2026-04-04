@@ -1,4 +1,6 @@
-import { Marquee } from "@/components/ui/marquee";
+'use client'
+import { Marquee } from '@/components/ui/marquee'
+import Image from 'next/image'
 
 const brands = [
   {
@@ -84,19 +86,30 @@ const brands = [
 ]
 
 // BrandCard component
-const BrandCard = ({ name, image }: { name: string; image: string }) => {
+const BrandCard = ({
+  name,
+  image,
+}: {
+  name: string
+  image: string
+}) => {
   return (
     <div className="relative w-48 h-32 mx-4 group cursor-pointer">
-        <div className="w-full h-full flex items-center justify-center p-6">
-          <img
+      <div className="w-full h-full flex items-center justify-center p-6">
+        {/* Contenedor con tamaño fijo para fill */}
+        <div className="relative w-32 h-12">
+          <Image
             src={image}
             alt={name}
-            className="max-w-full max-h-full object-contain transition-all duration-300 grayscale group-hover:grayscale-0 group-hover:scale-110"
+            fill
+            sizes="128px"
+            className="object-contain transition-all duration-300 grayscale group-hover:grayscale-0 group-hover:scale-110"
           />
         </div>
+      </div>
     </div>
   )
-};
+}
 
 export default function Brands() {
   return (
@@ -111,19 +124,19 @@ export default function Brands() {
             Marcas que Distribuimos
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Trabajamos con las marcas más reconocidas y confiables de la industria mundial
+            Trabajamos con las marcas más reconocidas y confiables de
+            la industria mundial
           </p>
         </div>
 
         {/* Marquee Container */}
         <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg">
           {/* All Brands - Left to Right */}
-          <Marquee  className="[--duration:70s] mb-8">
+          <Marquee className="[--duration:70s] mb-8">
             {brands.map((brand) => (
               <BrandCard key={brand.name} {...brand} />
             ))}
           </Marquee>
-
 
           {/* Gradient Overlays for fade effect */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-1/12 bg-linear-to-r from-white to-transparent"></div>
@@ -133,11 +146,13 @@ export default function Brands() {
         {/* Stats */}
         <div className="text-center mt-12">
           <p className="text-gray-600 text-lg">
-            <span className="font-bold text-matheo-red">{brands.length}+</span> marcas líderes a nivel mundial
+            <span className="font-bold text-matheo-red">
+              {brands.length}+
+            </span>{' '}
+            marcas líderes a nivel mundial
           </p>
         </div>
       </div>
     </section>
-  );
+  )
 }
-

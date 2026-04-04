@@ -1,7 +1,8 @@
+'use client'
 import { useState, useEffect, useRef } from 'react'
-import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
-import gsap from 'gsap'
+import Image from 'next/image'
 
 interface Slide {
   id: number
@@ -76,63 +77,59 @@ const slides: Slide[] = [
 
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const slideRef = useRef<HTMLDivElement>(null)
+  const [animating, setAnimating] = useState(false)
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(
     null,
   )
 
+  const goToSlide = (index: number) => {
+    if (animating) return
+    setAnimating(true)
+    setCurrentSlide(index)
+    // Resetear animating después de que termine la transición
+    setTimeout(() => setAnimating(false), 800)
+  }
+
   const prevSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev - 1 + slides.length) % slides.length,
-    )
+    goToSlide((currentSlide - 1 + slides.length) % slides.length)
   }
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length)
+    goToSlide((currentSlide + 1) % slides.length)
   }
 
   useEffect(() => {
     autoPlayRef.current = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length)
     }, 5000)
-
     return () => {
-      if (autoPlayRef.current) {
-        clearInterval(autoPlayRef.current)
-      }
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current)
     }
   }, [])
-
-  useEffect(() => {
-    if (slideRef.current) {
-      gsap.fromTo(
-        slideRef.current,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-      )
-    }
-  }, [currentSlide])
 
   const slide = slides[currentSlide]
 
   return (
     <section
       id="inicio"
-      className="relative min-h-[678px] h-[80vh] md:h-[85vh] flex items-center overflow-hidden"
+      className="relative min-h-169.5 h-[80vh] md:h-[85vh] flex items-center overflow-hidden"
     >
-      {/* Background Image with Overlay */}
+      {/* Background Images */}
       <div className="absolute inset-0">
         {slides.map((s, index) => (
           <div
             key={s.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className="absolute inset-0 transition-opacity duration-1000"
+            style={{ opacity: index === currentSlide ? 1 : 0 }}
           >
-            <img
+            <Image
               src={s.backgroundImage}
               alt={s.title}
-              className="w-full h-full object-cover"
+              fill
+              priority={index === 0}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              className="object-cover"
+              style={{ width: '100%', height: '100%' }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement
                 target.style.display = 'none'
@@ -143,14 +140,20 @@ export default function Hero() {
                 }
               }}
             />
-            <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-black/30"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-black/30" />
           </div>
         ))}
       </div>
 
+      {/* Content — animación CSS pura al cambiar slide */}
       <div className="container mx-auto px-4 relative z-10 pt-28 pb-12 md:pt-0">
-        {/* Content */}
-        <div ref={slideRef} className="max-w-3xl">
+        <div
+          key={currentSlide} // ← key fuerza re-mount y re-anima con CSS
+          className="max-w-3xl"
+          style={{
+            animation: 'heroFadeIn 0.8s ease forwards',
+          }}
+        >
           <div className="inline-block mb-4 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
             <span className="font-semibold text-xs uppercase tracking-wider text-white">
               INDUSTRIAL COMPANY MATHEO
@@ -168,26 +171,33 @@ export default function Hero() {
           <p className="text-base md:text-lg mb-6 text-white/90 max-w-xl drop-shadow-lg">
             {slide.description}
           </p>
+
           <div className="flex flex-col sm:flex-row gap-3 max-w-xs sm:max-w-none">
-            <a
-              href="https://www.facebook.com/profile.php?id=61583130317473"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-blue-600 backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-red hover:border-matheo-red px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
-            >
-              Siguenos en Fb
-            </a>
             <Link
-              href={'/contacto'}
+              href="/productos"
+              className="inline-flex items-center justify-center gap-2 bg-matheo-red backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-red hover:border-matheo-red px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
+            >
+              Ver Productos
+            </Link>
+            <Link
+              href="/contacto"
               className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-red hover:border-matheo-red px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
             >
-              Contáctanos
+              Escribenos
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ── Arrow buttons (prev / next) ── */}
+      {/* Keyframe global — ponlo en tu globals.css si prefieres */}
+      <style>{`
+        @keyframes heroFadeIn {
+          from { opacity: 0; transform: translateY(30px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
+      {/* Prev / Next */}
       <button
         onClick={prevSlide}
         className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
@@ -204,12 +214,12 @@ export default function Hero() {
         <ChevronRight size={26} strokeWidth={2.5} />
       </button>
 
-      {/* ── Dots indicator ── */}
+      {/* Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5">
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentSlide(index)}
+            onClick={() => goToSlide(index)}
             className={`rounded-full transition-all duration-300 ${
               index === currentSlide
                 ? 'w-8 h-3 bg-white shadow-lg'

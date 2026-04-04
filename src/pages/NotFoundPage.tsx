@@ -1,12 +1,13 @@
-"use client";
-import Link from 'next/link';
-import { Home, ArrowLeft } from 'lucide-react';
-import { useEffect } from 'react';
+'use client'
+import Link from 'next/link'
+import Image from 'next/image'
+import { Home, ArrowLeft } from 'lucide-react'
+import { useEffect } from 'react'
 
 export default function NotFoundPage() {
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
     <section className="min-h-screen pt-24 pb-12 flex flex-col items-center justify-center bg-white px-4">
@@ -19,14 +20,16 @@ export default function NotFoundPage() {
           </div>
 
           <div className="flex-1 flex justify-center max-w-sm">
-            <img
+            <Image
               src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774824496/MATE_bnxcae.png"
               alt="Mascota Matheo"
+              priority
+              width={400}
+              height={400}
               className="w-full h-auto"
             />
           </div>
         </div>
-
         {/* Description: Centered below */}
         <div className="text-center mb-12">
           <p className="text-xl text-[#333] max-w-2xl mx-auto leading-relaxed">

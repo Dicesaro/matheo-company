@@ -1,5 +1,6 @@
 'use client'
 import { Eye } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { cn } from '../lib/utils'
 
@@ -52,19 +53,27 @@ export default function CardProduct({
           'relative flex items-center justify-center bg-gray-50/50 shrink-0',
           viewMode === 'grid'
             ? // Móvil horizontal: cuadrado fijo a la izquierda
-              'w-[130px] sm:w-full aspect-square p-3 sm:p-4'
+              'w-32 sm:w-full aspect-square p-3 sm:p-4'
             : 'w-1/3 md:w-2/5 aspect-square rounded-xl',
         )}
       >
-        <img
+        <Image
           src={product.image}
           alt={product.name}
-          loading="lazy"
-          className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+          width={300}
+          height={300}
+          loading="eager"
+          className="object-contain group-hover:scale-105 transition-transform duration-500"
+          style={{
+            width: '100%',
+            height: '100%',
+            maxWidth: '100%',
+            maxHeight: '100%',
+          }}
           onError={(e) => {
             const target = e.target as HTMLImageElement
             target.src =
-              'https://via.placeholder.com/300?text=Sin+Imagen'
+              'https://placehold.co/300x300?text=Sin+Imagen'
           }}
         />
         {/* Eye icon */}

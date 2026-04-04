@@ -14,7 +14,6 @@ import { cn, generateSlug, slugToCategory } from '../lib/utils'
 import { useCustomSearchParams } from '../hooks/useCustomSearchParams'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import SEOHead from '../components/SEOHead'
 import CardProduct from '../components/CardProduct'
 import FilterSection from '../components/FilterSection'
 
@@ -248,29 +247,12 @@ export default function ProductsPage({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [currentPage])
 
-  const seoTitle = activeCategory
-    ? `Catálogo de ${activeCategory} | Herramientas Industriales`
-    : 'Catálogo de Herramientas Industriales en Perú'
-  const seoDescription = activeCategory
+  const pageDescription = activeCategory
     ? `Venta y distribución de ${activeCategory} para la industria metalmecánica. Cotiza precios de herramientas de alta precisión en Lima, Perú.`
     : 'Catálogo completo de herramientas industriales metalmecánicas en Perú: brocas, machos de roscado, fresas e insertos. Importación directa y distribución al por mayor y menor.'
 
   return (
     <div className="min-h-screen bg-gray-50/30 pt-32 md:pt-40 pb-20">
-      <SEOHead
-        title={seoTitle}
-        description={seoDescription}
-        canonical={
-          activeCategory
-            ? `/productos/${generateSlug(activeCategory)}`
-            : '/productos'
-        }
-        keywords={
-          activeCategory
-            ? `${activeCategory}, comprar en lima, comprar en perú, importar ${activeCategory}, herramientas industriales Perú`
-            : undefined
-        }
-      />
       <div className="container mx-auto px-4">
         {loading ? (
           <div className="flex flex-col lg:flex-row gap-12">
@@ -302,7 +284,7 @@ export default function ProductsPage({
                     className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col animate-pulse"
                   >
                     <div className="w-full aspect-square bg-gray-200 shrink-0"></div>
-                    <div className="p-4 flex flex-col flex-1 h-[200px]">
+                    <div className="p-4 flex flex-col flex-1 h-50">
                       <div className="h-4 bg-gray-200 rounded w-1/3 mb-3"></div>
                       <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
@@ -368,7 +350,7 @@ export default function ProductsPage({
                         className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50/50 text-gray-600 placeholder-gray-400 appearance-none outline-none focus:border-gray-200"
                       />
                     </div>
-                    <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                       {dbCategories
                         .filter((cat) =>
                           cat
@@ -413,7 +395,7 @@ export default function ProductsPage({
                     : 'Catálogo de Herramientas Industriales'}
                 </h1>
                 <p className="text-gray-600 text-sm md:text-base max-w-2xl">
-                  {seoDescription}
+                  {pageDescription}
                 </p>
               </div>
 

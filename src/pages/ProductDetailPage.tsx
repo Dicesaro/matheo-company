@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Image from 'next/image'
+// import { usePathname } from 'next/navigation'
 import {
   CheckCircle2,
   ChevronLeft,
@@ -10,7 +11,6 @@ import {
 import { useState, useEffect } from 'react'
 import { cn, generateSlug } from '../lib/utils'
 import { supabase } from '../lib/supabase'
-import SEOHead from '../components/SEOHead'
 
 interface Product {
   id: string
@@ -38,7 +38,7 @@ export default function ProductDetailPage({
   slug,
   categoria,
 }: ProductDetailPageProps) {
-  const pathname = usePathname()
+  //   const pathname = usePathname()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -161,53 +161,6 @@ export default function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-white pt-24 md:pt-40 pb-20">
-      {/* ── SEO Meta Tags ── */}
-      <SEOHead
-        title={product.name}
-        description={
-          product.description
-            ? `${product.description.slice(0, 155)}...`
-            : `${product.name} — Herramienta industrial de precisión. Importador y distribuidor en Perú. Cotiza al instante por WhatsApp.`
-        }
-        canonical={pathname}
-        image={product.image}
-        ogType="product"
-        keywords={`${product.name}, ${product.category}, ${product.brand}, herramientas industriales Perú`}
-        structuredData={{
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name: product.name,
-          description:
-            product.description ||
-            `Herramienta industrial ${product.name}`,
-          image: product.images,
-          brand: {
-            '@type': 'Brand',
-            name: product.brand,
-          },
-          category: product.category,
-          aggregateRating: product.rating
-            ? {
-                '@type': 'AggregateRating',
-                ratingValue: product.rating,
-                bestRating: 5,
-                worstRating: 1,
-                ratingCount: 24,
-              }
-            : undefined,
-          offers: {
-            '@type': 'Offer',
-            url: `https://industrialcompanymatheo.com${pathname}`,
-            priceCurrency: 'PEN',
-            price: '0.00', // Marcador por defecto, modificar si guardan precio real
-            availability: 'https://schema.org/InStock',
-            seller: {
-              '@type': 'Organization',
-              name: 'Industrial Company MATHEO EIRL',
-            },
-          },
-        }}
-      />
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-8 hidden md:block">
@@ -243,13 +196,16 @@ export default function ProductDetailPage({
           {/* Left Column: Image Gallery */}
           <div className="space-y-6 lg:sticky lg:top-40 h-fit max-w-lg mx-auto lg:max-w-none w-full">
             <div className="relative group bg-white rounded-2xl p-4 md:p-8 aspect-square flex items-center justify-center overflow-hidden shadow-sm">
-              <img
+              <Image
                 key={selectedImage}
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="max-w-full max-h-full object-contain transition-all duration-500 group-hover:scale-105 animate-in fade-in "
+                fill
+                priority
+                loading="eager"
+                className="object-contain transition-all duration-500 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
-
               {product.images.length > 1 && (
                 <>
                   <button
@@ -287,10 +243,14 @@ export default function ProductDetailPage({
                         : 'border-gray-100 opacity-60 hover:opacity-100',
                     )}
                   >
-                    <img
+                    <Image
                       src={img}
                       alt=""
-                      className="w-full h-full object-contain"
+                      width={80}
+                      height={80}
+                      loading="eager"
+                      style={{ width: '100%', height: '100%' }}
+                      className="object-contain"
                     />
                   </button>
                 ))}
