@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { Suspense } from 'react' // ← agregar
 import ProductsPage from '@/pages/ProductsPage'
 
 export const metadata: Metadata = {
@@ -22,5 +23,9 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <ProductsPage />
+  return (
+    <Suspense fallback={null}>
+      <ProductsPage />
+    </Suspense>
+  )
 }

@@ -1,6 +1,7 @@
 // src/app/productos/[categoria]/page.tsx
 import { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
+import { Suspense } from 'react'
 import { slugToCategory } from '@/lib/utils'
 import ProductsPage from '@/pages/ProductsPage'
 
@@ -45,5 +46,9 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { categoria } = await params
-  return <ProductsPage categorySlug={categoria} />
+  return (
+    <Suspense fallback={null}>
+      <ProductsPage categorySlug={categoria} />
+    </Suspense>
+  )
 }
