@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+   --color-matheo-red: #C41E3A;
+   --color-matheo-blue: #2B5F9E;
+   --color-matheo-dark: #1a1a1a;
+   --color-matheo-gray: #6b7280;
+}
+
 @layer base {
-   :root {
-      --color-matheo-red: #C41E3A;
-      --color-matheo-blue: #2B5F9E;
-      --color-matheo-dark: #1a1a1a;
-      --color-matheo-gray: #6b7280;
-   }
 
    html,
    body {
@@ -21,30 +22,6 @@
 }
 
 @layer utilities {
-   .text-matheo-red {
-      color: var(--color-matheo-red);
-   }
-
-   .bg-matheo-red {
-      background-color: var(--color-matheo-red);
-   }
-
-   .text-matheo-blue {
-      color: var(--color-matheo-blue);
-   }
-
-   .bg-matheo-blue {
-      background-color: var(--color-matheo-blue);
-   }
-
-   .border-matheo-red {
-      border-color: var(--color-matheo-red);
-   }
-
-   .border-matheo-blue {
-      border-color: var(--color-matheo-blue);
-   }
-
    .animate-marquee {
       animation: marquee var(--duration) linear infinite;
    }
