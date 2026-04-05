@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   },
   keywords:
     'herramientas industriales Peru, importador herramientas Lima, distribuidor herramientas metalmecánicas',
+  icons: {
+    icon: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_icon_sgykvs.svg',
+  },
   alternates: {
     canonical: 'https://industrialcompanymatheo.com',
   },
