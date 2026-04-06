@@ -7,9 +7,9 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
   const categories = [
     'CENTROS GIRATORIOS',
-    'PORTAINSERTOS P/ TORNEAR',
-    'INSERTOS P/ ROSCADO',
-    'MACHOS PARA ROSCAS',
+    'PORTAINSERTOS PARA TORNEAR',
+    'INSERTOS PARA ROSCADO',
+    'MACHOS PARA ROSCAR',
     'FRESAS ROTATIVAS',
   ]
 
