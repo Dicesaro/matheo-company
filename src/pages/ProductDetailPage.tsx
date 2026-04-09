@@ -336,12 +336,13 @@ export default function ProductDetailPage({
                       : '5.0'}
                   </span>
                 </div>
-
+                <h3 className="text-black">Descripción:</h3>
                 <p className="text-gray-600 text-sm md:text-base mb-8 leading-relaxed">
                   {product.description}
                 </p>
 
                 <div className="space-y-3 mb-10">
+                  <h3 className="text-black">Beneficios:</h3>
                   {product.benefits.map((benefit, idx) => (
                     <div
                       key={idx}

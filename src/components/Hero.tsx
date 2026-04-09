@@ -189,14 +189,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Keyframe global — ponlo en tu globals.css si prefieres */}
-      <style>{`
-        @keyframes heroFadeIn {
-          from { opacity: 0; transform: translateY(30px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
       {/* Prev / Next */}
       <button
         onClick={prevSlide}

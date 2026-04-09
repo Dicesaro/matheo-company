@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   ChevronLeft,
   ChevronRight,
+  Tag,
 } from 'lucide-react'
 import { cn, generateSlug, slugToCategory } from '../lib/utils'
 import { useCustomSearchParams } from '../hooks/useCustomSearchParams'
@@ -18,7 +19,7 @@ import CardProduct from '../components/CardProduct'
 import FilterSection from '../components/FilterSection'
 
 interface ProductsPageProps {
-  categorySlug?: string // viene de /productos/[categoria]
+  categorySlug?: string
 }
 
 interface Product {
@@ -54,9 +55,9 @@ export default function ProductsPage({
 
   const [products, setProducts] = useState<Product[]>([])
   const [dbCategories, setDbCategories] = useState<string[]>([])
+  const [dbBrands, setDbBrands] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
-  // ✅ Bug 3 corregido: selectedCategories se declara ANTES de usarlo
   const [selectedCategories, setSelectedCategories] = useState<
     string[]
   >(
@@ -69,12 +70,14 @@ export default function ProductsPage({
       ? searchParams.get('brand')!.split(',')
       : [],
   )
+
   const [categorySearchTerm, setCategorySearchTerm] = useState('')
+  const [brandSearchTerm, setBrandSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isDesktopView, setIsDesktopView] = useState(true)
   const [expandedFilters, setExpandedFilters] = useState({
     categories: !!searchParams.get('category') || false,
-    brands: !!searchParams.get('brand'),
+    brands: !!searchParams.get('brand') || false,
     price: false,
     rating: false,
   })
@@ -85,8 +88,6 @@ export default function ProductsPage({
   )
   const ITEMS_PER_PAGE = 16
 
-  // ✅ Bug 2 corregido: activeCategory declarado UNA SOLA VEZ aquí
-  // Resuelve la categoría: primero desde el slug de URL, luego desde el filtro seleccionado
   const categoryFromSlug = categorySlug
     ? slugToCategory(categorySlug, dbCategories)
     : null
@@ -108,25 +109,34 @@ export default function ProductsPage({
           const allCats = cats.map((c) => c.name)
           setDbCategories(allCats)
 
-          // ✅ Bug 1 corregido: if cerrado correctamente con su }
           if (categorySlug) {
             const resolved = slugToCategory(categorySlug, allCats)
             if (resolved) setSelectedCategories([resolved])
           }
         }
 
+        // Fetch Brands
+        const { data: brandsData } = await supabase
+          .from('brands')
+          .select('name')
+          .order('name')
+
+        if (brandsData) {
+          setDbBrands(brandsData.map((b) => b.name))
+        }
+
         // Fetch Products with relations
         const { data: prods, error } = await supabase.from('products')
           .select(`
-          id,
-          name,
-          description,
-          image_url,
-          price,
-          rating,
-          categories (name),
-          brands (name)
-        `)
+            id,
+            name,
+            description,
+            image_url,
+            price,
+            rating,
+            categories (name),
+            brands (name)
+          `)
 
         if (error) throw error
 
@@ -159,7 +169,6 @@ export default function ProductsPage({
     fetchData()
   }, [])
 
-  // Initialize expandedFilters based on desktop/mobile on client-side only
   useEffect(() => {
     const isDesktop = window.innerWidth >= 1024
     setIsDesktopView(isDesktop)
@@ -193,12 +202,10 @@ export default function ProductsPage({
     startIndex + ITEMS_PER_PAGE,
   )
 
-  // Sync state with URL parameters (solo para ?q= y ?brand=, la categoría viene del slug)
   useEffect(() => {
     const brandParam = searchParams.get('brand')
     const pageParam = searchParams.get('page')
 
-    // Solo sincroniza categoría desde query param si NO hay categorySlug en la URL
     if (!categorySlug) {
       const categoryParam = searchParams.get('category')
       setSelectedCategories(
@@ -235,6 +242,26 @@ export default function ProductsPage({
       }
     },
     [selectedCategories, isDesktopView, router],
+  )
+
+  const toggleBrand = useCallback(
+    (brand: string) => {
+      const updated = selectedBrands.includes(brand)
+        ? selectedBrands.filter((b) => b !== brand)
+        : [...selectedBrands, brand]
+
+      setSelectedBrands(updated)
+
+      const params = new URLSearchParams(searchParams)
+      if (updated.length > 0) {
+        params.set('brand', updated.join(','))
+      } else {
+        params.delete('brand')
+      }
+      params.delete('page')
+      setSearchParams(params)
+    },
+    [selectedBrands, searchParams, setSearchParams],
   )
 
   const setPage = (page: number) => {
@@ -325,8 +352,9 @@ export default function ProductsPage({
                 </div>
 
                 <div className="px-8">
+                  {/* Filtro Categoría */}
                   <FilterSection
-                    title="Categoria"
+                    title="Categoría"
                     icon={LayoutGrid}
                     isOpen={expandedFilters.categories}
                     onToggle={() =>
@@ -378,6 +406,62 @@ export default function ProductsPage({
                             </div>
                             <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
                               {category}
+                            </span>
+                          </label>
+                        ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Filtro Marca */}
+                  <FilterSection
+                    title="Marca"
+                    icon={Tag}
+                    isOpen={expandedFilters.brands}
+                    onToggle={() =>
+                      setExpandedFilters((p) => ({
+                        ...p,
+                        brands: !p.brands,
+                      }))
+                    }
+                  >
+                    <div className="mb-4 relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-matheo-blue transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Buscar marca..."
+                        value={brandSearchTerm}
+                        onChange={(e) =>
+                          setBrandSearchTerm(e.target.value)
+                        }
+                        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50/50 text-gray-600 placeholder-gray-400 appearance-none outline-none focus:border-gray-200"
+                      />
+                    </div>
+                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+                      {dbBrands
+                        .filter((brand) =>
+                          brand
+                            .toLowerCase()
+                            .includes(brandSearchTerm.toLowerCase()),
+                        )
+                        .map((brand) => (
+                          <label
+                            key={brand}
+                            className="flex items-center gap-3 group cursor-pointer"
+                          >
+                            <div className="relative flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedBrands.includes(
+                                  brand,
+                                )}
+                                onChange={() => toggleBrand(brand)}
+                                className="w-5 h-5 text-matheo-blue rounded-md border-2 border-gray-200 focus:ring-matheo-blue transition-all"
+                              />
+                            </div>
+                            <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
+                              {brand}
                             </span>
                           </label>
                         ))}

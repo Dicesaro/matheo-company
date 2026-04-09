@@ -41,8 +41,8 @@ export default function FilterSection({
       </button>
       <div
         className={cn(
-          'overflow-hidden transition-all duration-300 ease-in-out',
-          isOpen ? 'max-h-[500px] pb-6' : 'max-h-0',
+          'transition-all duration-300 ease-in-out overflow-hidden',
+          isOpen ? 'max-h-none pb-6' : 'max-h-0',
         )}
       >
         {children}
