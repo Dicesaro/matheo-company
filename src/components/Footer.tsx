@@ -1,6 +1,7 @@
 'use client'
 import { generateSlug } from '@/lib/utils'
 import { Mail, MapPin } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Footer() {
@@ -29,8 +30,10 @@ export default function Footer() {
           <div>
             {/* Logo */}
             <div className="mb-6">
-              <img
+              <Image
                 src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
+                width={200}
+                height={20}
                 alt="MATHEO Industrial Company"
                 className="h-20 w-auto"
               />
