@@ -79,6 +79,7 @@ export default function Navbar() {
       }, 400)
     }, 4000)
     return () => clearInterval(interval)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const megaRef = useRef<HTMLDivElement>(null)
   const megaTimeout = useRef<ReturnType<typeof setTimeout> | null>(
@@ -704,7 +705,7 @@ export default function Navbar() {
       <div
         className={cn(
           'md:hidden overflow-hidden transition-all duration-300',
-          isOpen ? 'max-h-[600px] border-t' : 'max-h-0',
+          isOpen ? 'max-h-150 border-t' : 'max-h-0',
         )}
       >
         <div className="container mx-auto px-4 py-6 bg-white space-y-1">
@@ -747,7 +748,7 @@ export default function Navbar() {
                     className={cn(
                       'overflow-hidden transition-all duration-300',
                       isMobileCatsOpen
-                        ? 'max-h-[400px] mb-2'
+                        ? 'max-h-100px mb-2'
                         : 'max-h-0',
                     )}
                   >
