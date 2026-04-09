@@ -2,7 +2,6 @@
 import {
   Menu,
   X,
-  Mail,
   Search,
   ChevronLeft,
   ChevronDown,
@@ -295,7 +294,9 @@ export default function Navbar() {
             className="text-xs select-none text-center"
             style={{
               opacity: promoVisible ? 1 : 0,
-              transform: promoVisible ? 'translateY(0)' : 'translateY(-6px)',
+              transform: promoVisible
+                ? 'translateY(0)'
+                : 'translateY(-6px)',
               transition: 'opacity 0.4s ease, transform 0.4s ease',
             }}
           >
