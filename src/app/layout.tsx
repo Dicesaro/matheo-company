@@ -7,12 +7,10 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import ScrollToTop from '@/components/ScrollToTop';
 
 export const metadata: Metadata = {
-  title: "Industrial Company Matheo",
-  description: "Importador y Distribuidor de Herramientas para la Industria Metalmecánica",
-  icons: {
-    icon: "https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_icon_sgykvs.svg",
-  },
-};
+  title: 'Industrial Company Matheo',
+  description:
+    'Importador y Distribuidor de Herramientas para la Industria Metalmecánica',
+}
 
 function NavbarPlaceholder() {
   return <div className="h-20 bg-gray-100" />;
