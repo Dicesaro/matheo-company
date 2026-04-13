@@ -161,9 +161,9 @@ export default function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-white pt-24 md:pt-40 pb-20">
-      <div className="container mx-auto px-4 max-w-6xl">
+      <div className="container mx-auto px-4 max-w-6xl pt-10 md:pt-0">
         {/* Breadcrumb */}
-        <div className="mb-8 hidden md:block">
+        <div className="mb-6">
           <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-gray-500 font-medium">
             <Link
               href={'/'}
@@ -192,10 +192,10 @@ export default function ProductDetailPage({
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
           {/* Left Column: Image Gallery */}
-          <div className="space-y-6 lg:sticky lg:top-40 h-fit max-w-lg mx-auto lg:max-w-none w-full">
-            <div className="relative group bg-white rounded-2xl p-4 md:p-8 aspect-square flex items-center justify-center overflow-hidden shadow-sm">
+          <div className="space-y-4 lg:sticky lg:top-40 h-fit w-full lg:w-1/2">
+            <div className="relative group bg-white rounded-2xl p-4 md:p-8 aspect-square w-full flex items-center justify-center overflow-hidden shadow-sm ">
               <Image
                 key={selectedImage}
                 src={product.images[selectedImage]}
@@ -213,47 +213,49 @@ export default function ProductDetailPage({
                       e.stopPropagation()
                       prevImage()
                     }}
-                    className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10"
+                    className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10"
                   >
-                    <ChevronLeft size={32} strokeWidth={1.5} />
+                    <ChevronLeft size={28} strokeWidth={1.5} />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       nextImage()
                     }}
-                    className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10"
+                    className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10"
                   >
-                    <ChevronRight size={32} strokeWidth={1.5} />
+                    <ChevronRight size={28} strokeWidth={1.5} />
                   </button>
                 </>
               )}
             </div>
 
             {product.images.length > 1 && (
-              <div className="flex gap-4 justify-center">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImage(idx)}
-                    className={cn(
-                      'w-20 h-20 rounded-xl border-2 p-2 transition-all overflow-hidden bg-white',
-                      selectedImage === idx
-                        ? 'border-matheo-blue shadow-md'
-                        : 'border-gray-100 opacity-60 hover:opacity-100',
-                    )}
-                  >
-                    <Image
-                      src={img}
-                      alt=""
-                      width={80}
-                      height={80}
-                      loading="eager"
-                      style={{ width: '100%', height: '100%' }}
-                      className="object-contain"
-                    />
-                  </button>
-                ))}
+              <div className="overflow-x-hidden w-full">
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {product.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={cn(
+                        'shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 p-1.5 md:p-2 transition-all overflow-hidden bg-white',
+                        selectedImage === idx
+                          ? 'border-matheo-blue shadow-md'
+                          : 'border-gray-100 opacity-60 hover:opacity-100',
+                      )}
+                    >
+                      <Image
+                        src={img}
+                        alt=""
+                        width={80}
+                        height={80}
+                        loading="eager"
+                        style={{ width: '100%', height: '100%' }}
+                        className="object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -382,14 +384,14 @@ export default function ProductDetailPage({
                     <div
                       key={idx}
                       className={cn(
-                        'grid grid-cols-2 gap-4 p-4 text-sm',
+                        'flex gap-4 p-4 text-sm',
                         idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white',
                       )}
                     >
-                      <span className="font-bold text-gray-900">
+                      <span className="font-bold text-gray-900 min-w-fit">
                         {spec.label}
                       </span>
-                      <span className="text-gray-600">
+                      <span className="text-gray-600 flex-1">
                         {spec.value}
                       </span>
                     </div>
@@ -399,13 +401,13 @@ export default function ProductDetailPage({
                     product.workMaterials.length > 0 && (
                       <div
                         className={cn(
-                          'grid grid-cols-2 gap-4 p-4 text-sm border-t border-gray-100',
+                          'flex gap-4 p-4 text-sm border-t border-gray-100',
                           product.specifications.length % 2 === 0
                             ? 'bg-gray-50/50'
                             : 'bg-white',
                         )}
                       >
-                        <span className="font-bold text-gray-900 self-center">
+                        <span className="font-bold text-gray-900 self-center min-w-fit">
                           Trabaja
                         </span>
                         <div className="flex gap-2 flex-wrap">
