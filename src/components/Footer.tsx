@@ -45,7 +45,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://www.facebook.com/profile.php?id=61583130317473"
+                href="https://www.facebook.com/IndustrialCompanyMatheo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-800 hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors"
@@ -65,7 +65,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://www.tiktok.com/@matheoindustrialc"
+                href="https://www.tiktok.com/@industrialcompanymatheo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-800 hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors"

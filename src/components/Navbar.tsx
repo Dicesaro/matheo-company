@@ -21,6 +21,11 @@ const navItems = [
   { name: 'Productos', href: '/productos', hasMega: true },
   { name: 'Nosotros', href: '/nosotros' },
   { name: 'Contacto', href: '/contacto' },
+  {
+    name: 'Ver Catálogo 📙',
+    href: '/catalogo.pdf',
+    isExternal: true,
+  },
 ]
 
 interface SearchResult {
@@ -79,7 +84,7 @@ export default function Navbar() {
       }, 400)
     }, 4000)
     return () => clearInterval(interval)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const megaRef = useRef<HTMLDivElement>(null)
   const megaTimeout = useRef<ReturnType<typeof setTimeout> | null>(
@@ -289,20 +294,65 @@ export default function Navbar() {
       )}
     >
       {/* Top Bar */}
-      <div className="bg-matheo-red text-white py-2">
-        <div className="container mx-auto px-4 flex justify-center items-center text-sm">
+      <div className="bg-matheo-red text-white py-2 min-h-[36px] flex items-center">
+        <div className="container mx-auto px-4 flex justify-between items-center text-sm relative">
+          
+          <div className="hidden md:flex items-center gap-4 z-10">
+            <a
+              href="https://www.facebook.com/IndustrialCompanyMatheo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-matheo-blue transition-colors flex items-center gap-1.5 opacity-90 hover:opacity-100"
+              aria-label="Facebook"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+              <span className="text-[11px] font-medium tracking-wide">Facebook</span>
+            </a>
+            <div className="w-px h-3 bg-white/30 hidden lg:block"></div>
+            <a
+              href="https://www.tiktok.com/@industrialcompanymatheo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-matheo-blue transition-colors flex items-center gap-1.5 opacity-90 hover:opacity-100"
+              aria-label="TikTok"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+              </svg>
+              <span className="text-[11px] font-medium tracking-wide">TikTok</span>
+            </a>
+          </div>
+
           <div
-            className="text-xs select-none text-center"
+            className="hidden md:block text-xs select-none text-center absolute left-0 right-0 pointer-events-none"
             style={{
               opacity: promoVisible ? 1 : 0,
               transform: promoVisible
                 ? 'translateY(0)'
-                : 'translateY(-6px)',
+                : 'translateY(-4px)',
               transition: 'opacity 0.4s ease, transform 0.4s ease',
             }}
           >
             {promoMessages[promoIndex]}
           </div>
+
+          <div className="hidden md:block w-32"></div>
+          
+          <div
+            className="md:hidden text-[11px] select-none text-center w-full pl-3"
+            style={{
+              opacity: promoVisible ? 1 : 0,
+              transform: promoVisible
+                ? 'translateY(0)'
+                : 'translateY(-4px)',
+              transition: 'opacity 0.4s ease, transform 0.4s ease',
+            }}
+          >
+            {promoMessages[promoIndex]}
+          </div>
+
         </div>
       </div>
 
@@ -509,11 +559,19 @@ export default function Navbar() {
                   }
 
                   const isHashLink = item.href.includes('#')
-                  if (isHashLink) {
+                  if (isHashLink || item.isExternal) {
                     return (
                       <a
                         key={item.name}
                         href={item.href}
+                        target={
+                          item.isExternal ? '_blank' : undefined
+                        }
+                        rel={
+                          item.isExternal
+                            ? 'noopener noreferrer'
+                            : undefined
+                        }
                         className="text-gray-700 hover:text-matheo-red font-medium transition-colors relative group"
                       >
                         {item.name}
@@ -684,6 +742,16 @@ export default function Navbar() {
                 />
               </Link>
 
+              <a
+                href="/catalogo.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMegaOpen(false)}
+                className="group inline-flex items-center justify-center gap-2 w-full bg-white text-matheo-blue border-2 border-matheo-blue hover:bg-blue-50 font-bold text-sm py-2.5 px-5 rounded-xl transition-all"
+              >
+                Descargar en PDF
+              </a>
+
               <div className="mt-6 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-400">
                   <span className="font-bold text-matheo-blue">
@@ -797,12 +865,18 @@ export default function Navbar() {
             }
 
             const isHashLink = item.href.includes('#')
-            if (isHashLink) {
+            if (isHashLink || item.isExternal) {
               return (
                 <a
                   key={item.name}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
+                  target={item.isExternal ? '_blank' : undefined}
+                  rel={
+                    item.isExternal
+                      ? 'noopener noreferrer'
+                      : undefined
+                  }
                   className="block py-3 text-gray-700 hover:text-matheo-red hover:bg-gray-50 px-4 rounded-lg transition-colors"
                 >
                   {item.name}
@@ -824,6 +898,32 @@ export default function Navbar() {
               </Link>
             )
           })}
+          
+          {/* Mobile Social Links */}
+          <div className="flex items-center gap-4 px-4 py-4 mt-2 border-t border-gray-100">
+            <a
+              href="https://www.facebook.com/IndustrialCompanyMatheo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 bg-gray-50 text-gray-600 hover:text-white hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors shadow-sm border border-gray-100"
+              aria-label="Facebook"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </a>
+            <a
+              href="https://www.tiktok.com/@industrialcompanymatheo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 bg-gray-50 text-gray-600 hover:text-white hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors shadow-sm border border-gray-100"
+              aria-label="TikTok"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </nav>
