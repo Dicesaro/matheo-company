@@ -195,17 +195,19 @@ export default function ProductDetailPage({
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
           {/* Left Column: Image Gallery */}
           <div className="space-y-4 lg:sticky lg:top-40 h-fit w-full lg:w-1/2">
-            <div className="relative group bg-white rounded-2xl p-4 md:p-8 aspect-square w-full flex items-center justify-center overflow-hidden shadow-sm ">
-              <Image
-                key={selectedImage}
-                src={product.images[selectedImage]}
-                alt={product.name}
-                fill
-                priority
-                loading="eager"
-                className="object-contain transition-all duration-500 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
+            <div className="relative group bg-white rounded-2xl aspect-square w-full overflow-hidden shadow-sm p-4 md:p-8">
+              <div className="relative w-full h-full">
+                <Image
+                  key={selectedImage}
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  fill
+                  priority
+                  loading="eager"
+                  className="object-contain transition-all duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
               {product.images.length > 1 && (
                 <>
                   <button
@@ -261,7 +263,7 @@ export default function ProductDetailPage({
           </div>
 
           {/* Right Column: Info & Details */}
-          <div className="flex flex-col">
+          <div className="w-full lg:w-1/2 flex flex-col">
             <div className="flex gap-8 border-b-2 border-gray-100 mb-8">
               <button
                 onClick={() => setActiveTab('info')}
@@ -384,14 +386,14 @@ export default function ProductDetailPage({
                     <div
                       key={idx}
                       className={cn(
-                        'flex gap-4 p-4 text-sm',
+                        'grid grid-cols-[120px_1fr] md:grid-cols-[160px_1fr] text-sm divide-x divide-gray-100',
                         idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white',
                       )}
                     >
-                      <span className="font-bold text-gray-900 min-w-fit">
+                      <span className="font-bold text-gray-900 p-4">
                         {spec.label}
                       </span>
-                      <span className="text-gray-600 flex-1">
+                      <span className="text-gray-600 p-4">
                         {spec.value}
                       </span>
                     </div>
@@ -401,16 +403,16 @@ export default function ProductDetailPage({
                     product.workMaterials.length > 0 && (
                       <div
                         className={cn(
-                          'flex gap-4 p-4 text-sm border-t border-gray-100',
+                          'grid grid-cols-[120px_1fr] md:grid-cols-[160px_1fr] text-sm border-t border-gray-100 divide-x divide-gray-100',
                           product.specifications.length % 2 === 0
                             ? 'bg-gray-50/50'
                             : 'bg-white',
                         )}
                       >
-                        <span className="font-bold text-gray-900 self-center min-w-fit">
+                        <span className="font-bold text-gray-900 p-4 flex items-center">
                           Trabaja
                         </span>
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex gap-2 flex-wrap p-4">
                           {[
                             {
                               char: 'P',
