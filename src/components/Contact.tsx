@@ -1,4 +1,4 @@
-"use client";
+'use client'
 import { Send, CheckCircle2 } from 'lucide-react'
 import { useForm, ValidationError } from '@formspree/react'
 
@@ -198,9 +198,9 @@ export default function Contact() {
           {/* Map */}
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full min-h-125 relative border border-gray-100">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d1160.0652423344322!2d-77.05080696595397!3d-12.044978502457365!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMTLCsDAyJzQwLjgiUyA3N8KwMDMnMDMuMSJX!5e0!3m2!1sen!2spe!4v1767975991274!5m2!1sen!2spe"
-              width="100%"
-              height="100%"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d975.4946309633432!2d-77.05172132281241!3d-12.044998535099145!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c935f7f5da97%3A0x7feac36b833a107e!2sIndustrial%20Company%20Matheo%20EIRL%20%7C%20Fresado%2C%20Torneado%20y%20Roscado!5e0!3m2!1ses-419!2spe!4v1777826884409!5m2!1ses-419!2spe"
+              width="600"
+              height="450"
               style={{ border: 0, minHeight: '500px' }}
               allowFullScreen={true}
               loading="lazy"

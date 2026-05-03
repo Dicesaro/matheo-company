@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronDown,
   ArrowRight,
-  LayoutGrid,
 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
@@ -55,6 +54,9 @@ export default function Navbar() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>(
     [],
   )
+  const [categoryResults, setCategoryResults] = useState<
+    { name: string; image: string | null }[]
+  >([])
   const [categories, setCategories] = useState<
     { name: string; image: string | null }[]
   >([])
@@ -216,15 +218,29 @@ export default function Navbar() {
       clearTimeout(searchTimeoutRef.current)
     }
 
+    // Filtrar categorías en el cliente (ya están cargadas)
+    if (value.trim().length >= 2) {
+      const lower = value.trim().toLowerCase()
+      setCategoryResults(
+        categories
+          .filter((c) => c.name.toLowerCase().includes(lower))
+          .slice(0, 4),
+      )
+    } else {
+      setCategoryResults([])
+    }
+
     searchTimeoutRef.current = setTimeout(async () => {
       if (value.length >= 2) {
+        // ilike en Supabase/Postgres es case-insensitive por defecto
+        const term = value.trim()
         try {
           const { data, error } = await supabase
             .from('products')
             .select(
               `id, name, image_url, brands (name), categories(name)`,
             )
-            .or(`name.ilike.%${value}%,description.ilike.%${value}%`)
+            .or(`name.ilike.%${term}%,description.ilike.%${term}%`)
             .limit(6)
 
           if (data && !error) {
@@ -247,6 +263,7 @@ export default function Navbar() {
         }
       } else {
         setSearchResults([])
+        setCategoryResults([])
       }
 
       if (pathname === '/productos') {
@@ -259,7 +276,7 @@ export default function Navbar() {
         lastPushedSearch.current = value
         setSearchParams(params, { replace: true })
       }
-    }, 600) // Increased debounce to 600ms to group typing better
+    }, 200) // 200ms debounce para resultados más rápidos
   }
 
   const handleResultClick = (
@@ -270,19 +287,41 @@ export default function Navbar() {
       `/productos/${generateSlug(category)}/${generateSlug(productName)}`,
     )
     setSearchResults([])
+    setCategoryResults([])
+    setSearchValue('')
+    setIsSearchExpanded(false)
+    setIsOpen(false)
+  }
+
+  const handleCategoryClick = (catName: string) => {
+    router.push(`/productos/${generateSlug(catName)}`)
+    setSearchResults([])
+    setCategoryResults([])
     setSearchValue('')
     setIsSearchExpanded(false)
     setIsOpen(false)
   }
 
   useEffect(() => {
-    const handleClickOutside = () => setSearchResults([])
-    window.addEventListener('click', handleClickOutside)
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node
+      const desktopSearch = document.getElementById(
+        'navbar-search-wrapper-desktop',
+      )
+      const mobileSearch = document.getElementById(
+        'navbar-search-wrapper-mobile',
+      )
+      const isInsideDesktop = desktopSearch?.contains(target) ?? false
+      const isInsideMobile = mobileSearch?.contains(target) ?? false
+      if (!isInsideDesktop && !isInsideMobile) {
+        setSearchResults([])
+        setCategoryResults([])
+      }
+    }
+    window.addEventListener('mousedown', handleClickOutside)
     return () =>
-      window.removeEventListener('click', handleClickOutside)
+      window.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  // No longer need columns — using grid cards layout
 
   return (
     <nav
@@ -296,7 +335,6 @@ export default function Navbar() {
       {/* Top Bar */}
       <div className="bg-matheo-red text-white py-2 min-h-[36px] flex items-center">
         <div className="container mx-auto px-4 flex justify-between items-center text-sm relative">
-          
           <div className="hidden md:flex items-center gap-4 z-10">
             <a
               href="https://www.facebook.com/IndustrialCompanyMatheo"
@@ -305,10 +343,21 @@ export default function Navbar() {
               className="text-white hover:text-matheo-blue transition-colors flex items-center gap-1.5 opacity-90 hover:opacity-100"
               aria-label="Facebook"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
               </svg>
-              <span className="text-[11px] font-medium tracking-wide">Facebook</span>
+              <span className="text-[11px] font-medium tracking-wide">
+                Facebook
+              </span>
             </a>
             <div className="w-px h-3 bg-white/30 hidden lg:block"></div>
             <a
@@ -318,10 +367,21 @@ export default function Navbar() {
               className="text-white hover:text-matheo-blue transition-colors flex items-center gap-1.5 opacity-90 hover:opacity-100"
               aria-label="TikTok"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
               </svg>
-              <span className="text-[11px] font-medium tracking-wide">TikTok</span>
+              <span className="text-[11px] font-medium tracking-wide">
+                TikTok
+              </span>
             </a>
           </div>
 
@@ -339,7 +399,7 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:block w-32"></div>
-          
+
           <div
             className="md:hidden text-[11px] select-none text-center w-full pl-3"
             style={{
@@ -352,7 +412,6 @@ export default function Navbar() {
           >
             {promoMessages[promoIndex]}
           </div>
-
         </div>
       </div>
 
@@ -372,7 +431,10 @@ export default function Navbar() {
               >
                 <ChevronLeft size={28} />
               </button>
-              <div className="relative flex-1">
+              <div
+                id="navbar-search-wrapper-mobile"
+                className="relative flex-1"
+              >
                 <form
                   onSubmit={handleSearch}
                   className="relative group"
@@ -390,42 +452,107 @@ export default function Navbar() {
                     size={20}
                   />
                 </form>
-                {searchResults.length > 0 && (
+                {/* Botón X para limpiar búsqueda - mobile */}
+                {searchValue && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchValue('')
+                      setSearchResults([])
+                      setCategoryResults([])
+                    }}
+                    className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
+                    aria-label="Borrar búsqueda"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+                {(searchResults.length > 0 ||
+                  categoryResults.length > 0) && (
                   <div className="absolute top-full left-0 right-0 mt-3 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-60 animate-in fade-in zoom-in-95 duration-200">
-                    {searchResults.map((product) => (
-                      <button
-                        key={product.id}
-                        onClick={() =>
-                          handleResultClick(
-                            product.name,
-                            product.category,
-                          )
-                        }
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
-                      >
-                        {product.image ? (
-                          <div className="w-10 h-10 rounded text-center border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
-                            <Image
-                              width={100}
-                              height={100}
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-full object-contain mix-blend-multiply"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 rounded border border-transparent flex items-center justify-center shrink-0">
-                            <Search
-                              size={16}
-                              className="text-gray-400"
-                            />
-                          </div>
+                    {/* Sección Categorías */}
+                    {categoryResults.length > 0 && (
+                      <>
+                        <div className="px-4 pt-3 pb-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-matheo-blue">
+                            Categorías
+                          </span>
+                        </div>
+                        {categoryResults.map((cat) => (
+                          <button
+                            key={cat.name}
+                            onClick={() =>
+                              handleCategoryClick(cat.name)
+                            }
+                            className="w-full text-left px-4 py-2.5 hover:bg-blue-50/60 flex items-center gap-3 transition-colors"
+                          >
+                            <div className="w-8 h-8 rounded-lg border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                              {cat.image ? (
+                                <Image
+                                  width={40}
+                                  height={40}
+                                  src={cat.image}
+                                  alt={cat.name}
+                                  className="w-full h-full object-contain mix-blend-multiply"
+                                />
+                              ) : (
+                                <span className="text-base">🗂️</span>
+                              )}
+                            </div>
+                            <span className="text-sm font-semibold text-matheo-blue truncate min-w-0">
+                              {cat.name}
+                            </span>
+                          </button>
+                        ))}
+                        {searchResults.length > 0 && (
+                          <div className="mx-4 border-t border-gray-100" />
                         )}
-                        <span className="text-sm font-medium text-gray-700 truncate min-w-0">
-                          {product.name}
-                        </span>
-                      </button>
-                    ))}
+                      </>
+                    )}
+                    {/* Sección Productos */}
+                    {searchResults.length > 0 && (
+                      <>
+                        <div className="px-4 pt-3 pb-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                            Productos
+                          </span>
+                        </div>
+                        {searchResults.map((product) => (
+                          <button
+                            key={product.id}
+                            onClick={() =>
+                              handleResultClick(
+                                product.name,
+                                product.category,
+                              )
+                            }
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
+                          >
+                            {product.image ? (
+                              <div className="w-10 h-10 rounded text-center border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                                <Image
+                                  width={100}
+                                  height={100}
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="w-full h-full object-contain mix-blend-multiply"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded border border-transparent flex items-center justify-center shrink-0">
+                                <Search
+                                  size={16}
+                                  className="text-gray-400"
+                                />
+                              </div>
+                            )}
+                            <span className="text-sm font-medium text-gray-700 truncate min-w-0">
+                              {product.name}
+                            </span>
+                          </button>
+                        ))}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -456,64 +583,139 @@ export default function Navbar() {
               </Link>
 
               {/* Search Bar (Middle) - DESKTOP ONLY */}
-              {/* <div className="hidden lg:flex flex-1 max-w-md mx-8 relative">
+              <div
+                id="navbar-search-wrapper-desktop"
+                className="hidden lg:flex flex-1 max-w-md mx-8 relative"
+              >
                 <form
                   onSubmit={handleSearch}
                   className="relative w-full group"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <Search
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-matheo-red transition-colors"
                     size={18}
                   />
                   <input
+                    id="navbar-search-desktop"
                     type="text"
                     placeholder="¿Qué herramienta buscas?"
                     value={searchValue}
                     onChange={handleSearchChange}
-                    className="w-full pl-11 pr-4 py-2.5 bg-gray-50/50 border-2 border-gray-100 rounded-xl focus:bg-white focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/5 focus:outline-none transition-all text-sm font-medium"
+                    className="w-full pl-11 pr-10 py-2.5 bg-gray-50/50 border-2 border-gray-100 rounded-xl focus:bg-white focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/5 focus:outline-none transition-all text-sm font-medium"
                   />
+                  {/* Botón X para limpiar búsqueda - desktop */}
+                  {searchValue && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchValue('')
+                        setSearchResults([])
+                        setCategoryResults([])
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
+                      aria-label="Borrar búsqueda"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
                 </form>
-                {searchResults.length > 0 && (
-                  <div
-                    className="absolute top-full left-0 right-0 mt-3 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-60 animate-in fade-in zoom-in-95 duration-200"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {searchResults.map((product) => (
-                      <button
-                        key={product.id}
-                        onClick={() =>
-                          handleResultClick(
-                            product.name,
-                            product.category,
-                          )
-                        }
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
-                      >
-                        {product.image ? (
-                          <div className="w-10 h-10 rounded text-center border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-full object-contain mix-blend-multiply"
+                {(searchResults.length > 0 ||
+                  categoryResults.length > 0) && (
+                  <div className="absolute top-full left-0 right-0 mt-3 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-60 animate-in fade-in zoom-in-95 duration-200">
+                    {/* Sección Categorías */}
+                    {categoryResults.length > 0 && (
+                      <>
+                        <div className="px-4 pt-3 pb-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-matheo-blue">
+                            Categorías
+                          </span>
+                        </div>
+                        {categoryResults.map((cat) => (
+                          <button
+                            key={cat.name}
+                            onClick={() =>
+                              handleCategoryClick(cat.name)
+                            }
+                            className="w-full text-left px-4 py-2.5 hover:bg-blue-50/60 flex items-center gap-3 transition-colors"
+                          >
+                            <div className="w-8 h-8 rounded-lg border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                              {cat.image ? (
+                                <Image
+                                  width={40}
+                                  height={40}
+                                  src={cat.image}
+                                  alt={cat.name}
+                                  className="w-full h-full object-contain mix-blend-multiply"
+                                />
+                              ) : (
+                                <span className="text-base">🗂️</span>
+                              )}
+                            </div>
+                            <span className="text-sm font-semibold text-matheo-blue truncate min-w-0 flex-1">
+                              {cat.name}
+                            </span>
+                            <ArrowRight
+                              size={14}
+                              className="text-matheo-blue/30 shrink-0"
                             />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 rounded flex items-center justify-center shrink-0">
-                            <Search
-                              size={16}
-                              className="text-gray-400"
-                            />
-                          </div>
+                          </button>
+                        ))}
+                        {searchResults.length > 0 && (
+                          <div className="mx-4 border-t border-gray-100" />
                         )}
-                        <span className="text-sm font-medium text-gray-700 truncate min-w-0 flex-1">
-                          {product.name}
-                        </span>
-                      </button>
-                    ))}
+                      </>
+                    )}
+                    {/* Sección Productos */}
+                    {searchResults.length > 0 && (
+                      <>
+                        <div className="px-4 pt-3 pb-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                            Productos
+                          </span>
+                        </div>
+                        {searchResults.map((product) => (
+                          <button
+                            key={product.id}
+                            onClick={() =>
+                              handleResultClick(
+                                product.name,
+                                product.category,
+                              )
+                            }
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
+                          >
+                            {product.image ? (
+                              <div className="w-10 h-10 rounded text-center border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                                <Image
+                                  width={80}
+                                  height={80}
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="w-full h-full object-contain mix-blend-multiply"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded flex items-center justify-center shrink-0">
+                                <Search
+                                  size={16}
+                                  className="text-gray-400"
+                                />
+                              </div>
+                            )}
+                            <span className="text-sm font-medium text-gray-700 truncate min-w-0 flex-1">
+                              {product.name}
+                            </span>
+                            <ArrowRight
+                              size={14}
+                              className="text-gray-300 shrink-0"
+                            />
+                          </button>
+                        ))}
+                      </>
+                    )}
                   </div>
                 )}
-              </div> */}
+              </div>
 
               {/* Desktop Navigation - RIGHT */}
               <div className="hidden md:flex items-center gap-8 shrink-0">
@@ -602,15 +804,17 @@ export default function Navbar() {
               </div>
 
               {/* Mobile Search Button - RIGHT */}
-              {/* <button
+              <button
+                id="navbar-search-mobile-btn"
                 onClick={() => {
                   setIsSearchExpanded(true)
                   setIsOpen(false)
                 }}
                 className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
+                aria-label="Buscar productos"
               >
                 <Search size={28} />
-              </button> */}
+              </button>
             </>
           )}
         </div>
@@ -716,10 +920,6 @@ export default function Navbar() {
             <div className="w-52 shrink-0 flex flex-col justify-start gap-5">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <LayoutGrid
-                    size={18}
-                    className="text-matheo-blue"
-                  />
                   <span className="text-xs font-black uppercase tracking-widest text-matheo-blue">
                     Catálogo
                   </span>
@@ -898,7 +1098,7 @@ export default function Navbar() {
               </Link>
             )
           })}
-          
+
           {/* Mobile Social Links */}
           <div className="flex items-center gap-4 px-4 py-4 mt-2 border-t border-gray-100">
             <a
@@ -908,7 +1108,16 @@ export default function Navbar() {
               className="w-10 h-10 bg-gray-50 text-gray-600 hover:text-white hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors shadow-sm border border-gray-100"
               aria-label="Facebook"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
               </svg>
             </a>
@@ -919,7 +1128,16 @@ export default function Navbar() {
               className="w-10 h-10 bg-gray-50 text-gray-600 hover:text-white hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors shadow-sm border border-gray-100"
               aria-label="TikTok"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
               </svg>
             </a>
