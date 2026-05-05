@@ -284,7 +284,7 @@ export default function Navbar() {
     category: string,
   ) => {
     router.push(
-      `/productos/${generateSlug(category)}/${generateSlug(productName)}`,
+      `/producto/${generateSlug(category)}/${generateSlug(productName)}`,
     )
     setSearchResults([])
     setCategoryResults([])
