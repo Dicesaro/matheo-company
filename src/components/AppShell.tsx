@@ -1,0 +1,42 @@
+'use client'
+import { usePathname } from 'next/navigation'
+import { Suspense } from 'react'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
+import WhatsAppButton from '@/components/WhatsAppButton'
+import ScrollToTop from '@/components/ScrollToTop'
+
+function NavbarPlaceholder() {
+  return <div className="h-20 bg-gray-100" />
+}
+
+// Rutas en las que NO se debe mostrar el Navbar, Footer ni WhatsApp
+const HIDDEN_LAYOUT_ROUTES = ['/redes']
+
+export default function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const hideLayout = HIDDEN_LAYOUT_ROUTES.some((route) => pathname === route)
+
+  if (hideLayout) {
+    return (
+      <>
+        <ScrollToTop />
+        {children}
+      </>
+    )
+  }
+
+  return (
+    <>
+      <ScrollToTop />
+      <div className="min-h-screen flex flex-col overflow-x-hidden">
+        <Suspense fallback={<NavbarPlaceholder />}>
+          <Navbar />
+        </Suspense>
+        <main className="grow">{children}</main>
+        <Footer />
+        <WhatsAppButton />
+      </div>
+    </>
+  )
+}

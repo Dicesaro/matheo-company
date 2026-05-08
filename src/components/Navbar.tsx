@@ -337,50 +337,14 @@ export default function Navbar() {
         <div className="container mx-auto px-4 flex justify-between items-center text-sm relative">
           <div className="hidden md:flex items-center gap-4 z-10">
             <a
-              href="https://www.facebook.com/IndustrialCompanyMatheo"
+              href="/redes"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-matheo-blue transition-colors flex items-center gap-1.5 opacity-90 hover:opacity-100"
-              aria-label="Facebook"
+              aria-label="Redes Sociales"
             >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-              </svg>
-              <span className="text-[11px] font-medium tracking-wide">
-                Facebook
-              </span>
-            </a>
-            <div className="w-px h-3 bg-white/30 hidden lg:block"></div>
-            <a
-              href="https://www.tiktok.com/@industrialcompanymatheo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:text-matheo-blue transition-colors flex items-center gap-1.5 opacity-90 hover:opacity-100"
-              aria-label="TikTok"
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-              </svg>
-              <span className="text-[11px] font-medium tracking-wide">
-                TikTok
+              <span className="text-[11px] font-medium tracking-wide underline underline-offset-2">
+                Nuestras Redes Sociales
               </span>
             </a>
           </div>

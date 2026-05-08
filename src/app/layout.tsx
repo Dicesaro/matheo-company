@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import "./globals.css";
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import WhatsAppButton from '@/components/WhatsAppButton';
-import ScrollToTop from '@/components/ScrollToTop';
+import AppShell from '@/components/AppShell';
 
 export const metadata: Metadata = {
   title: 'Industrial Company Matheo',
   description:
     'Importador y Distribuidor de Herramientas para la Industria Metalmecánica',
-}
-
-function NavbarPlaceholder() {
-  return <div className="h-20 bg-gray-100" />;
 }
 
 export default function RootLayout({
@@ -24,17 +16,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased font-sans">
-        <ScrollToTop />
-        <div className="min-h-screen flex flex-col overflow-x-hidden">
-          <Suspense fallback={<NavbarPlaceholder />}>
-            <Navbar />
-          </Suspense>
-          <main className="grow">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppButton />
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
