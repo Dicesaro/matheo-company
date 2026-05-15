@@ -63,6 +63,7 @@ export default function FeaturedProducts() {
             categories (name)
           `,
           )
+          .eq('featured', true)
           .order('rating', { ascending: false })
           .limit(12)
 

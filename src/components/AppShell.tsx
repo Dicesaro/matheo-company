@@ -12,10 +12,12 @@ function NavbarPlaceholder() {
 
 // Rutas en las que NO se debe mostrar el Navbar, Footer ni WhatsApp
 const HIDDEN_LAYOUT_ROUTES = ['/redes']
+const isAdminRoute = (pathname: string) => pathname.startsWith('/admin')
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const hideLayout = HIDDEN_LAYOUT_ROUTES.some((route) => pathname === route)
+  const currentPath = pathname ?? ''
+  const hideLayout = HIDDEN_LAYOUT_ROUTES.some((route) => currentPath === route) || isAdminRoute(currentPath)
 
   if (hideLayout) {
     return (

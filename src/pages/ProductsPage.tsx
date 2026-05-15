@@ -20,6 +20,7 @@ import FilterSection from '../components/FilterSection'
 
 interface ProductsPageProps {
   categorySlug?: string
+  subcategorySlug?: string
 }
 
 interface Product {
@@ -48,6 +49,7 @@ interface RawProduct {
 
 export default function ProductsPage({
   categorySlug,
+  subcategorySlug,
 }: ProductsPageProps) {
   const [searchParams, setSearchParams] = useCustomSearchParams()
   const searchTerm = searchParams.get('q') || ''
@@ -57,6 +59,7 @@ export default function ProductsPage({
   const [dbCategories, setDbCategories] = useState<string[]>([])
   const [dbBrands, setDbBrands] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [parentNameMap, setParentNameMap] = useState<Record<string, string[]>>({})
 
   const [selectedCategories, setSelectedCategories] = useState<
     string[]
@@ -81,6 +84,7 @@ export default function ProductsPage({
     price: false,
     rating: false,
   })
+  const [expandedParents, setExpandedParents] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(
     searchParams.get('page')
       ? parseInt(searchParams.get('page')!)
@@ -91,31 +95,67 @@ export default function ProductsPage({
   const categoryFromSlug = categorySlug
     ? slugToCategory(categorySlug, dbCategories)
     : null
+  const subcategoryFromSlug = subcategorySlug
+    ? slugToCategory(subcategorySlug, dbCategories)
+    : null
   const activeCategory =
+    subcategoryFromSlug ??
     categoryFromSlug ??
     (selectedCategories.length === 1 ? selectedCategories[0] : null)
+  const subcategoryMap = parentNameMap
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
       try {
-        // Fetch Categories
         const { data: cats } = await supabase
           .from('categories')
-          .select('name')
+          .select('id, name, parent_id')
           .order('name')
 
         if (cats) {
           const allCats = cats.map((c) => c.name)
           setDbCategories(allCats)
 
-          if (categorySlug) {
+          const idToName: Record<string, string> = {}
+          for (const c of cats) idToName[c.id] = c.name
+
+          const childrenOf: Record<string, string[]> = {}
+          const parents: string[] = []
+          for (const c of cats) {
+            if (c.parent_id) {
+              const parentName = idToName[c.parent_id]
+              if (parentName) {
+                if (!childrenOf[parentName]) childrenOf[parentName] = []
+                childrenOf[parentName].push(c.name)
+              }
+            } else {
+              parents.push(c.name)
+            }
+          }
+          setParentNameMap(childrenOf)
+
+          if (subcategorySlug) {
+            const resolved = slugToCategory(subcategorySlug, allCats)
+            if (resolved) {
+              setSelectedCategories([resolved])
+              const parentName = Object.entries(childrenOf).find(([, children]) =>
+                children.includes(resolved)
+              )?.[0]
+              if (parentName) setExpandedParents([parentName])
+            }
+          } else if (categorySlug) {
             const resolved = slugToCategory(categorySlug, allCats)
-            if (resolved) setSelectedCategories([resolved])
+            if (resolved) {
+              if (childrenOf[resolved]) {
+                setExpandedParents([resolved])
+              } else {
+                setSelectedCategories([resolved])
+              }
+            }
           }
         }
 
-        // Fetch Brands
         const { data: brandsData } = await supabase
           .from('brands')
           .select('name')
@@ -125,7 +165,6 @@ export default function ProductsPage({
           setDbBrands(brandsData.map((b) => b.name))
         }
 
-        // Fetch Products with relations
         const { data: prods, error } = await supabase.from('products')
           .select(`
             id,
@@ -180,13 +219,27 @@ export default function ProductsPage({
     }
   }, [])
 
+  const getEffectiveCategoryFilter = useCallback((): string[] => {
+    if (selectedCategories.length > 0) {
+      return selectedCategories.flatMap((name) => {
+        const children = subcategoryMap[name]
+        return children && children.length > 0 ? children : [name]
+      })
+    }
+    if (categoryFromSlug && activeCategory === categoryFromSlug && subcategoryMap[categoryFromSlug]) {
+      return subcategoryMap[categoryFromSlug]
+    }
+    return []
+  }, [selectedCategories, categoryFromSlug, activeCategory, subcategoryMap])
+
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+    const effectiveFilter = getEffectiveCategoryFilter()
     const matchesCategory =
-      selectedCategories.length === 0 ||
-      selectedCategories.includes(product.category)
+      effectiveFilter.length === 0 ||
+      effectiveFilter.includes(product.category)
     const matchesBrand =
       selectedBrands.length === 0 ||
       selectedBrands.includes(product.brand)
@@ -230,18 +283,32 @@ export default function ProductsPage({
   const toggleCategory = useCallback(
     (category: string) => {
       const isAlreadySelected = selectedCategories.includes(category)
+      const isParent = !!subcategoryMap[category]
 
       if (isAlreadySelected) {
         router.push('/productos')
+      } else if (isParent) {
+        setExpandedParents((prev) =>
+          prev.includes(category)
+            ? prev.filter((p) => p !== category)
+            : [...prev, category],
+        )
       } else {
-        router.push(`/productos/${generateSlug(category)}`)
+        const parentName = Object.entries(subcategoryMap).find(([, children]) =>
+          children.includes(category)
+        )?.[0]
+        if (parentName) {
+          router.push(`/productos/${generateSlug(parentName)}/${generateSlug(category)}`)
+        } else {
+          router.push(`/productos/${generateSlug(category)}`)
+        }
       }
 
       if (!isDesktopView) {
         setExpandedFilters((prev) => ({ ...prev, categories: false }))
       }
     },
-    [selectedCategories, isDesktopView, router],
+    [selectedCategories, subcategoryMap, isDesktopView, router],
   )
 
   const toggleBrand = useCallback(
@@ -378,8 +445,9 @@ export default function ProductsPage({
                         className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50/50 text-gray-600 placeholder-gray-400 appearance-none outline-none focus:border-gray-200"
                       />
                     </div>
-                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-1 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                       {dbCategories
+                        .filter((cat) => !Object.values(subcategoryMap).flat().includes(cat))
                         .filter((cat) =>
                           cat
                             .toLowerCase()
@@ -387,28 +455,75 @@ export default function ProductsPage({
                               categorySearchTerm.toLowerCase(),
                             ),
                         )
-                        .map((category) => (
-                          <label
-                            key={category}
-                            className="flex items-center gap-3 group cursor-pointer"
-                          >
-                            <div className="relative flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={selectedCategories.includes(
-                                  category,
+                        .map((parentName) => {
+                          const children = subcategoryMap[parentName] || []
+                          const isExpanded = expandedParents.includes(parentName)
+                          const hasFilteredChildren = children.some((child) =>
+                            child.toLowerCase().includes(categorySearchTerm.toLowerCase()),
+                          )
+                          const showChildren = isExpanded && hasFilteredChildren
+
+                          return (
+                            <div key={parentName}>
+                              <button
+                                onClick={() => toggleCategory(parentName)}
+                                className={`w-full flex items-center gap-2 py-1.5 rounded-lg transition-colors text-left ${
+                                  selectedCategories.includes(parentName)
+                                    ? 'text-matheo-blue'
+                                    : 'text-gray-600 hover:text-matheo-blue'
+                                }`}
+                              >
+                                {children.length > 0 && (
+                                  <ChevronRight
+                                    size={14}
+                                    className={`shrink-0 transition-transform duration-200 ${
+                                      isExpanded ? 'rotate-90' : ''
+                                    } ${
+                                      selectedCategories.includes(parentName)
+                                        ? 'text-matheo-blue'
+                                        : 'text-gray-400'
+                                    }`}
+                                  />
                                 )}
-                                onChange={() =>
-                                  toggleCategory(category)
-                                }
-                                className="w-5 h-5 text-matheo-blue rounded-md border-2 border-gray-200 focus:ring-matheo-blue transition-all"
-                              />
+                                {children.length === 0 && <div className="w-3.5 shrink-0" />}
+                                <span className="text-sm font-bold">{parentName}</span>
+                                {children.length > 0 && (
+                                  <span
+                                    className={`text-xs ml-auto ${
+                                      isExpanded ? 'text-matheo-blue' : 'text-gray-400'
+                                    }`}
+                                  >
+                                    {isExpanded ? '−' : '+'}
+                                  </span>
+                                )}
+                              </button>
+                              {showChildren && (
+                                <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
+                                  {children
+                                    .filter((child) =>
+                                      child.toLowerCase().includes(categorySearchTerm.toLowerCase()),
+                                    )
+                                    .map((child) => (
+                                      <label
+                                        key={child}
+                                        className="flex items-center gap-2 group cursor-pointer py-1 rounded-lg hover:bg-gray-50 px-2"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedCategories.includes(child)}
+                                          onChange={() => toggleCategory(child)}
+                                          className="w-4 h-4 text-matheo-blue rounded border-2 border-gray-200 focus:ring-matheo-blue transition-all"
+                                        />
+                                        <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-xs font-medium">
+                                          {child}
+                                        </span>
+                                      </label>
+                                    ))}
+                                </div>
+                              )}
                             </div>
-                            <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
-                              {category}
-                            </span>
-                          </label>
-                        ))}
+                          )
+                        })}
                     </div>
                   </FilterSection>
 

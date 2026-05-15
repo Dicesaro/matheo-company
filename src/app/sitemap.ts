@@ -38,16 +38,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const { data: categories } = await supabase
       .from('categories')
-      .select('name')
+      .select('id, name, parent_id')
       .order('name')
 
     if (categories) {
-      categoryRoutes = categories.map((cat) => ({
-        url: `${BASE_URL}/productos/${generateSlug(cat.name)}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      }))
+      const idToName: Record<string, string> = {}
+      for (const c of categories) idToName[c.id] = c.name
+
+      for (const cat of categories) {
+        if (cat.parent_id) {
+          const parentName = idToName[cat.parent_id]
+          if (parentName) {
+            categoryRoutes.push({
+              url: `${BASE_URL}/productos/${generateSlug(parentName)}/${generateSlug(cat.name)}`,
+              lastModified: new Date(),
+              changeFrequency: 'weekly' as const,
+              priority: 0.8,
+            })
+          }
+        } else {
+          categoryRoutes.push({
+            url: `${BASE_URL}/productos/${generateSlug(cat.name)}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.8,
+          })
+        }
+      }
     }
   } catch (error) {
     console.error('Sitemap: error fetching categories', error)

@@ -58,7 +58,7 @@ export default function Navbar() {
     { name: string; image: string | null }[]
   >([])
   const [categories, setCategories] = useState<
-    { name: string; image: string | null }[]
+    { name: string; image: string | null; isParent: boolean }[]
   >([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
   const [isMegaOpen, setIsMegaOpen] = useState(false)
@@ -130,11 +130,14 @@ export default function Navbar() {
       try {
         const { data: cats } = await supabase
           .from('categories')
-          .select('name')
+          .select('name, parent_id')
           .order('name')
 
         if (cats) {
-          // Fetch products to extract an image for each category
+          const subcatNames = new Set(
+            cats.filter((c) => c.parent_id).map((c) => c.name),
+          )
+
           const { data: prods } = await supabase
             .from('products')
             .select('image_url, categories(name)')
@@ -162,9 +165,10 @@ export default function Navbar() {
           }
 
           setCategories(
-            cats.map((c: { name: string }) => ({
+            cats.map((c: { name: string; parent_id: string | null }) => ({
               name: c.name,
               image: imgMap[c.name] || null,
+              isParent: !subcatNames.has(c.name),
             })),
           )
         }
@@ -815,7 +819,7 @@ export default function Navbar() {
                           </div>
                         </div>
                       ))
-                    : categories.slice(0, 15).map((cat) => (
+                    : categories.filter((c) => c.isParent).slice(0, 15).map((cat) => (
                         <Link
                           key={cat.name}
                           href={`/productos/${generateSlug(cat.name)}`}
@@ -919,7 +923,7 @@ export default function Navbar() {
               <div className="mt-6 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-400">
                   <span className="font-bold text-matheo-blue">
-                    {categories.length}
+                    {categories.filter((c) => c.isParent).length}
                   </span>{' '}
                   categorías disponibles
                 </p>
@@ -995,7 +999,7 @@ export default function Navbar() {
                               <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                             </div>
                           ))
-                        : categories.slice(0, 15).map((cat) => (
+                        : categories.filter((c) => c.isParent).slice(0, 15).map((cat) => (
                             <Link
                               key={cat.name}
                               href={`/productos?category=${encodeURIComponent(cat.name)}`}
