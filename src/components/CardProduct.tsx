@@ -1,7 +1,9 @@
 'use client'
-import { Eye } from 'lucide-react'
+import { Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { cn } from '../lib/utils'
 
 interface Product {
@@ -23,27 +25,63 @@ interface CardProductProps {
   onWhatsAppQuote?: (product: Product) => void
 }
 
+function getFavorites(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem('favorites')
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
 export default function CardProduct({
   product,
   viewMode,
   onWhatsAppQuote,
 }: CardProductProps) {
+  const [isFavorite, setIsFavorite] = useState(() =>
+    getFavorites().includes(product.id),
+  )
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const favorites = getFavorites()
+    let updated: string[]
+    if (favorites.includes(product.id)) {
+      updated = favorites.filter((id) => id !== product.id)
+    } else {
+      updated = [...favorites, product.id]
+    }
+    localStorage.setItem('favorites', JSON.stringify(updated))
+    setIsFavorite(!isFavorite)
+  }
+
   const handleWhatsAppQuote = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     onWhatsAppQuote?.(product)
   }
 
+  const productUrl = `/producto/${product.categorySlug}/${product.slug}`
+  const categoryUrl = `/productos/${product.categorySlug}`
+  const router = useRouter()
+
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    router.push(categoryUrl)
+  }
+
   return (
-    <div
+    <Link
       key={product.id}
+      href={productUrl}
       className={cn(
-        'bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group',
-        // Móvil: siempre flex-row (horizontal)
-        // ≥sm y viewMode grid: flex-col (vertical normal)
-        // list en cualquier tamaño: flex-row
+        'bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer',
         viewMode === 'grid'
-          ? 'flex flex-row sm:flex-col'
+          ? 'flex flex-col h-full'
           : 'flex flex-row p-4 gap-4',
       )}
     >
@@ -52,8 +90,7 @@ export default function CardProduct({
         className={cn(
           'relative flex items-center justify-center bg-gray-50/50 shrink-0',
           viewMode === 'grid'
-            ? // Móvil horizontal: cuadrado fijo a la izquierda
-              'w-32 sm:w-full aspect-square p-3 sm:p-4'
+            ? 'w-full aspect-square'
             : 'w-1/3 md:w-2/5 aspect-square rounded-xl',
         )}
       >
@@ -76,20 +113,23 @@ export default function CardProduct({
               'https://placehold.co/300x300?text=Sin+Imagen'
           }}
         />
-        {/* Eye icon */}
-        <Link
-          href={`/producto/${product.categorySlug}/${product.slug}`}
-          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:bg-[#2B5F9E] text-white hover:shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
-          aria-label="Ver detalles"
-          title="Ver detalles"
-          onClick={(e) => e.stopPropagation()}
+        {/* Star button */}
+        <button
+          onClick={toggleFavorite}
+          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:shadow-lg transition-all duration-300 z-10"
+          aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
         >
-          <Eye
-            className="text-[#2B5F9E] hover:text-white"
+          <Star
             size={17}
             strokeWidth={2.5}
+            className={cn(
+              'transition-colors duration-300',
+              isFavorite
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'text-gray-400 hover:text-yellow-400',
+            )}
           />
-        </Link>
+        </button>
       </div>
 
       {/* Contenido */}
@@ -97,60 +137,36 @@ export default function CardProduct({
         className={cn(
           'flex flex-col flex-1 min-w-0',
           viewMode === 'grid'
-            ? // Móvil: padding pequeño alineado a la izquierda
-              // ≥sm: padding normal centrado
-              'p-3 sm:p-4 text-left sm:text-center justify-center'
-            : 'justify-center text-center py-2',
+            ? 'p-3 sm:p-4 text-left'
+            : 'justify-center py-2',
         )}
       >
-        {/* Rating Stars */}
-        <div
-          className={cn(
-            'flex items-center gap-1 mb-2',
-            viewMode === 'grid'
-              ? 'justify-start sm:justify-center'
-              : 'justify-center',
-          )}
-        >
-          {[...Array(5)].map((_, i) => {
-            const rating = product.rating || 5
-            const fillAmount = Math.min(Math.max(rating - i, 0), 1)
-
-            return (
-              <div key={i} className="relative">
-                <svg
-                  className="w-4 h-4 text-gray-200 fill-current"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                {fillAmount > 0 && (
-                  <div
-                    className="absolute inset-0 overflow-hidden"
-                    style={{
-                      width: `${fillAmount * 100}%`,
-                    }}
-                  >
-                    <svg
-                      className="w-4 h-4 text-yellow-400 fill-current"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+        {/* Categoria */}
+        <div className="mb-1.5">
+          <span
+            onClick={handleCategoryClick}
+            className="text-[11px] font-bold text-matheo-blue uppercase tracking-wider hover:underline cursor-pointer"
+          >
+            {product.category}
+          </span>
         </div>
+
+        {/* Marca */}
+        {product.brand && (
+          <div className="mb-1">
+            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+              {product.brand}
+            </span>
+          </div>
+        )}
 
         {/* Nombre del producto */}
         <div className="mb-3">
           <h3
             className={cn(
-              'font-bold text-gray-800 uppercase line-clamp-3 leading-tight',
+              'text-gray-800 font-semibold leading-tight line-clamp-2',
               viewMode === 'grid'
-                ? 'text-[13px] text-left sm:text-center'
+                ? 'text-[13px] text-left'
                 : 'text-sm md:text-base text-left',
             )}
           >
@@ -159,16 +175,10 @@ export default function CardProduct({
         </div>
 
         {/* Botones */}
-        <div className="space-y-2 mt-auto">
-          <Link
-            href={`/producto/${product.categorySlug}/${product.slug}`}
-            className="w-full bg-matheo-blue hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold text-xs md:text-sm transition-all transform hover:scale-[1.02] block text-center shadow-sm"
-          >
-            Ver Detalles
-          </Link>
+        <div className="mt-auto" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={handleWhatsAppQuote}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-bold text-xs md:text-sm flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-sm"
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-bold text-xs md:text-sm flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-sm cursor-pointer"
           >
             <svg
               className="w-4 h-4"
@@ -181,6 +191,6 @@ export default function CardProduct({
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }

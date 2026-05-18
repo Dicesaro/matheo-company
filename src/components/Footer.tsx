@@ -1,18 +1,22 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { generateSlug } from '@/lib/utils'
 import { Mail, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getCategories } from '@/lib/actions/categories'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
-  const categories = [
-    'CENTROS GIRATORIOS',
-    'PORTAINSERTOS PARA TORNEAR',
-    'INSERTOS PARA ROSCADO',
-    'MACHOS PARA ROSCAR',
-    'FRESAS ROTATIVAS',
-  ]
+  const [parentCategories, setParentCategories] = useState<
+    { id: string; name: string; parent_id: string | null }[]
+  >([])
+
+  useEffect(() => {
+    getCategories().then((cats) =>
+      setParentCategories(cats.filter((c) => c.parent_id === null)),
+    )
+  }, [])
 
   const quickLinks = [
     { name: 'Inicio', href: '/' },
@@ -113,14 +117,14 @@ export default function Footer() {
               Categorías
             </h3>
             <ul className="space-y-3">
-              {categories.map((category) => (
-                <li key={category}>
+              {parentCategories.map((category) => (
+                <li key={category.id}>
                   <Link
-                    href={`/productos/${generateSlug(category)}`}
+                    href={`/productos/${generateSlug(category.name)}`}
                     className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group"
                   >
                     <span className="w-0 h-0.5 bg-matheo-red group-hover:w-4 transition-all"></span>
-                    {category}
+                    {category.name}
                   </Link>
                 </li>
               ))}

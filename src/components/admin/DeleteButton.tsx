@@ -39,22 +39,33 @@ export default function DeleteButton({ id, action, label }: DeleteButtonProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="ghost" size="icon" />}>
-        <Trash2 className="h-4 w-4 text-destructive" />
+        <Trash2 className="h-4 w-4 text-gray-400 transition-colors hover:text-red-500" />
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="rounded-2xl border border-gray-100 shadow-xl">
         <DialogHeader>
-          <DialogTitle>Confirmar eliminación</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            Confirmar eliminación
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">
             {label
               ? `¿Estás seguro de eliminar "${label}"? Esta acción no se puede deshacer.`
               : '¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.'}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="rounded-xl border-gray-200"
+          >
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={loading}
+            className="rounded-xl"
+          >
             {loading ? 'Eliminando...' : 'Eliminar'}
           </Button>
         </DialogFooter>

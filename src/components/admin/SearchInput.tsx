@@ -26,7 +26,7 @@ export default function SearchInput({ defaultValue }: { defaultValue?: string })
         placeholder="Buscar productos..."
         defaultValue={defaultValue}
         onChange={(e) => handleSearch(e.target.value)}
-        className="border-gray-200 pl-9 focus-visible:ring-matheo-red bg-white"
+        className="border-gray-200 pl-9 focus-visible:ring-matheo-red/30 bg-white rounded-xl"
       />
     </div>
   )

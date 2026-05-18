@@ -9,7 +9,9 @@ import {
   LayoutGrid,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Tag,
+  X,
 } from 'lucide-react'
 import { cn, generateSlug, slugToCategory } from '../lib/utils'
 import { useCustomSearchParams } from '../hooks/useCustomSearchParams'
@@ -76,7 +78,7 @@ export default function ProductsPage({
 
   const [categorySearchTerm, setCategorySearchTerm] = useState('')
   const [brandSearchTerm, setBrandSearchTerm] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [isDesktopView, setIsDesktopView] = useState(true)
   const [expandedFilters, setExpandedFilters] = useState({
     categories: !!searchParams.get('category') || false,
@@ -85,6 +87,7 @@ export default function ProductsPage({
     rating: false,
   })
   const [expandedParents, setExpandedParents] = useState<string[]>([])
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(
     searchParams.get('page')
       ? parseInt(searchParams.get('page')!)
@@ -350,7 +353,7 @@ export default function ProductsPage({
       <div className="container mx-auto px-4">
         {loading ? (
           <div className="flex flex-col lg:flex-row gap-12">
-            <aside className="w-full lg:w-80 shrink-0">
+            <aside className="hidden lg:block lg:w-80 shrink-0">
               <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-32 animate-pulse">
                 <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100">
                   <div className="h-6 bg-gray-200 rounded w-2/3"></div>
@@ -394,7 +397,7 @@ export default function ProductsPage({
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-12">
-            <aside className="w-full lg:w-80 shrink-0">
+            <aside className="hidden lg:block lg:w-80 shrink-0">
               <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-32">
                 <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -606,29 +609,42 @@ export default function ProductsPage({
                   </span>{' '}
                   productos
                 </p>
-                <div className="hidden sm:flex bg-gray-100 p-1 rounded-xl">
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setViewMode('grid')}
-                    className={cn(
-                      'p-2 rounded-lg transition-all',
-                      viewMode === 'grid'
-                        ? 'bg-white shadow-sm text-matheo-blue'
-                        : 'text-gray-400 hover:text-gray-600',
-                    )}
+                    onClick={() => setIsMobileFilterOpen(true)}
+                    className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl bg-matheo-blue text-white text-sm font-bold hover:bg-blue-700 transition-all active:scale-95"
                   >
-                    <Grid3x3 size={20} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={cn(
-                      'p-2 rounded-lg transition-all',
-                      viewMode === 'list'
-                        ? 'bg-white shadow-sm text-matheo-blue'
-                        : 'text-gray-400 hover:text-gray-600',
+                    <SlidersHorizontal size={16} />
+                    Filtros
+                    {(selectedCategories.length > 0 ||
+                      selectedBrands.length > 0) && (
+                      <span className="w-2 h-2 rounded-full bg-white" />
                     )}
-                  >
-                    <List size={20} />
                   </button>
+                  <div className="flex bg-gray-100 p-1 rounded-xl">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={cn(
+                        'p-2 rounded-lg transition-all',
+                        viewMode === 'grid'
+                          ? 'bg-white shadow-sm text-matheo-blue'
+                          : 'text-gray-400 hover:text-gray-600',
+                      )}
+                    >
+                      <Grid3x3 size={20} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={cn(
+                        'p-2 rounded-lg transition-all',
+                        viewMode === 'list'
+                          ? 'bg-white shadow-sm text-matheo-blue'
+                          : 'text-gray-400 hover:text-gray-600',
+                      )}
+                    >
+                      <List size={20} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -636,8 +652,8 @@ export default function ProductsPage({
                 className={cn(
                   'grid gap-4 md:gap-6',
                   viewMode === 'grid'
-                    ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                    : 'grid-cols-1 lg:grid-cols-2',
+                  ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-1 lg:grid-cols-2',
                 )}
               >
                 {paginatedProducts.map((product) => {
@@ -749,6 +765,258 @@ export default function ProductsPage({
             </main>
           </div>
         )}
+      </div>
+
+      {/* ── MOBILE FILTER DRAWER ── */}
+      <div className="lg:hidden">
+        {/* Backdrop */}
+        <div
+          className={cn(
+            'fixed inset-0 z-50 bg-black/40 transition-opacity duration-300',
+            isMobileFilterOpen
+              ? 'opacity-100 pointer-events-auto'
+              : 'opacity-0 pointer-events-none',
+          )}
+          onClick={() => setIsMobileFilterOpen(false)}
+        />
+
+        {/* Drawer panel */}
+        <div
+          className={cn(
+            'fixed right-0 top-0 bottom-0 z-50 w-full sm:w-96 bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col',
+            isMobileFilterOpen ? 'translate-x-0' : 'translate-x-full',
+          )}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal size={20} className="text-matheo-blue" />
+              <span className="font-bold text-lg text-matheo-blue">
+                Filtros
+              </span>
+            </div>
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+            >
+              <X size={22} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-5 py-4">
+            {/* ── Categorías ── */}
+            <div className="mb-4">
+              <button
+                onClick={() =>
+                  setExpandedFilters((p) => ({
+                    ...p,
+                    categories: !p.categories,
+                  }))
+                }
+                className="w-full flex items-center justify-between py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <LayoutGrid
+                    size={20}
+                    className="text-matheo-blue"
+                    strokeWidth={1.5}
+                  />
+                  <span className="font-bold text-gray-900">
+                    Categoría
+                  </span>
+                </div>
+                <ChevronDown
+                  size={18}
+                  className={cn(
+                    'text-gray-400 transition-transform duration-200',
+                    expandedFilters.categories && 'rotate-180',
+                  )}
+                />
+              </button>
+
+              <div
+                className={cn(
+                  'overflow-hidden transition-all duration-200',
+                  expandedFilters.categories
+                    ? 'max-h-96 pb-2'
+                    : 'max-h-0',
+                )}
+              >
+                <div className="space-y-0.5">
+                  {dbCategories
+                    .filter(
+                      (cat) =>
+                        !Object.values(subcategoryMap)
+                          .flat()
+                          .includes(cat),
+                    )
+                    .map((parentName) => {
+                      const children =
+                        subcategoryMap[parentName] || []
+                      const isExpanded =
+                        expandedParents.includes(parentName)
+
+                      return (
+                        <div key={parentName}>
+                          <button
+                            onClick={() => {
+                              setExpandedParents((prev) =>
+                                prev.includes(parentName)
+                                  ? prev.filter(
+                                      (p) => p !== parentName,
+                                    )
+                                  : [...prev, parentName],
+                              )
+                            }}
+                            className={`w-full flex items-center gap-2 py-2 rounded-lg transition-colors text-left ${
+                              selectedCategories.includes(parentName)
+                                ? 'text-matheo-blue'
+                                : 'text-gray-600 hover:text-matheo-blue'
+                            }`}
+                          >
+                            {children.length > 0 && (
+                              <ChevronRight
+                                size={14}
+                                className={`shrink-0 transition-transform duration-200 ${
+                                  isExpanded ? 'rotate-90' : ''
+                                } ${
+                                  selectedCategories.includes(
+                                    parentName,
+                                  )
+                                    ? 'text-matheo-blue'
+                                    : 'text-gray-400'
+                                }`}
+                              />
+                            )}
+                            {children.length === 0 && (
+                              <div className="w-3.5 shrink-0" />
+                            )}
+                            <span className="text-sm font-bold">
+                              {parentName}
+                            </span>
+                            {children.length > 0 && (
+                              <span
+                                className={`text-xs ml-auto ${
+                                  isExpanded
+                                    ? 'text-matheo-blue'
+                                    : 'text-gray-400'
+                                }`}
+                              >
+                                {isExpanded ? '−' : '+'}
+                              </span>
+                            )}
+                          </button>
+                          {isExpanded && children.length > 0 && (
+                            <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
+                              {children.map((child) => (
+                                <label
+                                  key={child}
+                                  className="flex items-center gap-2 group cursor-pointer py-1.5 rounded-lg hover:bg-gray-50 px-2"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedCategories.includes(
+                                      child,
+                                    )}
+                                    onChange={() => {
+                                      toggleCategory(child)
+                                      setIsMobileFilterOpen(false)
+                                    }}
+                                    className="w-4 h-4 text-matheo-blue rounded border-2 border-gray-200 focus:ring-matheo-blue transition-all"
+                                  />
+                                  <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-medium">
+                                    {child}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 my-2" />
+
+            {/* ── Marcas ── */}
+            <div className="mb-4">
+              <button
+                onClick={() =>
+                  setExpandedFilters((p) => ({
+                    ...p,
+                    brands: !p.brands,
+                  }))
+                }
+                className="w-full flex items-center justify-between py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <Tag
+                    size={20}
+                    className="text-matheo-blue"
+                    strokeWidth={1.5}
+                  />
+                  <span className="font-bold text-gray-900">
+                    Marca
+                  </span>
+                </div>
+                <ChevronDown
+                  size={18}
+                  className={cn(
+                    'text-gray-400 transition-transform duration-200',
+                    expandedFilters.brands && 'rotate-180',
+                  )}
+                />
+              </button>
+
+              <div
+                className={cn(
+                  'overflow-hidden transition-all duration-200',
+                  expandedFilters.brands
+                    ? 'max-h-96 pb-2'
+                    : 'max-h-0',
+                )}
+              >
+                <div className="space-y-2">
+                  {dbBrands.map((brand) => (
+                    <label
+                      key={brand}
+                      className="flex items-center gap-3 group cursor-pointer py-1"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedBrands.includes(brand)}
+                        onChange={() => toggleBrand(brand)}
+                        className="w-4 h-4 text-matheo-blue rounded-md border-2 border-gray-200 focus:ring-matheo-blue transition-all"
+                      />
+                      <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
+                        {brand}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          {(selectedCategories.length > 0 ||
+            selectedBrands.length > 0) && (
+            <div className="shrink-0 border-t border-gray-100 px-5 py-4">
+              <button
+                onClick={() => {
+                  clearAllFilters()
+                  setIsMobileFilterOpen(false)
+                }}
+                className="w-full py-2.5 rounded-xl bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 transition-colors"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -1,9 +1,7 @@
-import { Plus, Pencil } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Plus, Pencil, Building2 } from 'lucide-react'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { deleteBrand, getBrands } from '@/lib/actions/brands'
 import DeleteButton from '@/components/admin/DeleteButton'
 import ButtonLink from '@/components/admin/ButtonLink'
@@ -26,47 +24,78 @@ export default async function BrandsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-slide-up-fade">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Marcas</h1>
-          <p className="text-gray-500">Gestiona las marcas de productos</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            Marcas
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500">
+            Gestiona las marcas de productos
+          </p>
         </div>
-        <ButtonLink href="/admin/marcas/nuevo" className="bg-matheo-red hover:bg-matheo-red/90 text-white shadow-lg shadow-matheo-red/25">
+        <ButtonLink
+          href="/admin/marcas/nuevo"
+          className="bg-matheo-red text-white shadow-sm shadow-matheo-red/20 transition-all duration-200 hover:bg-matheo-red/90 hover:shadow-md hover:shadow-matheo-red/30"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Nueva marca
         </ButtonLink>
       </div>
 
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-gray-50 to-white rounded-t-xl border-b">
-          <CardTitle className="text-gray-900">Todas las marcas</CardTitle>
-          <span className="text-sm text-gray-400">{brands.length} en total</span>
-        </CardHeader>
-        <CardContent className="p-0">
+      <div className="animate-slide-up-fade stagger-1">
+        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+            <h2 className="text-sm font-semibold text-gray-900">
+              Todas las marcas
+            </h2>
+            <span className="text-xs text-gray-400">
+              {brands.length} en total
+            </span>
+          </div>
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50/50">
-                <TableHead className="text-gray-500 font-semibold">ID</TableHead>
-                <TableHead className="text-gray-500 font-semibold">Nombre</TableHead>
-                <TableHead className="w-24 text-gray-500 font-semibold">Acciones</TableHead>
+              <TableRow className="border-b border-gray-50">
+                <TableHead className="h-10 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                  ID
+                </TableHead>
+                <TableHead className="h-10 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                  Nombre
+                </TableHead>
+                <TableHead className="h-10 w-24 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                  Acciones
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginated.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-32 text-center text-gray-400">
-                    No hay marcas registradas
+                  <TableCell colSpan={3} className="h-32 text-center text-sm text-gray-400">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Building2 className="h-8 w-8 text-gray-300" />
+                      <p>No hay marcas registradas</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
               {paginated.map((brand) => (
-                <TableRow key={brand.id} className="hover:bg-gray-50/50 transition-colors">
-                  <TableCell className="font-mono text-xs text-gray-400">{brand.id}</TableCell>
-                  <TableCell className="font-medium text-gray-900">{brand.name}</TableCell>
-                  <TableCell>
+                <TableRow
+                  key={brand.id}
+                  className="border-b border-gray-50 transition-all duration-200 hover:bg-gray-50/50"
+                >
+                  <TableCell className="px-4 py-3 font-mono text-xs text-gray-400">
+                    {brand.id}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 font-medium text-gray-900">
+                    {brand.name}
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      <ButtonLink variant="ghost" size="icon" href={`/admin/marcas/${brand.id}`}>
-                        <Pencil className="h-4 w-4 text-gray-400 hover:text-matheo-red" />
+                      <ButtonLink
+                        variant="ghost"
+                        size="icon"
+                        href={`/admin/marcas/${brand.id}`}
+                      >
+                        <Pencil className="h-4 w-4 text-gray-400 transition-colors hover:text-matheo-red" />
                       </ButtonLink>
                       <DeleteButton
                         id={brand.id}
@@ -85,8 +114,8 @@ export default async function BrandsPage({
             totalPages={totalPages}
             basePath="/admin/marcas"
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

@@ -8,7 +8,6 @@ export default function WhatsAppButton() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    email: '',
     subject: '',
     accepted: false,
   })
@@ -35,7 +34,7 @@ export default function WhatsAppButton() {
     e.preventDefault()
     if (!formData.accepted) return
 
-    const message = `*Asesoría Técnica*\n\n*Nombre:* ${formData.name}\n*Celular:* ${formData.phone}\n*Email:* ${formData.email}\n*Asunto:*\n${formData.subject}`
+    const message = `*Asesoría Técnica*\n\n*Nombre:* ${formData.name}\n*Celular:* ${formData.phone}\n*Asunto:*\n${formData.subject}`
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
 
     window.open(whatsappUrl, '_blank')
@@ -43,7 +42,6 @@ export default function WhatsAppButton() {
     setFormData({
       name: '',
       phone: '',
-      email: '',
       subject: '',
       accepted: false,
     })
@@ -99,17 +97,6 @@ export default function WhatsAppButton() {
               value={formData.phone}
               onChange={(e) =>
                 setFormData((p) => ({ ...p, phone: e.target.value }))
-              }
-              className={inputClasses}
-            />
-
-            <input
-              type="email"
-              placeholder="Email"
-              required
-              value={formData.email}
-              onChange={(e) =>
-                setFormData((p) => ({ ...p, email: e.target.value }))
               }
               className={inputClasses}
             />

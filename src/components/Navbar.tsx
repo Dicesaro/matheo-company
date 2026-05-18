@@ -4,6 +4,7 @@ import {
   X,
   Search,
   ChevronLeft,
+  ChevronRight,
   ChevronDown,
   ArrowRight,
 } from 'lucide-react'
@@ -16,8 +17,8 @@ import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
 const navItems = [
-  { name: 'Inicio', href: '/' },
-  { name: 'Productos', href: '/productos', hasMega: true },
+  { name: 'Productos', href: '/productos', hasMega: 'productos' },
+  { name: 'Categorías', href: '/productos', hasMega: 'categorias' },
   { name: 'Nosotros', href: '/nosotros' },
   { name: 'Contacto', href: '/contacto' },
   {
@@ -58,11 +59,23 @@ export default function Navbar() {
     { name: string; image: string | null }[]
   >([])
   const [categories, setCategories] = useState<
-    { name: string; image: string | null; isParent: boolean }[]
+    { id: string; name: string; image: string | null; isParent: boolean }[]
   >([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
-  const [isMegaOpen, setIsMegaOpen] = useState(false)
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true)
+  const [activeMega, setActiveMega] = useState<string | null>(null)
+  const [isCategoriasOpen, setIsCategoriasOpen] = useState(false)
+  const [hoveredParentCat, setHoveredParentCat] = useState<
+    string | null
+  >(null)
+  const [subcategoryMap, setSubcategoryMap] = useState<
+    Record<string, { name: string; image: string | null }[]>
+  >({})
+  const [isMobileProdsOpen, setIsMobileProdsOpen] = useState(false)
   const [isMobileCatsOpen, setIsMobileCatsOpen] = useState(false)
+  const [products, setProducts] = useState<
+    { id: string; name: string; image_url: string | null; category: string }[]
+  >([])
 
   const promoMessages = [
     '🚀 Importador directo — sin intermediarios, mejor precio',
@@ -88,8 +101,10 @@ export default function Navbar() {
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const megaRef = useRef<HTMLDivElement>(null)
   const megaTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+  const catTimeout = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
   const searchTimeoutRef = useRef<ReturnType<
@@ -104,7 +119,7 @@ export default function Navbar() {
   if (pathname !== prevLocation) {
     setPrevLocation(pathname)
     setIsOpen(false)
-    setIsMegaOpen(false)
+    setActiveMega(null)
   }
 
   useEffect(() => {
@@ -121,6 +136,8 @@ export default function Navbar() {
   }, [searchParams])
 
   const hasFetchedNav = useRef(false)
+  const hasFetchedProducts = useRef(false)
+
   // Fetch categories and an example product image for each
   useEffect(() => {
     if (hasFetchedNav.current) return
@@ -164,12 +181,50 @@ export default function Navbar() {
             )
           }
 
+          const idToName: Record<string, string> = {}
+          cats.forEach(
+            (c: { id?: string; name: string }) => {
+              if (c.id) idToName[c.id] = c.name
+            },
+          )
+
+          const subMap: Record<
+            string,
+            { name: string; image: string | null }[]
+          > = {}
+          cats.forEach(
+            (c: {
+              id?: string
+              name: string
+              parent_id?: string | null
+            }) => {
+              if (c.parent_id) {
+                const parentName = idToName[c.parent_id]
+                if (parentName) {
+                  if (!subMap[parentName]) subMap[parentName] = []
+                  subMap[parentName].push({
+                    name: c.name,
+                    image: imgMap[c.name] || null,
+                  })
+                }
+              }
+            },
+          )
+          setSubcategoryMap(subMap)
+
           setCategories(
-            cats.map((c: { name: string; parent_id: string | null }) => ({
-              name: c.name,
-              image: imgMap[c.name] || null,
-              isParent: !subcatNames.has(c.name),
-            })),
+            cats.map(
+              (c: {
+                id?: string
+                name: string
+                parent_id?: string | null
+              }) => ({
+                id: c.id ?? '',
+                name: c.name,
+                image: imgMap[c.name] || null,
+                isParent: !subcatNames.has(c.name),
+              }),
+            ),
           )
         }
       } finally {
@@ -177,6 +232,38 @@ export default function Navbar() {
       }
     }
     fetchNavData()
+  }, [])
+
+  // Fetch products for the Productos mega menu
+  useEffect(() => {
+    if (hasFetchedProducts.current) return
+    hasFetchedProducts.current = true
+
+    async function fetchProductsData() {
+      try {
+        const { data } = await supabase
+          .from('products')
+          .select('id, name, image_url, categories(name)')
+          .not('image_url', 'is', null)
+          .limit(12)
+
+        if (data) {
+          setProducts(
+            data.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              image_url: p.image_url,
+              category: Array.isArray(p.categories)
+                ? p.categories[0]?.name || ''
+                : p.categories?.name || '',
+            })),
+          )
+        }
+      } finally {
+        setIsLoadingProducts(false)
+      }
+    }
+    fetchProductsData()
   }, [])
 
   useEffect(() => {
@@ -187,13 +274,13 @@ export default function Navbar() {
 
   const isHome = pathname === '/'
 
-  const handleMegaEnter = () => {
+  const handleMegaEnter = (target: string) => {
     if (megaTimeout.current) clearTimeout(megaTimeout.current)
-    setIsMegaOpen(true)
+    setActiveMega(target)
   }
 
   const handleMegaLeave = () => {
-    megaTimeout.current = setTimeout(() => setIsMegaOpen(false), 150)
+    megaTimeout.current = setTimeout(() => setActiveMega(null), 150)
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -328,6 +415,7 @@ export default function Navbar() {
   }, [])
 
   return (
+    <>
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
@@ -337,9 +425,9 @@ export default function Navbar() {
       )}
     >
       {/* Top Bar */}
-      <div className="bg-matheo-red text-white py-2 min-h-[36px] flex items-center">
+      <div className="bg-matheo-red text-white py-2 min-h-9 flex items-center">
         <div className="container mx-auto px-4 flex justify-between items-center text-sm relative">
-          <div className="hidden md:flex items-center gap-4 z-10">
+          <div className="hidden mlg:flex items-center gap-4 z-10">
             <a
               href="/redes"
               target="_blank"
@@ -354,7 +442,7 @@ export default function Navbar() {
           </div>
 
           <div
-            className="hidden md:block text-xs select-none text-center absolute left-0 right-0 pointer-events-none"
+            className="hidden mlg:block text-xs select-none text-center absolute left-0 right-0 pointer-events-none"
             style={{
               opacity: promoVisible ? 1 : 0,
               transform: promoVisible
@@ -366,10 +454,10 @@ export default function Navbar() {
             {promoMessages[promoIndex]}
           </div>
 
-          <div className="hidden md:block w-32"></div>
+          <div className="hidden mlg:block w-32"></div>
 
           <div
-            className="md:hidden text-[11px] select-none text-center w-full pl-3"
+            className="mlg:hidden text-[11px] select-none text-center w-full pl-3"
             style={{
               opacity: promoVisible ? 1 : 0,
               transform: promoVisible
@@ -385,10 +473,11 @@ export default function Navbar() {
 
       {/* Main Navigation */}
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20 relative">
+        {/* ── MOBILE LAYOUT ── */}
+        <div className="flex items-center justify-between mlg:hidden h-20 relative">
           {/* Mobile Search State - ACTIVE */}
           {isSearchExpanded ? (
-            <div className="flex items-center w-full gap-3 md:hidden animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex items-center w-full gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
               <button
                 onClick={() => {
                   setIsSearchExpanded(false)
@@ -420,7 +509,6 @@ export default function Navbar() {
                     size={20}
                   />
                 </form>
-                {/* Botón X para limpiar búsqueda - mobile */}
                 {searchValue && (
                   <button
                     type="button"
@@ -437,12 +525,11 @@ export default function Navbar() {
                 )}
                 {(searchResults.length > 0 ||
                   categoryResults.length > 0) && (
-                  <div className="absolute top-full left-0 right-0 mt-3 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-60 animate-in fade-in zoom-in-95 duration-200">
-                    {/* Sección Categorías */}
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60">
                     {categoryResults.length > 0 && (
                       <>
-                        <div className="px-4 pt-3 pb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-matheo-blue">
+                        <div className="px-3 pt-2 pb-0.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-matheo-blue">
                             Categorías
                           </span>
                         </div>
@@ -452,9 +539,9 @@ export default function Navbar() {
                             onClick={() =>
                               handleCategoryClick(cat.name)
                             }
-                            className="w-full text-left px-4 py-2.5 hover:bg-blue-50/60 flex items-center gap-3 transition-colors"
+                            className="w-full text-left px-3 py-1.5 hover:bg-blue-50/60 flex items-center gap-2 transition-colors"
                           >
-                            <div className="w-8 h-8 rounded-lg border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                            <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
                               {cat.image ? (
                                 <Image
                                   width={40}
@@ -464,7 +551,7 @@ export default function Navbar() {
                                   className="w-full h-full object-contain mix-blend-multiply"
                                 />
                               ) : (
-                                <span className="text-base">🗂️</span>
+                                <span className="text-xs">🗂️</span>
                               )}
                             </div>
                             <span className="text-sm font-semibold text-matheo-blue truncate min-w-0">
@@ -473,15 +560,14 @@ export default function Navbar() {
                           </button>
                         ))}
                         {searchResults.length > 0 && (
-                          <div className="mx-4 border-t border-gray-100" />
+                          <div className="mx-3 border-t border-gray-100" />
                         )}
                       </>
                     )}
-                    {/* Sección Productos */}
                     {searchResults.length > 0 && (
                       <>
-                        <div className="px-4 pt-3 pb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        <div className="px-3 pt-2 pb-0.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                             Productos
                           </span>
                         </div>
@@ -494,22 +580,22 @@ export default function Navbar() {
                                 product.category,
                               )
                             }
-                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
+                            className="w-full text-left px-3 py-1.5 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-50 last:border-0 transition-colors"
                           >
                             {product.image ? (
-                              <div className="w-10 h-10 rounded text-center border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                              <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
                                 <Image
-                                  width={100}
-                                  height={100}
+                                  width={40}
+                                  height={40}
                                   src={product.image}
                                   alt={product.name}
                                   className="w-full h-full object-contain mix-blend-multiply"
                                 />
                               </div>
                             ) : (
-                              <div className="w-10 h-10 rounded border border-transparent flex items-center justify-center shrink-0">
+                              <div className="w-6 h-6 rounded border border-transparent flex items-center justify-center shrink-0">
                                 <Search
-                                  size={16}
+                                  size={14}
                                   className="text-gray-400"
                                 />
                               </div>
@@ -527,258 +613,34 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              {/* Mobile Menu Button - LEFT */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
                 aria-label="Toggle menu"
               >
                 {isOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
 
-              {/* Logo - CENTERED ON MOBILE, LEFT ON DESKTOP */}
               <Link
                 href={'/'}
-                className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 shrink-0"
+                className="absolute left-1/2 -translate-x-1/2 shrink-0"
               >
                 <Image
                   width={100}
                   height={100}
                   src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
                   alt="MATHEO Industrial Company"
-                  className="h-16 md:h-14 w-auto cursor-pointer hover:opacity-90 transition-opacity"
+                  className="h-16 w-auto cursor-pointer hover:opacity-90 transition-opacity"
                 />
               </Link>
 
-              {/* Search Bar (Middle) - DESKTOP ONLY */}
-              <div
-                id="navbar-search-wrapper-desktop"
-                className="hidden lg:flex flex-1 max-w-md mx-8 relative"
-              >
-                <form
-                  onSubmit={handleSearch}
-                  className="relative w-full group"
-                >
-                  <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-matheo-red transition-colors"
-                    size={18}
-                  />
-                  <input
-                    id="navbar-search-desktop"
-                    type="text"
-                    placeholder="¿Qué herramienta buscas?"
-                    value={searchValue}
-                    onChange={handleSearchChange}
-                    className="w-full pl-11 pr-10 py-2.5 bg-gray-50/50 border-2 border-gray-100 rounded-xl focus:bg-white focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/5 focus:outline-none transition-all text-sm font-medium"
-                  />
-                  {/* Botón X para limpiar búsqueda - desktop */}
-                  {searchValue && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchValue('')
-                        setSearchResults([])
-                        setCategoryResults([])
-                      }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
-                      aria-label="Borrar búsqueda"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </form>
-                {(searchResults.length > 0 ||
-                  categoryResults.length > 0) && (
-                  <div className="absolute top-full left-0 right-0 mt-3 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-60 animate-in fade-in zoom-in-95 duration-200">
-                    {/* Sección Categorías */}
-                    {categoryResults.length > 0 && (
-                      <>
-                        <div className="px-4 pt-3 pb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-matheo-blue">
-                            Categorías
-                          </span>
-                        </div>
-                        {categoryResults.map((cat) => (
-                          <button
-                            key={cat.name}
-                            onClick={() =>
-                              handleCategoryClick(cat.name)
-                            }
-                            className="w-full text-left px-4 py-2.5 hover:bg-blue-50/60 flex items-center gap-3 transition-colors"
-                          >
-                            <div className="w-8 h-8 rounded-lg border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                              {cat.image ? (
-                                <Image
-                                  width={40}
-                                  height={40}
-                                  src={cat.image}
-                                  alt={cat.name}
-                                  className="w-full h-full object-contain mix-blend-multiply"
-                                />
-                              ) : (
-                                <span className="text-base">🗂️</span>
-                              )}
-                            </div>
-                            <span className="text-sm font-semibold text-matheo-blue truncate min-w-0 flex-1">
-                              {cat.name}
-                            </span>
-                            <ArrowRight
-                              size={14}
-                              className="text-matheo-blue/30 shrink-0"
-                            />
-                          </button>
-                        ))}
-                        {searchResults.length > 0 && (
-                          <div className="mx-4 border-t border-gray-100" />
-                        )}
-                      </>
-                    )}
-                    {/* Sección Productos */}
-                    {searchResults.length > 0 && (
-                      <>
-                        <div className="px-4 pt-3 pb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                            Productos
-                          </span>
-                        </div>
-                        {searchResults.map((product) => (
-                          <button
-                            key={product.id}
-                            onClick={() =>
-                              handleResultClick(
-                                product.name,
-                                product.category,
-                              )
-                            }
-                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
-                          >
-                            {product.image ? (
-                              <div className="w-10 h-10 rounded text-center border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                                <Image
-                                  width={80}
-                                  height={80}
-                                  src={product.image}
-                                  alt={product.name}
-                                  className="w-full h-full object-contain mix-blend-multiply"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 rounded flex items-center justify-center shrink-0">
-                                <Search
-                                  size={16}
-                                  className="text-gray-400"
-                                />
-                              </div>
-                            )}
-                            <span className="text-sm font-medium text-gray-700 truncate min-w-0 flex-1">
-                              {product.name}
-                            </span>
-                            <ArrowRight
-                              size={14}
-                              className="text-gray-300 shrink-0"
-                            />
-                          </button>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Desktop Navigation - RIGHT */}
-              <div className="hidden md:flex items-center gap-8 shrink-0">
-                {navItems.map((item) => {
-                  if (item.hasMega) {
-                    return (
-                      <div
-                        key={item.name}
-                        className="relative"
-                        onMouseEnter={handleMegaEnter}
-                        onMouseLeave={handleMegaLeave}
-                        ref={megaRef}
-                      >
-                        <Link
-                          href={item.href}
-                          className={cn(
-                            'flex items-center gap-1 text-gray-700 hover:text-matheo-red font-medium transition-colors relative group py-1',
-                            pathname === item.href &&
-                              'text-matheo-red',
-                          )}
-                        >
-                          {item.name}
-                          <ChevronDown
-                            size={16}
-                            className={cn(
-                              'transition-transform duration-200',
-                              isMegaOpen
-                                ? 'rotate-180 text-matheo-red'
-                                : '',
-                            )}
-                          />
-                          <span
-                            className={cn(
-                              'absolute bottom-0 left-0 h-0.5 bg-matheo-red transition-all group-hover:w-full',
-                              pathname === item.href
-                                ? 'w-full'
-                                : 'w-0',
-                            )}
-                          />
-                        </Link>
-                      </div>
-                    )
-                  }
-
-                  const isHashLink = item.href.includes('#')
-                  if (isHashLink || item.isExternal) {
-                    return (
-                      <a
-                        key={item.name}
-                        href={item.href}
-                        target={
-                          item.isExternal ? '_blank' : undefined
-                        }
-                        rel={
-                          item.isExternal
-                            ? 'noopener noreferrer'
-                            : undefined
-                        }
-                        className="text-gray-700 hover:text-matheo-red font-medium transition-colors relative group"
-                      >
-                        {item.name}
-                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-matheo-red transition-all group-hover:w-full" />
-                      </a>
-                    )
-                  }
-
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={cn(
-                        'text-gray-700 hover:text-matheo-red font-medium transition-colors relative group',
-                        pathname === item.href && 'text-matheo-red',
-                      )}
-                    >
-                      {item.name}
-                      <span
-                        className={cn(
-                          'absolute bottom-0 left-0 h-0.5 bg-matheo-red transition-all group-hover:w-full',
-                          pathname === item.href ? 'w-full' : 'w-0',
-                        )}
-                      />
-                    </Link>
-                  )
-                })}
-              </div>
-
-              {/* Mobile Search Button - RIGHT */}
               <button
                 id="navbar-search-mobile-btn"
                 onClick={() => {
                   setIsSearchExpanded(true)
                   setIsOpen(false)
                 }}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
                 aria-label="Buscar productos"
               >
                 <Search size={28} />
@@ -786,15 +648,376 @@ export default function Navbar() {
             </>
           )}
         </div>
+
+        {/* ── DESKTOP LAYOUT ── */}
+        <div className="hidden mlg:flex items-center h-20">
+          {/* Left: Logo + Categorías */}
+          <div className="flex items-center gap-6 shrink-0">
+            <Link href={'/'}>
+              <Image
+                width={100}
+                height={100}
+                src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
+                alt="MATHEO Industrial Company"
+                className="h-14 w-auto cursor-pointer hover:opacity-90 transition-opacity"
+              />
+            </Link>
+            <div
+              className="relative"
+              onMouseEnter={() => {
+                if (catTimeout.current) clearTimeout(catTimeout.current)
+                setIsCategoriasOpen(true)
+              }}
+              onMouseLeave={() => {
+                catTimeout.current = setTimeout(() => {
+                  setIsCategoriasOpen(false)
+                  setHoveredParentCat(null)
+                }, 150)
+              }}
+            >
+              <button
+                className={cn(
+                  'flex items-center gap-1 py-1 font-medium transition-colors',
+                  isCategoriasOpen
+                    ? 'text-matheo-red'
+                    : 'text-gray-700 hover:text-matheo-red',
+                )}
+              >
+                Categorías
+                <ChevronDown
+                  size={16}
+                  className={cn(
+                    'transition-transform duration-200',
+                    isCategoriasOpen && 'rotate-180',
+                  )}
+                />
+              </button>
+
+              {isCategoriasOpen && (
+                <div className="absolute top-full left-0 mt-1 min-w-55 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 py-2">
+                  {isLoadingCategories
+                    ? Array.from({ length: 5 }).map((_, i) => (
+                        <div
+                          key={`cat-sk-${i}`}
+                          className="h-9 mx-2 bg-gray-100 rounded-lg animate-pulse"
+                        />
+                      ))
+                    : categories
+                        .filter((c) => c.isParent)
+                        .slice(0, 15)
+                        .map((cat) => {
+                          const subs = subcategoryMap[cat.name]
+                          const hasSub = subs?.length > 0
+                          return (
+                            <div
+                              key={cat.name}
+                              className="relative px-2"
+                              onMouseEnter={() =>
+                                setHoveredParentCat(cat.name)
+                              }
+                            >
+                              <Link
+                                href={`/productos/${generateSlug(cat.name)}`}
+                                onClick={() => {
+                                  setIsCategoriasOpen(false)
+                                  setActiveMega(null)
+                                }}
+                                className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-matheo-blue transition-colors"
+                              >
+                                <span className="font-medium">
+                                  {cat.name}
+                                </span>
+                                {hasSub && (
+                                  <ChevronRight
+                                    size={14}
+                                    className="shrink-0 text-gray-300"
+                                  />
+                                )}
+                              </Link>
+
+                              {/* Sub-flyout */}
+                              {hasSub &&
+                                hoveredParentCat === cat.name && (
+                                  <div
+                                    className="absolute left-full top-0 ml-1 min-w-[200px] bg-white border border-gray-200 rounded-xl shadow-2xl z-50 py-2"
+                                    onMouseEnter={() =>
+                                      setHoveredParentCat(cat.name)
+                                    }
+                                  >
+                                    {subs.map((sub) => (
+                                      <Link
+                                        key={sub.name}
+                                        href={`/productos/${generateSlug(sub.name)}`}
+                                        onClick={() => {
+                                          setIsCategoriasOpen(false)
+                                          setActiveMega(null)
+                                        }}
+                                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-matheo-blue transition-colors"
+                                      >
+                                        {sub.name}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                            </div>
+                          )
+                        })}
+
+                  {!isLoadingCategories && (
+                    <>
+                      <hr className="my-2 mx-2 border-gray-100" />
+                      <div className="px-2">
+                        <Link
+                          href="/productos"
+                          onClick={() => {
+                            setIsCategoriasOpen(false)
+                            setActiveMega(null)
+                          }}
+                          className="block px-3 py-2 text-sm font-semibold text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          Conoce más categorías
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Center: Search Bar */}
+          <div className="flex-1 flex justify-center px-8">
+            <div
+              id="navbar-search-wrapper-desktop"
+              className="relative w-full max-w-sm"
+            >
+              <form
+                onSubmit={handleSearch}
+                className="relative w-full group"
+              >
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-matheo-red transition-colors"
+                  size={18}
+                />
+                <input
+                  id="navbar-search-desktop"
+                  type="text"
+                  placeholder="¿Qué herramienta buscas?"
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  className="w-full pl-11 pr-10 py-2.5 bg-gray-50/50 border-2 border-gray-100 rounded-xl focus:bg-white focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/5 focus:outline-none transition-all text-sm font-medium"
+                />
+                {searchValue && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchValue('')
+                      setSearchResults([])
+                      setCategoryResults([])
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
+                    aria-label="Borrar búsqueda"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </form>
+              {(searchResults.length > 0 ||
+                categoryResults.length > 0) && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60">
+                  {categoryResults.length > 0 && (
+                    <>
+                      <div className="px-3 pt-2 pb-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-matheo-blue">
+                          Categorías
+                        </span>
+                      </div>
+                      {categoryResults.map((cat) => (
+                        <button
+                          key={cat.name}
+                          onClick={() =>
+                            handleCategoryClick(cat.name)
+                          }
+                          className="w-full text-left px-3 py-1.5 hover:bg-blue-50/60 flex items-center gap-2 transition-colors"
+                        >
+                          <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                            {cat.image ? (
+                              <Image
+                                width={40}
+                                height={40}
+                                src={cat.image}
+                                alt={cat.name}
+                                className="w-full h-full object-contain mix-blend-multiply"
+                              />
+                            ) : (
+                              <span className="text-xs">🗂️</span>
+                            )}
+                          </div>
+                          <span className="text-sm font-semibold text-matheo-blue truncate min-w-0 flex-1">
+                            {cat.name}
+                          </span>
+                        </button>
+                      ))}
+                      {searchResults.length > 0 && (
+                        <div className="mx-3 border-t border-gray-100" />
+                      )}
+                    </>
+                  )}
+                  {searchResults.length > 0 && (
+                    <>
+                      <div className="px-3 pt-2 pb-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                          Productos
+                        </span>
+                      </div>
+                      {searchResults.map((product) => (
+                        <button
+                          key={product.id}
+                          onClick={() =>
+                            handleResultClick(
+                              product.name,
+                              product.category,
+                            )
+                          }
+                          className="w-full text-left px-3 py-1.5 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-50 last:border-0 transition-colors"
+                        >
+                          {product.image ? (
+                            <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                              <Image
+                                width={40}
+                                height={40}
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-full object-contain mix-blend-multiply"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded flex items-center justify-center shrink-0">
+                              <Search
+                                size={14}
+                                className="text-gray-400"
+                              />
+                            </div>
+                          )}
+                          <span className="text-sm font-medium text-gray-700 truncate min-w-0 flex-1">
+                            {product.name}
+                          </span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Inicio, Productos, Nosotros, Contacto, Ver Catálogo */}
+          <div className="flex items-center gap-6 shrink-0">
+            {navItems
+              .filter((i) => i.name !== 'Categorías')
+              .map((item) => {
+                if (item.hasMega) {
+                  return (
+                    <div
+                      key={item.name}
+                      className="relative"
+                      onMouseEnter={() =>
+                        handleMegaEnter(item.hasMega!)
+                      }
+                      onMouseLeave={handleMegaLeave}
+                    >
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          'flex items-center gap-1 text-gray-700 hover:text-matheo-red font-medium transition-colors relative group py-1',
+                          pathname === item.href &&
+                            'text-matheo-red',
+                        )}
+                      >
+                        {item.name}
+                        <ChevronDown
+                          size={16}
+                          className={cn(
+                            'transition-transform duration-200',
+                            activeMega === item.hasMega
+                              ? 'rotate-180 text-matheo-red'
+                              : '',
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            'absolute bottom-0 left-0 h-0.5 bg-matheo-red transition-all group-hover:w-full',
+                            pathname === item.href
+                              ? 'w-full'
+                              : 'w-0',
+                          )}
+                        />
+                      </Link>
+                    </div>
+                  )
+                }
+
+                if (item.name === 'Ver Catálogo 📙') {
+                  return (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-700 hover:text-matheo-red font-medium transition-colors relative group whitespace-nowrap"
+                    >
+                      {item.name}
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-matheo-red transition-all group-hover:w-full" />
+                    </a>
+                  )
+                }
+
+                if (item.href.includes('#')) {
+                  return (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      className="text-gray-700 hover:text-matheo-red font-medium transition-colors relative group"
+                    >
+                      {item.name}
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-matheo-red transition-all group-hover:w-full" />
+                    </a>
+                  )
+                }
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'text-gray-700 hover:text-matheo-red font-medium transition-colors relative group',
+                      pathname === item.href &&
+                        'text-matheo-red',
+                    )}
+                  >
+                    {item.name}
+                    <span
+                      className={cn(
+                        'absolute bottom-0 left-0 h-0.5 bg-matheo-red transition-all group-hover:w-full',
+                        pathname === item.href
+                          ? 'w-full'
+                          : 'w-0',
+                      )}
+                    />
+                  </Link>
+                )
+              })}
+          </div>
+        </div>
       </div>
 
-      {/* ── MEGA MENU (Desktop) ── */}
+      {/* ── MEGA MENU: Productos ── */}
       <div
-        onMouseEnter={handleMegaEnter}
+        onMouseEnter={() => handleMegaEnter('productos')}
         onMouseLeave={handleMegaLeave}
         className={cn(
-          'hidden md:block absolute left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-40 overflow-hidden transition-all duration-300 ease-in-out',
-          isMegaOpen
+          'hidden mlg:block absolute left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-40 overflow-hidden transition-all duration-300 ease-in-out',
+          activeMega === 'productos'
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 -translate-y-2 pointer-events-none',
         )}
@@ -802,14 +1025,13 @@ export default function Navbar() {
       >
         <div className="container mx-auto px-6 py-8">
           <div className="flex gap-8">
-            {/* Category list — Escalable para múltiples categorías */}
             <div className="flex-1 flex flex-col gap-4">
               <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {isLoadingCategories
+                <div className="grid grid-cols-1 mlg:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {isLoadingProducts
                     ? Array.from({ length: 9 }).map((_, i) => (
                         <div
-                          key={`skeleton-${i}`}
+                          key={`prod-skeleton-${i}`}
                           className="group relative flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 animate-pulse"
                         >
                           <div className="w-14 h-14 shrink-0 rounded-2xl bg-gray-200"></div>
@@ -819,89 +1041,56 @@ export default function Navbar() {
                           </div>
                         </div>
                       ))
-                    : categories.filter((c) => c.isParent).slice(0, 15).map((cat) => (
+                    : products.slice(0, 12).map((prod) => (
                         <Link
-                          key={cat.name}
-                          href={`/productos/${generateSlug(cat.name)}`}
-                          onClick={() => setIsMegaOpen(false)}
-                          className="group relative flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 hover:border-matheo-blue/30 hover:bg-blue-50/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-0.5"
+                          key={prod.id}
+                          href={`/producto/${generateSlug(prod.category)}/${generateSlug(prod.name)}`}
+                          onClick={() => setActiveMega(null)}
+                          className="group relative flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 hover:border-matheo-red/30 hover:bg-red-50/50 transition-all duration-300 hover:shadow-xl hover:shadow-red-900/5 hover:-translate-y-0.5"
                         >
-                          <div
-                            className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center ${cat.image ? 'bg-white border border-gray-100 p-1.5' : 'bg-linear-to-br from-gray-600 to-gray-800'} shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300 overflow-hidden`}
-                          >
-                            {cat.image ? (
+                          <div className="w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center bg-white border border-gray-100 p-1.5 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300 overflow-hidden">
+                            {prod.image_url ? (
                               <Image
                                 width={100}
                                 height={100}
-                                src={cat.image}
-                                alt={cat.name}
+                                src={prod.image_url}
+                                alt={prod.name}
                                 className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
-                                onError={(e) => {
-                                  ;(
-                                    e.target as HTMLImageElement
-                                  ).style.display = 'none'
-                                }}
                               />
                             ) : (
-                              <span className="text-xl drop-shadow-md transform group-hover:rotate-12 transition-transform duration-300 text-white">
-                                🔧
-                              </span>
+                              <span className="text-xl">🔧</span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="block font-bold text-gray-800 text-sm group-hover:text-matheo-blue transition-colors truncate leading-tight">
-                              {cat.name}
-                            </span>
-                            <span className="block text-[11px] text-gray-400 mt-1 font-black uppercase tracking-wider group-hover:text-matheo-blue/70 transition-colors">
-                              Explorar
+                            <span className="block font-bold text-gray-800 text-sm group-hover:text-matheo-red transition-colors truncate leading-tight">
+                              {prod.name}
                             </span>
                           </div>
                         </Link>
                       ))}
                 </div>
               </div>
-
-              {/* Botón "Conoce más categorías" */}
-              {!isLoadingCategories && categories.length > 0 && (
-                <div className="pt-3 border-t border-gray-100 flex justify-center">
-                  <Link
-                    href="/productos"
-                    onClick={() => setIsMegaOpen(false)}
-                    className="group inline-flex items-center gap-2 text-sm font-semibold text-matheo-blue hover:text-blue-800 transition-colors"
-                  >
-                    <span className="underline underline-offset-2 decoration-matheo-blue/40 group-hover:decoration-blue-800 transition-colors">
-                      Conoce más categorías
-                    </span>
-                    <ArrowRight
-                      size={15}
-                      className="group-hover:translate-x-1 transition-transform duration-200"
-                    />
-                  </Link>
-                </div>
-              )}
             </div>
 
-            {/* Divider */}
             <div className="w-px bg-gray-100 self-stretch" />
 
-            {/* Right panel — CTA */}
             <div className="w-52 shrink-0 flex flex-col justify-start gap-5">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-matheo-blue">
-                    Catálogo
+                  <span className="text-xs font-black uppercase tracking-widest text-matheo-red">
+                    Productos
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                  Explora toda nuestra gama de herramientas
+                  Explora nuestra línea completa de herramientas
                   industriales y de precisión.
                 </p>
               </div>
 
               <Link
-                href={'/productos'}
-                onClick={() => setIsMegaOpen(false)}
-                className="group inline-flex items-center justify-center gap-2 w-full bg-matheo-blue hover:bg-blue-800 text-white font-bold text-sm py-3 px-5 rounded-xl transition-all shadow-md hover:shadow-lg"
+                href="/productos"
+                onClick={() => setActiveMega(null)}
+                className="group inline-flex items-center justify-center gap-2 w-full bg-matheo-red hover:bg-red-800 text-white font-bold text-sm py-3 px-5 rounded-xl transition-all shadow-md hover:shadow-lg"
               >
                 Ver todos los productos
                 <ArrowRight
@@ -914,18 +1103,18 @@ export default function Navbar() {
                 href="/catalogo.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setIsMegaOpen(false)}
-                className="group inline-flex items-center justify-center gap-2 w-full bg-white text-matheo-blue border-2 border-matheo-blue hover:bg-blue-50 font-bold text-sm py-2.5 px-5 rounded-xl transition-all"
+                onClick={() => setActiveMega(null)}
+                className="group inline-flex items-center justify-center gap-2 w-full bg-white text-matheo-red border-2 border-matheo-red hover:bg-red-50 font-bold text-sm py-2.5 px-5 rounded-xl transition-all"
               >
                 Descargar en PDF
               </a>
 
               <div className="mt-6 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-400">
-                  <span className="font-bold text-matheo-blue">
-                    {categories.filter((c) => c.isParent).length}
+                  <span className="font-bold text-matheo-red">
+                    {products.length}
                   </span>{' '}
-                  categorías disponibles
+                  productos destacados
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   Importador y distribuidor de herramientas
@@ -937,19 +1126,125 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── MOBILE NAVIGATION ── */}
+    </nav>
+
+      {/* ── BACKDROP ── */}
       <div
         className={cn(
-          'md:hidden overflow-hidden transition-all duration-300',
-          isOpen ? 'max-h-150 border-t' : 'max-h-0',
+          'fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 mlg:hidden',
+          isOpen
+            ? 'opacity-100 pointer-events-auto'
+            : 'opacity-0 pointer-events-none',
+        )}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* ── MOBILE DRAWER (left) ── */}
+      <div
+        className={cn(
+          'fixed left-0 top-0 bottom-0 z-50 w-full sm:w-96 bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col mlg:hidden',
+          isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="container mx-auto px-4 py-6 bg-white space-y-1">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+          <span className="font-bold text-lg text-matheo-blue">Menú</span>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
           {navItems.map((item) => {
-            if (item.hasMega) {
+            if (item.hasMega === 'productos') {
               return (
                 <div key={item.name}>
-                  {/* Header row: link + toggle chevron */}
+                  <div className="flex items-center">
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={cn(
+                        'flex-1 py-3 px-4 text-gray-700 hover:text-matheo-red hover:bg-gray-50 rounded-lg transition-colors font-medium',
+                        pathname === item.href &&
+                          'text-matheo-red bg-gray-50',
+                      )}
+                    >
+                      {item.name}
+                    </Link>
+                    <button
+                      onClick={() =>
+                        setIsMobileProdsOpen(!isMobileProdsOpen)
+                      }
+                      className="p-3 text-gray-500 hover:text-matheo-red transition-colors"
+                      aria-label="Ver productos"
+                    >
+                      <ChevronDown
+                        size={18}
+                        className={cn(
+                          'transition-transform duration-300',
+                          isMobileProdsOpen && 'rotate-180',
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  <div
+                    className={cn(
+                      'overflow-hidden transition-all duration-300',
+                      isMobileProdsOpen
+                        ? 'max-h-150 mb-2'
+                        : 'max-h-0',
+                    )}
+                  >
+                    <div className="ml-4 pl-4 border-l-2 border-matheo-red/20 space-y-1 py-2">
+                      {isLoadingProducts
+                        ? Array.from({ length: 5 }).map((_, i) => (
+                            <div
+                              key={`mob-prod-skeleton-${i}`}
+                              className="flex items-center gap-3 py-2 px-3 animate-pulse"
+                            >
+                              <div className="w-6 h-6 shrink-0 rounded bg-gray-200"></div>
+                              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                            </div>
+                          ))
+                        : products.slice(0, 10).map((prod) => (
+                            <Link
+                              key={prod.id}
+                              href={`/producto/${generateSlug(prod.category)}/${generateSlug(prod.name)}`}
+                              onClick={() => setIsOpen(false)}
+                              className="flex items-center gap-3 py-2 px-3 text-sm text-gray-600 hover:text-matheo-red hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <div className="w-6 h-6 shrink-0 flex items-center justify-center overflow-hidden">
+                                {prod.image_url ? (
+                                  <Image
+                                    width={100}
+                                    height={100}
+                                    src={prod.image_url}
+                                    alt={prod.name}
+                                    className="w-full h-full object-contain"
+                                  />
+                                ) : (
+                                  <span className="text-base">🔧</span>
+                                )}
+                              </div>
+                              <span className="font-medium">
+                                {prod.name}
+                              </span>
+                            </Link>
+                          ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            if (item.hasMega === 'categorias') {
+              return (
+                <div key={item.name}>
                   <div className="flex items-center">
                     <Link
                       href={item.href}
@@ -979,12 +1274,11 @@ export default function Navbar() {
                     </button>
                   </div>
 
-                  {/* Category accordion */}
                   <div
                     className={cn(
                       'overflow-hidden transition-all duration-300',
                       isMobileCatsOpen
-                        ? 'max-h-100px mb-2'
+                        ? 'max-h-150 mb-2'
                         : 'max-h-0',
                     )}
                   >
@@ -992,7 +1286,7 @@ export default function Navbar() {
                       {isLoadingCategories
                         ? Array.from({ length: 5 }).map((_, i) => (
                             <div
-                              key={`mob-skeleton-${i}`}
+                              key={`mob-cat-skeleton-${i}`}
                               className="flex items-center gap-3 py-2 px-3 animate-pulse"
                             >
                               <div className="w-6 h-6 shrink-0 rounded bg-gray-200"></div>
@@ -1002,7 +1296,7 @@ export default function Navbar() {
                         : categories.filter((c) => c.isParent).slice(0, 15).map((cat) => (
                             <Link
                               key={cat.name}
-                              href={`/productos?category=${encodeURIComponent(cat.name)}`}
+                              href={`/productos/${generateSlug(cat.name)}`}
                               onClick={() => setIsOpen(false)}
                               className="flex items-center gap-3 py-2 px-3 text-sm text-gray-600 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
                             >
@@ -1067,7 +1361,7 @@ export default function Navbar() {
             )
           })}
 
-          {/* Mobile Social Links */}
+          {/* Social Links */}
           <div className="flex items-center gap-4 px-4 py-4 mt-2 border-t border-gray-100">
             <a
               href="https://www.facebook.com/IndustrialCompanyMatheo"
@@ -1112,6 +1406,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-    </nav>
+    </>
   )
 }

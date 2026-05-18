@@ -33,36 +33,36 @@ export default function Contact() {
   return (
     <section
       id="contacto"
-      className="py-16 bg-linear-to-b from-gray-50 to-white"
+      className="py-12 bg-linear-to-b from-gray-50 to-white"
     >
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h2
             id="contacto"
-            className="text-4xl md:text-5xl font-bold text-matheo-blue mb-4"
+            className="text-3xl md:text-4xl font-bold text-matheo-blue mb-3"
           >
             Contáctanos
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Estamos aquí para ayudarte. Envíanos tu consulta y te
             responderemos a la brevedad
           </p>
         </div>
 
         {/* Map and Form - Side by Side */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
           {/* Contact Form */}
           <div className="h-full">
             <form
               onSubmit={handleSubmit}
-              className="bg-white rounded-2xl shadow-2xl p-8 lg:p-10 h-full border border-gray-100"
+              className="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 h-full border border-gray-100"
             >
-              <h3 className="text-3xl font-bold text-matheo-blue mb-8">
+              <h3 className="text-2xl font-bold text-matheo-blue mb-6">
                 Envíanos un mensaje
               </h3>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
                   <label
                     htmlFor="name"
@@ -75,7 +75,7 @@ export default function Contact() {
                     id="name"
                     name="name"
                     required
-                    className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                     placeholder="Tu nombre"
                   />
                   <ValidationError
@@ -99,7 +99,7 @@ export default function Contact() {
                       id="email"
                       name="email"
                       required
-                      className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                       placeholder="cliente@email.com"
                     />
                     <ValidationError
@@ -121,7 +121,7 @@ export default function Contact() {
                       type="tel"
                       id="phone"
                       name="phone"
-                      className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                       placeholder="+51 ..."
                     />
                   </div>
@@ -138,7 +138,7 @@ export default function Contact() {
                     id="subject"
                     name="subject"
                     required
-                    className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                   >
                     <option value="">Selecciona un asunto</option>
                     <option value="cotizacion">
@@ -180,7 +180,7 @@ export default function Contact() {
                 <button
                   type="submit"
                   disabled={state.submitting}
-                  className="w-full bg-matheo-red hover:bg-red-700 text-white py-5 rounded-xl font-bold transition-all transform hover:scale-[1.02] shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                  className="w-full bg-matheo-red hover:bg-red-700 text-white py-3.5 rounded-xl font-bold transition-all transform hover:scale-[1.02] shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                 >
                   {state.submitting ? (
                     <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
@@ -196,12 +196,12 @@ export default function Contact() {
           </div>
 
           {/* Map */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full min-h-125 relative border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full min-h-96 relative border border-gray-100">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d975.4946309633432!2d-77.05172132281241!3d-12.044998535099145!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c935f7f5da97%3A0x7feac36b833a107e!2sIndustrial%20Company%20Matheo%20EIRL%20%7C%20Fresado%2C%20Torneado%20y%20Roscado!5e0!3m2!1ses-419!2spe!4v1777826884409!5m2!1ses-419!2spe"
               width="600"
-              height="450"
-              style={{ border: 0, minHeight: '500px' }}
+              height="350"
+              style={{ border: 0, minHeight: '350px' }}
               allowFullScreen={true}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

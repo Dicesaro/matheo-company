@@ -3,6 +3,7 @@ import Hero from '../components/Hero'
 import Brands from '../components/Brands'
 import Contact from '../components/Contact'
 import FeaturedProducts from '../components/Products'
+import CategoryProducts from '../components/CategoryProducts'
 
 export const metadata: Metadata = {
   title:
@@ -61,6 +62,7 @@ export default function Home() {
       />
       <Hero />
       <FeaturedProducts />
+      <CategoryProducts />
       <Brands />
       <Contact />
     </>

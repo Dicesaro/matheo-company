@@ -36,11 +36,11 @@ export default function ClientPagination({ currentPage, totalPages, basePath }: 
   }
 
   return (
-    <div className="flex items-center justify-center gap-1 border-t border-gray-100 px-6 py-4">
+    <div className="flex items-center justify-center gap-1.5 border-t border-gray-100 px-6 py-4">
       <button
         onClick={() => goToPage(currentPage - 1)}
         disabled={currentPage <= 1}
-        className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -54,7 +54,7 @@ export default function ClientPagination({ currentPage, totalPages, basePath }: 
           <button
             key={page}
             onClick={() => goToPage(page)}
-            className={`flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors ${
+            className={`flex h-9 min-w-[36px] items-center justify-center rounded-xl px-2 text-sm font-medium transition-all duration-200 ${
               page === currentPage
                 ? 'bg-matheo-red text-white shadow-sm shadow-matheo-red/20'
                 : 'border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -68,7 +68,7 @@ export default function ClientPagination({ currentPage, totalPages, basePath }: 
       <button
         onClick={() => goToPage(currentPage + 1)}
         disabled={currentPage >= totalPages}
-        className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <ChevronRight className="h-4 w-4" />
       </button>

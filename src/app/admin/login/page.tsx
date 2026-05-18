@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from '@/components/ui/card'
-import { AlertCircle, HardHat } from 'lucide-react'
+import { AlertCircle, HardHat, Lock } from 'lucide-react'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -53,42 +53,46 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleLogin} className="space-y-4">
+    <form onSubmit={handleLogin} className="space-y-5">
       {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <div className="flex items-center gap-2.5 rounded-xl bg-red-50/80 px-4 py-3 text-sm text-red-700 ring-1 ring-red-100">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-700">Email</Label>
+        <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
           placeholder="admin@matheo.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border-gray-200 focus-visible:ring-matheo-red"
+          className="border-gray-200 bg-white/80 focus-visible:ring-matheo-red/30 rounded-xl"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-gray-700">Contraseña</Label>
+        <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+          Contraseña
+        </Label>
         <Input
           id="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border-gray-200 focus-visible:ring-matheo-red"
+          className="border-gray-200 bg-white/80 focus-visible:ring-matheo-red/30 rounded-xl"
           required
         />
       </div>
 
       <Button
         type="submit"
-        className="w-full bg-matheo-red hover:bg-matheo-red/90 shadow-lg shadow-matheo-red/25"
+        className="w-full rounded-xl bg-matheo-red py-2.5 text-sm font-semibold text-white shadow-sm shadow-matheo-red/20 transition-all duration-200 hover:bg-matheo-red/90 hover:shadow-md hover:shadow-matheo-red/30"
         disabled={loading}
       >
         {loading ? (
@@ -97,7 +101,10 @@ function LoginForm() {
             Ingresando...
           </span>
         ) : (
-          'Ingresar'
+          <span className="flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Ingresar
+          </span>
         )}
       </Button>
     </form>
@@ -114,15 +121,15 @@ export default function AdminLoginPage() {
 
 function LoginPageContent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-900 to-black p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-[#f6f8fc] p-4">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-matheo-red/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-matheo-blue/10 blur-3xl" />
+        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-rose-200/30 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-sky-200/30 blur-3xl" />
       </div>
 
-      <Card className="relative w-full max-w-sm border-0 bg-white/95 shadow-2xl backdrop-blur-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex items-center justify-center">
+      <Card className="relative w-full max-w-sm animate-slide-up-fade border border-gray-100 bg-white/80 shadow-xl shadow-gray-200/50 backdrop-blur-xl rounded-2xl">
+        <CardHeader className="text-center pt-8 pb-2">
+          <div className="mx-auto mb-5 flex items-center justify-center">
             <Image
               src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
               alt="MATHEO"
@@ -132,10 +139,14 @@ function LoginPageContent() {
               priority
             />
           </div>
-          <CardTitle className="text-xl text-gray-900">Panel de Administración</CardTitle>
-          <CardDescription>Ingresa tus credenciales</CardDescription>
+          <CardTitle className="text-xl font-bold text-gray-900">
+            Panel de Administración
+          </CardTitle>
+          <CardDescription className="text-sm text-gray-500">
+            Ingresa tus credenciales para acceder
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-7 pb-7 pt-3">
           <LoginForm />
         </CardContent>
       </Card>

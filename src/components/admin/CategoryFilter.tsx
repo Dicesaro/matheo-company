@@ -25,7 +25,7 @@ export default function CategoryFilter({ categories, defaultValue, searchQuery }
 
   return (
     <Select value={defaultValue || ''} onValueChange={handleChange}>
-      <SelectTrigger className="border-gray-200 focus-visible:ring-matheo-red">
+      <SelectTrigger className="border-gray-200 focus-visible:ring-matheo-red/30 rounded-xl">
         <SelectValue placeholder="Todas las categorías" />
       </SelectTrigger>
       <SelectContent>

@@ -1,6 +1,11 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  MessageCircleMore,
+} from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -22,7 +27,7 @@ const slides: Slide[] = [
     description:
       'Venta y distribución de fresas de carburo de tungsteno y acero rápido (HSS). La mejor calidad para acabados de precisión en metalmecánica en todo el Perú.',
     buttonText: 'Ver Catálogo',
-    buttonLink: '/productos/fresas-para-planear',
+    buttonLink: '/productos/herramientas-de-fresado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_FRESADO_g0jssx.png',
   },
@@ -33,8 +38,7 @@ const slides: Slide[] = [
     description:
       'Especialistas en venta de insertos de carburo para roscar, machos de roscado NPT/Métrico y herramientas de alta resistencia para tornos CNC en Lima, Perú.',
     buttonText: 'Ver Productos',
-    buttonLink:
-      '/productos?category=INSERTOS+P%2F+ROSCADO%2CPORTAINSERTOS+P%2F+ROSCAR%2CMACHOS+PARA+ROSCAS',
+    buttonLink: '/productos/herramientas-de-roscado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_ROSCADO_zftbr0.png',
   },
@@ -45,8 +49,7 @@ const slides: Slide[] = [
     description:
       'Amplio catálogo de brocas industriales de alto rendimiento para metal, concreto y materiales compuestos. Las mejores marcas para tu taller en Perú.',
     buttonText: 'Ver Brocas',
-    buttonLink:
-      '/productos?category=BROCAS+CON+INSERTO%2CINSERTOS+PARA+TALADRADO%2CINSERTOS+P%2FTALADRADO',
+    buttonLink: '/productos/herramientas-de-taladrado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_TALADRADO_cerwvn.png',
   },
@@ -57,8 +60,7 @@ const slides: Slide[] = [
     description:
       'Venta de insertos y portaherramientas de máxima duración para procesos de torneado en Lima. Potencia la producción y rentabilidad de tu empresa.',
     buttonText: 'Ver Productos',
-    buttonLink:
-      '/productos?category=BLOQUES+PORTA+LAMA%2CPORTAINSERTOS+PARA+RANURAR%2CPORTAINSERTOS+PARA+TORNEAR%2CINSERTOS+PARA+TORNEADO%2CINSERTOS+P%2F+TORNEADO%2CPORTAINSERTOS+P%2F+TORNEAR%2CPORTAINSERTOS+P%2F+RANURAR',
+    buttonLink: '/productos/herramientas-para-torneado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_TORNEADO_rot42d.png',
   },
@@ -69,7 +71,7 @@ const slides: Slide[] = [
     description:
       'Proveedores de mordazas, platos y sistemas de sujeción para tornos y centros de mecanizado. Soluciones confiables para metalmecánica en Lima, Perú.',
     buttonText: 'Ver Productos',
-    buttonLink: '/productos?category=CHUCKS%2CCENTROS+GIRATORIOS',
+    buttonLink: '/productos/herramientas-de-sujecion',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_SUJECION_ymgvjl.png',
   },
@@ -174,15 +176,17 @@ export default function Hero() {
 
           <div className="flex flex-col sm:flex-row gap-3 max-w-xs sm:max-w-none">
             <Link
-              href="/productos"
+              href={slide.buttonLink}
               className="inline-flex items-center justify-center gap-2 bg-matheo-red backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-red hover:border-matheo-red px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
             >
+              <ShoppingCart />
               Ver Productos
             </Link>
             <Link
               href="/contacto"
-              className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-red hover:border-matheo-red px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
+              className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-gray hover:border-matheo-gray px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
             >
+              <MessageCircleMore />
               Escribenos
             </Link>
           </div>
