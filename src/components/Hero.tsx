@@ -5,6 +5,8 @@ import {
   ChevronRight,
   ShoppingCart,
   MessageCircleMore,
+  Pause,
+  Play,
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -17,69 +19,82 @@ interface Slide {
   buttonText: string
   buttonLink: string
   backgroundImage: string
+  mobileBackgroundImage?: string
 }
 
 const slides: Slide[] = [
   {
     id: 1,
-    title: 'FRESADO INDUSTRIAL Y CNC EN LIMA',
-    subtitle: 'Herramientas de Corte de Alto Rendimiento',
+    title: 'HERRAMIENTAS DE FRESADO',
+    subtitle: 'Herramientas de Corte de Alto Rendimiento y Precisión',
     description:
-      'Venta y distribución de fresas de carburo de tungsteno y acero rápido (HSS). La mejor calidad para acabados de precisión en metalmecánica en todo el Perú.',
+      'Venta y distribución de fresas de carburo de tungsteno y acero rápido (HSS). La mejor calidad para acabados de precisión en metalmecánica en todo el Perú. Contamos con las mejores marcas y asesoramiento técnico especializado.',
     buttonText: 'Ver Catálogo',
     buttonLink: '/productos/herramientas-de-fresado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_FRESADO_g0jssx.png',
+    mobileBackgroundImage:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779381850/HERO_FRESADO_MOBILE_qmvco6.png',
   },
   {
     id: 2,
-    title: 'ROSCADO INDUSTRIAL Y CNC',
-    subtitle: 'Machos de Roscar e Insertos',
+    title: 'HERRAMIENTAS DE ROSCADO',
+    subtitle:
+      'Machos de Roscar, Insertos y Herramientas de Precisión',
     description:
-      'Especialistas en venta de insertos de carburo para roscar, machos de roscado NPT/Métrico y herramientas de alta resistencia para tornos CNC en Lima, Perú.',
+      'Especialistas en venta de insertos de carburo para roscar, machos de roscado NPT/Métrico y herramientas de alta resistencia para tornos CNC en Lima, Perú. Calidad garantizada para tus proyectos de roscado industrial.',
     buttonText: 'Ver Productos',
     buttonLink: '/productos/herramientas-de-roscado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_ROSCADO_zftbr0.png',
+    mobileBackgroundImage:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779383279/HERO_ROSCADO_MOBILE_aey77l.png',
   },
   {
     id: 3,
-    title: 'HERRAMIENTAS DE TALADRADO PROFESIONAL',
-    subtitle: 'Soluciones de Perforación en Lima',
+    title: 'HERRAMIENTAS DE TALADRADO',
+    subtitle: 'Soluciones de Perforación para Metal y Concreto',
     description:
-      'Amplio catálogo de brocas industriales de alto rendimiento para metal, concreto y materiales compuestos. Las mejores marcas para tu taller en Perú.',
+      'Amplio catálogo de brocas industriales de alto rendimiento para metal, concreto y materiales compuestos. Las mejores marcas para tu taller en Perú con envíos rápidos a todo el país y asesoría técnica sin costo.',
     buttonText: 'Ver Brocas',
     buttonLink: '/productos/herramientas-de-taladrado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_TALADRADO_cerwvn.png',
+    mobileBackgroundImage:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779383734/HERO_TALADRADO_MOBILE_jw2nb3.png',
   },
   {
     id: 4,
-    title: 'HERRAMIENTAS DE TORNEADO CNC',
-    subtitle: 'Especialistas en Mecanizado Industrial',
+    title: 'HERRAMIENTAS DE TORNEADO',
+    subtitle: 'Especialistas en Mecanizado Industrial en Lima',
     description:
-      'Venta de insertos y portaherramientas de máxima duración para procesos de torneado en Lima. Potencia la producción y rentabilidad de tu empresa.',
+      'Venta de insertos y portaherramientas de máxima duración para procesos de torneado en Lima. Potencia la producción y rentabilidad de tu empresa con herramientas de alto rendimiento y soporte técnico especializado.',
     buttonText: 'Ver Productos',
     buttonLink: '/productos/herramientas-para-torneado',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_TORNEADO_rot42d.png',
+    mobileBackgroundImage:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779384252/HERO_TORNEADO_MOBILE_d2ndbh.png',
   },
   {
     id: 5,
-    title: 'EQUIPOS Y HERRAMIENTAS DE SUJECIÓN',
-    subtitle: 'Sujeción Industrial de Alto Nivel',
+    title: 'HERRAMIENTAS DE SUJECIÓN',
+    subtitle: 'Sujeción Industrial de Alto Nivel para CNC',
     description:
-      'Proveedores de mordazas, platos y sistemas de sujeción para tornos y centros de mecanizado. Soluciones confiables para metalmecánica en Lima, Perú.',
+      'Proveedores de mordazas, platos y sistemas de sujeción para tornos y centros de mecanizado. Soluciones confiables para metalmecánica en Lima, Perú con las mejores marcas del mercado y envío garantizado.',
     buttonText: 'Ver Productos',
     buttonLink: '/productos/herramientas-de-sujecion',
     backgroundImage:
       'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774820117/HERO_SUJECION_ymgvjl.png',
+    mobileBackgroundImage:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779384788/HERO_SUJECION_MOBILE_vrznhr.png',
   },
 ]
 
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [animating, setAnimating] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(
     null,
   )
@@ -101,20 +116,26 @@ export default function Hero() {
   }
 
   useEffect(() => {
+    if (isPaused) return
+
     autoPlayRef.current = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length)
     }, 5000)
+
     return () => {
-      if (autoPlayRef.current) clearInterval(autoPlayRef.current)
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current)
+        autoPlayRef.current = null
+      }
     }
-  }, [])
+  }, [isPaused])
 
   const slide = slides[currentSlide]
 
   return (
     <section
       id="inicio"
-      className="relative min-h-169.5 h-[80vh] md:h-[85vh] flex items-center overflow-hidden"
+      className="relative w-full h-130 sm:h-[80vh] md:h-[85vh] flex items-center overflow-hidden"
     >
       {/* Background Images */}
       <div className="absolute inset-0">
@@ -124,13 +145,35 @@ export default function Hero() {
             className="absolute inset-0 transition-opacity duration-1000"
             style={{ opacity: index === currentSlide ? 1 : 0 }}
           >
+            {/* Mobile image */}
+            {s.mobileBackgroundImage && (
+              <Image
+                src={s.mobileBackgroundImage}
+                alt={s.title}
+                fill
+                priority={index === 0}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                className="object-cover sm:hidden"
+                style={{ width: '100%', height: '100%' }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                  const parent = target.parentElement
+                  if (parent) {
+                    parent.style.background =
+                      'linear-gradient(135deg, #1e40af 0%, #dc2626 100%)'
+                  }
+                }}
+              />
+            )}
+            {/* Desktop image */}
             <Image
               src={s.backgroundImage}
               alt={s.title}
               fill
               priority={index === 0}
               loading={index === 0 ? 'eager' : 'lazy'}
-              className="object-cover"
+              className={`object-cover ${s.mobileBackgroundImage ? 'hidden sm:block' : ''}`}
               style={{ width: '100%', height: '100%' }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement
@@ -142,52 +185,48 @@ export default function Hero() {
                 }
               }}
             />
-            <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-black/30" />
+            <div className="absolute inset-0 bg-linear-to-r from-black/70" />
           </div>
         ))}
       </div>
 
       {/* Content — animación CSS pura al cambiar slide */}
-      <div className="container mx-auto px-4 relative z-10 pt-28 pb-12 md:pt-0">
-        <div
-          key={currentSlide} // ← key fuerza re-mount y re-anima con CSS
-          className="max-w-3xl"
-          style={{
-            animation: 'heroFadeIn 0.8s ease forwards',
-          }}
-        >
-          <div className="inline-block mb-4 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
-            <span className="font-semibold text-xs uppercase tracking-wider text-white">
-              INDUSTRIAL COMPANY MATHEO
-            </span>
-          </div>
+      <div className="container mx-auto px-4 relative z-10 pt-28 md:pt-0">
+          <div
+            key={currentSlide} // ← key fuerza re-mount y re-anima con CSS
+            className="max-w-3xl text-center sm:text-left"
+            style={{
+              animation: 'heroFadeIn 0.8s ease forwards',
+            }}
+          >
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 leading-tight text-white drop-shadow-2xl line-clamp-2">
+              {slide.title}
+            </h1>
 
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 leading-tight text-white drop-shadow-2xl">
-            {slide.title}
-          </h1>
+            <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 text-yellow-400 drop-shadow-lg line-clamp-2">
+              {slide.subtitle}
+            </h2>
 
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 text-yellow-400 drop-shadow-lg">
-            {slide.subtitle}
-          </h2>
+            <p className="text-sm sm:text-base md:text-lg mb-2 text-white/90 max-w-xl mx-auto sm:mx-0 drop-shadow-lg line-clamp-3">
+              {slide.description}
+            </p>
 
-          <p className="text-base md:text-lg mb-6 text-white/90 max-w-xl drop-shadow-lg">
-            {slide.description}
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 max-w-xs sm:max-w-none">
+            <div className="flex flex-row gap-2 justify-center sm:justify-start max-w-xs sm:max-w-none mx-auto sm:mx-0">
             <Link
               href={slide.buttonLink}
-              className="inline-flex items-center justify-center gap-2 bg-matheo-red backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-red hover:border-matheo-red px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
+              className="inline-flex items-center justify-center gap-1.5 bg-matheo-red backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-red hover:border-matheo-red px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-xs sm:text-sm"
             >
-              <ShoppingCart />
-              Ver Productos
+              <ShoppingCart size={16} />
+              <span className="hidden sm:inline">Ver Productos</span>
+              <span className="sm:hidden">Ver</span>
             </Link>
             <Link
               href="/contacto"
-              className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-gray hover:border-matheo-gray px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-sm"
+              className="inline-flex items-center justify-center gap-1.5 bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-matheo-gray hover:border-matheo-gray px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-xl text-xs sm:text-sm"
             >
-              <MessageCircleMore />
-              Escribenos
+              <MessageCircleMore size={16} />
+              <span className="hidden sm:inline">Escribenos</span>
+              <span className="sm:hidden">Mail</span>
             </Link>
           </div>
         </div>
@@ -196,7 +235,7 @@ export default function Hero() {
       {/* Prev / Next */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
+        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full  hover:bg-white/30 border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
         aria-label="Slide anterior"
       >
         <ChevronLeft size={26} strokeWidth={2.5} />
@@ -204,7 +243,7 @@ export default function Hero() {
 
       <button
         onClick={nextSlide}
-        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
+        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
         aria-label="Slide siguiente"
       >
         <ChevronRight size={26} strokeWidth={2.5} />
@@ -224,6 +263,15 @@ export default function Hero() {
             aria-label={`Ir al slide ${index + 1}`}
           />
         ))}
+
+        {/* Pause/Play */}
+        <button
+          onClick={() => setIsPaused((p) => !p)}
+          className="ml-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white transition-all duration-200 hover:scale-110"
+          aria-label={isPaused ? 'Reanudar' : 'Pausar'}
+        >
+          {isPaused ? <Play size={14} /> : <Pause size={14} />}
+        </button>
       </div>
     </section>
   )

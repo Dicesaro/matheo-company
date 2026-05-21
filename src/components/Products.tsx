@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Flame, ArrowRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useInView } from 'react-intersection-observer'
@@ -28,8 +28,33 @@ const categories = [
   },
   {
     image:
-      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779138840/Frame_828_y2cghh.png',
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779332029/INSERTOS_PARA_TALADRADO_fongff.png',
     href: '/productos/herramientas-de-taladrado/insertos-para-taladrado',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779332264/BROCAS_CORONA_nuz0fj.png',
+    href: '/productos/herramientas-de-taladrado/brocas-corona',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779332266/INSERTOS_PARA_ROSCAR_eix0cs.png',
+    href: '/productos/herramientas-de-roscado/insertos-para-roscado',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779332265/DISCOS_NORTON_lnludl.png',
+    href: '/productos/abrasivos/discos',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779332266/INSERTOS_PARA_PLANEADO_z4yrgb.png',
+    href: '/productos/herramientas-para-torneado/insertos-para-planeado',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779332266/BROCAS_CON_INSERTO_dxi7xs.png',
+    href: '/productos/herramientas-de-taladrado/brocas-con-inserto',
   },
 ]
 
@@ -51,6 +76,16 @@ export default function FeaturedProducts() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => {
+        const max = Math.max(0, categories.length - itemsToShow)
+        return prev >= max ? 0 : prev + 1
+      })
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [itemsToShow])
 
   const maxIndex = Math.max(0, categories.length - itemsToShow)
 
