@@ -73,6 +73,9 @@ export default function Navbar() {
   >({})
   const [isMobileProdsOpen, setIsMobileProdsOpen] = useState(false)
   const [isMobileCatsOpen, setIsMobileCatsOpen] = useState(false)
+  const [expandedMobileCat, setExpandedMobileCat] = useState<
+    string | null
+  >(null)
   const [products, setProducts] = useState<
     { id: string; name: string; image_url: string | null; category: string }[]
   >([])
@@ -147,7 +150,7 @@ export default function Navbar() {
       try {
         const { data: cats } = await supabase
           .from('categories')
-          .select('name, parent_id')
+          .select('id, name, parent_id')
           .order('name')
 
         if (cats) {
@@ -694,7 +697,7 @@ export default function Navbar() {
               </button>
 
               {isCategoriasOpen && (
-                <div className="absolute top-full left-0 mt-1 min-w-55 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 py-2">
+                <div className="absolute top-full left-0 mt-1 min-w-55 bg-white border border-gray-200 shadow-2xl z-50 py-2">
                   {isLoadingCategories
                     ? Array.from({ length: 5 }).map((_, i) => (
                         <div
@@ -711,7 +714,7 @@ export default function Navbar() {
                           return (
                             <div
                               key={cat.name}
-                              className="relative px-2"
+                              className="relative px-2 rounded-lg hover:bg-gray-50 transition-colors"
                               onMouseEnter={() =>
                                 setHoveredParentCat(cat.name)
                               }
@@ -722,7 +725,7 @@ export default function Navbar() {
                                   setIsCategoriasOpen(false)
                                   setActiveMega(null)
                                 }}
-                                className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-matheo-blue transition-colors"
+                                className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:text-matheo-blue transition-colors"
                               >
                                 <span className="font-medium">
                                   {cat.name}
@@ -739,7 +742,7 @@ export default function Navbar() {
                               {hasSub &&
                                 hoveredParentCat === cat.name && (
                                   <div
-                                    className="absolute left-full top-0 ml-1 min-w-[200px] bg-white border border-gray-200 rounded-xl shadow-2xl z-50 py-2"
+                                    className="absolute left-full top-0 ml-1 min-w-[200px] bg-white border border-gray-200 shadow-2xl z-50 py-2"
                                     onMouseEnter={() =>
                                       setHoveredParentCat(cat.name)
                                     }
@@ -805,7 +808,7 @@ export default function Navbar() {
                   placeholder="¿Qué herramienta buscas?"
                   value={searchValue}
                   onChange={handleSearchChange}
-                  className="w-full pl-11 pr-10 py-2.5 bg-gray-50/50 border-2 border-gray-100 rounded-xl focus:bg-white focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/5 focus:outline-none transition-all text-sm font-medium"
+                  className="w-full pl-11 pr-10 py-2.5 bg-white border-2 border-gray-200 rounded-xl focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/10 focus:outline-none transition-all text-sm font-medium shadow-sm"
                 />
                 {searchValue && (
                   <button
@@ -1293,33 +1296,77 @@ export default function Navbar() {
                               <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                             </div>
                           ))
-                        : categories.filter((c) => c.isParent).slice(0, 15).map((cat) => (
-                            <Link
-                              key={cat.name}
-                              href={`/productos/${generateSlug(cat.name)}`}
-                              onClick={() => setIsOpen(false)}
-                              className="flex items-center gap-3 py-2 px-3 text-sm text-gray-600 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
-                            >
-                              <div className="w-6 h-6 shrink-0 flex items-center justify-center overflow-hidden">
-                                {cat.image ? (
-                                  <Image
-                                    width={100}
-                                    height={100}
-                                    src={cat.image}
-                                    alt={cat.name}
-                                    className="w-full h-full object-contain"
-                                  />
-                                ) : (
-                                  <span className="text-base">
-                                    🔧
-                                  </span>
-                                )}
+                        : categories.filter((c) => c.isParent).slice(0, 15).map((cat) => {
+                            const subs = subcategoryMap[cat.name]
+                            const hasSub = subs?.length > 0
+                            return (
+                              <div key={cat.name}>
+                                <div className="flex items-center">
+                                  <Link
+                                    href={`/productos/${generateSlug(cat.name)}`}
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center gap-3 py-2 px-3 text-sm text-gray-600 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors flex-1"
+                                  >
+                                    <div className="w-6 h-6 shrink-0 flex items-center justify-center overflow-hidden">
+                                      {cat.image ? (
+                                        <Image
+                                          width={100}
+                                          height={100}
+                                          src={cat.image}
+                                          alt={cat.name}
+                                          className="w-full h-full object-contain"
+                                        />
+                                      ) : (
+                                        <span className="text-base">
+                                          🔧
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="font-medium">
+                                      {cat.name}
+                                    </span>
+                                  </Link>
+                                  {hasSub && (
+                                    <button
+                                      onClick={() =>
+                                        setExpandedMobileCat(
+                                          expandedMobileCat === cat.name
+                                            ? null
+                                            : cat.name,
+                                        )
+                                      }
+                                      className="p-2 text-gray-500 hover:text-matheo-red transition-colors"
+                                      aria-label="Ver subcategorías"
+                                    >
+                                      <ChevronDown
+                                        size={16}
+                                        className={cn(
+                                          'transition-transform duration-300',
+                                          expandedMobileCat === cat.name &&
+                                            'rotate-180',
+                                        )}
+                                      />
+                                    </button>
+                                  )}
+                                </div>
+                                {hasSub &&
+                                  expandedMobileCat === cat.name && (
+                                    <div className="ml-4 pl-4 border-l-2 border-gray-100 space-y-0.5 py-1 mb-1">
+                                      {subs.map((sub) => (
+                                        <Link
+                                          key={sub.name}
+                                          href={`/productos/${generateSlug(sub.name)}`}
+                                          onClick={() => setIsOpen(false)}
+                                          className="block py-1.5 px-3 text-sm text-gray-500 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
+                                        >
+                                          {sub.name}
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  )}
                               </div>
-                              <span className="font-medium">
-                                {cat.name}
-                              </span>
-                            </Link>
-                          ))}
+                            )
+                          })}
                     </div>
                   </div>
                 </div>
