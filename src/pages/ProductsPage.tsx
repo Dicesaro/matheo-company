@@ -593,7 +593,7 @@ export default function ProductsPage({
               <div className="mb-6">
                 <h1 className="text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tight mb-2">
                   {activeCategory
-                    ? `Catálogo de ${activeCategory}`
+                    ? `${activeCategory}`
                     : 'Catálogo de Herramientas Industriales'}
                 </h1>
                 <p className="text-gray-600 text-sm md:text-base max-w-2xl">

@@ -1,33 +1,40 @@
 'use client'
 
-import { Send, CheckCircle2 } from 'lucide-react'
-import { useForm, ValidationError } from '@formspree/react'
+import { useState } from 'react'
+import { Send } from 'lucide-react'
+
+const PHONE_NUMBER = '51922922766'
 
 const ComplaintsBookPage = () => {
-  const [state, handleSubmit] = useForm('xzddpdzk')
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    documentType: 'DNI',
+    documentNumber: '',
+    type: 'Reclamo',
+    description: '',
+  })
 
-  if (state.succeeded) {
-    return (
-      <div className="container mx-auto px-4 py-16 pt-48 text-center">
-        <div className="max-w-md mx-auto bg-green-50 p-12 rounded-3xl border border-green-100">
-          <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-matheo-blue mb-4">
-            ¡Reclamo Registrado!
-          </h2>
-          <p className="text-gray-600 mb-8">
-            Su hoja de reclamación ha sido enviada correctamente. Se
-            ha generado un registro y nos pondremos en contacto con
-            usted a la brevedad posible para atender su solicitud.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-matheo-blue text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-900 transition-colors"
-          >
-            Volver al inicio
-          </button>
-        </div>
-      </div>
-    )
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    const message = `*Libro de Reclamaciones*\n\n*Nombre:* ${formData.name}\n*Email:* ${formData.email}\n*Teléfono:* ${formData.phone}\n*Documento:* ${formData.documentType} - ${formData.documentNumber}\n*Tipo:* ${formData.type}\n*Detalle:*\n${formData.description}`
+
+    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
+    setSubmitting(false)
   }
 
   return (
@@ -49,13 +56,6 @@ const ComplaintsBookPage = () => {
           onSubmit={handleSubmit}
           className="bg-gray-900 p-8 rounded-xl border border-gray-800 shadow-xl"
         >
-          {/* Hidden field for email subject */}
-          <input
-            type="hidden"
-            name="_subject"
-            value="Nuevo Reclamo/Queja - Libro de Reclamaciones"
-          />
-
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div>
               <label
@@ -69,14 +69,10 @@ const ComplaintsBookPage = () => {
                 id="name"
                 name="name"
                 required
+                value={formData.name}
+                onChange={handleChange}
                 className="w-full bg-black border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-matheo-red focus:ring-1 focus:ring-matheo-red transition-colors"
                 placeholder="Juan Pérez"
-              />
-              <ValidationError
-                prefix="Name"
-                field="name"
-                errors={state.errors}
-                className="text-red-500 text-xs mt-1"
               />
             </div>
 
@@ -92,14 +88,10 @@ const ComplaintsBookPage = () => {
                 id="email"
                 name="email"
                 required
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full bg-black border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-matheo-red focus:ring-1 focus:ring-matheo-red transition-colors"
                 placeholder="juan@ejemplo.com"
-              />
-              <ValidationError
-                prefix="Email"
-                field="email"
-                errors={state.errors}
-                className="text-red-500 text-xs mt-1"
               />
             </div>
 
@@ -115,14 +107,10 @@ const ComplaintsBookPage = () => {
                 id="phone"
                 name="phone"
                 required
+                value={formData.phone}
+                onChange={handleChange}
                 className="w-full bg-black border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-matheo-red focus:ring-1 focus:ring-matheo-red transition-colors"
                 placeholder="999 999 999"
-              />
-              <ValidationError
-                prefix="Phone"
-                field="phone"
-                errors={state.errors}
-                className="text-red-500 text-xs mt-1"
               />
             </div>
 
@@ -137,6 +125,8 @@ const ComplaintsBookPage = () => {
                 <select
                   id="documentType"
                   name="documentType"
+                  value={formData.documentType}
+                  onChange={handleChange}
                   className="w-full bg-black border border-gray-800 rounded-lg px-2 py-3 text-white focus:outline-none focus:border-matheo-red focus:ring-1 focus:ring-matheo-red transition-colors"
                 >
                   <option value="DNI">DNI</option>
@@ -156,6 +146,8 @@ const ComplaintsBookPage = () => {
                   id="documentNumber"
                   name="documentNumber"
                   required
+                  value={formData.documentNumber}
+                  onChange={handleChange}
                   className="w-full bg-black border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-matheo-red focus:ring-1 focus:ring-matheo-red transition-colors"
                   placeholder="12345678"
                 />
@@ -173,7 +165,8 @@ const ComplaintsBookPage = () => {
                   type="radio"
                   name="type"
                   value="Reclamo"
-                  defaultChecked
+                  checked={formData.type === 'Reclamo'}
+                  onChange={handleChange}
                   className="text-matheo-red focus:ring-matheo-red bg-black border-gray-800"
                 />
                 <span className="text-white">Reclamo</span>
@@ -183,6 +176,8 @@ const ComplaintsBookPage = () => {
                   type="radio"
                   name="type"
                   value="Queja"
+                  checked={formData.type === 'Queja'}
+                  onChange={handleChange}
                   className="text-matheo-red focus:ring-matheo-red bg-black border-gray-800"
                 />
                 <span className="text-white">Queja</span>
@@ -209,23 +204,19 @@ const ComplaintsBookPage = () => {
               name="description"
               required
               rows={6}
+              value={formData.description}
+              onChange={handleChange}
               className="w-full bg-black border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-matheo-red focus:ring-1 focus:ring-matheo-red transition-colors resize-none"
               placeholder="Describa aquí el detalle de su reclamo o queja..."
             ></textarea>
-            <ValidationError
-              prefix="Description"
-              field="description"
-              errors={state.errors}
-              className="text-red-500 text-xs mt-1"
-            />
           </div>
 
           <button
             type="submit"
-            disabled={state.submitting}
+            disabled={submitting}
             className="w-full bg-matheo-red hover:bg-red-700 text-white font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {state.submitting ? (
+            {submitting ? (
               <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>

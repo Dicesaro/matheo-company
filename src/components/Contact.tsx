@@ -1,33 +1,44 @@
 'use client'
-import { Send, CheckCircle2 } from 'lucide-react'
-import { useForm, ValidationError } from '@formspree/react'
+import { useState } from 'react'
+import { Send } from 'lucide-react'
+
+const PHONE_NUMBER = '51922922766'
 
 export default function Contact() {
-  const [state, handleSubmit] = useForm('xzddpdzk')
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  })
 
-  if (state.succeeded) {
-    return (
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-md mx-auto bg-green-50 p-12 rounded-3xl border border-green-100">
-            <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-matheo-blue mb-4">
-              ¡Mensaje Enviado!
-            </h2>
-            <p className="text-gray-600 mb-8">
-              Gracias por contactarnos. Nuestro equipo revisará tu
-              mensaje y te responderá a la brevedad posible.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-matheo-blue text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-900 transition-colors"
-            >
-              Enviar otro mensaje
-            </button>
-          </div>
-        </div>
-      </section>
-    )
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    const subjectLabels: Record<string, string> = {
+      cotizacion: 'Solicitud de Cotización',
+      consulta: 'Consulta de Producto',
+      garantia: 'Garantía / Servicio Técnico',
+      otro: 'Otro',
+    }
+
+    const message = `*Nuevo Contacto - Web*\n\n*Nombre:* ${formData.name}\n*Email:* ${formData.email}\n*Teléfono:* ${formData.phone}\n*Asunto:* ${subjectLabels[formData.subject] || formData.subject}\n*Mensaje:*\n${formData.message}`
+
+    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
+    setSubmitting(false)
   }
 
   return (
@@ -75,14 +86,10 @@ export default function Contact() {
                     id="name"
                     name="name"
                     required
+                    value={formData.name}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                     placeholder="Tu nombre"
-                  />
-                  <ValidationError
-                    prefix="Name"
-                    field="name"
-                    errors={state.errors}
-                    className="text-red-500 text-xs mt-1"
                   />
                 </div>
 
@@ -99,14 +106,10 @@ export default function Contact() {
                       id="email"
                       name="email"
                       required
+                      value={formData.email}
+                      onChange={handleChange}
                       className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                       placeholder="cliente@email.com"
-                    />
-                    <ValidationError
-                      prefix="Email"
-                      field="email"
-                      errors={state.errors}
-                      className="text-red-500 text-xs mt-1"
                     />
                   </div>
 
@@ -121,6 +124,8 @@ export default function Contact() {
                       type="tel"
                       id="phone"
                       name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
                       className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                       placeholder="+51 ..."
                     />
@@ -138,6 +143,8 @@ export default function Contact() {
                     id="subject"
                     name="subject"
                     required
+                    value={formData.subject}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all"
                   >
                     <option value="">Selecciona un asunto</option>
@@ -166,23 +173,19 @@ export default function Contact() {
                     name="message"
                     required
                     rows={4}
+                    value={formData.message}
+                    onChange={handleChange}
                     className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all resize-none"
                     placeholder="Escribe tu mensaje aquí..."
-                  />
-                  <ValidationError
-                    prefix="Message"
-                    field="message"
-                    errors={state.errors}
-                    className="text-red-500 text-xs mt-1"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={state.submitting}
+                  disabled={submitting}
                   className="w-full bg-matheo-red hover:bg-red-700 text-white py-3.5 rounded-xl font-bold transition-all transform hover:scale-[1.02] shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                 >
-                  {state.submitting ? (
+                  {submitting ? (
                     <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
