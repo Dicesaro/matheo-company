@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +14,6 @@ import {
 import { Code, List } from 'lucide-react'
 import { toast } from 'sonner'
 import { createProduct, updateProduct } from '@/lib/actions/products'
-import ImageUpload from '@/components/admin/ImageUpload'
 import DynamicList from '@/components/admin/DynamicList'
 import SpecificationsEditor from '@/components/admin/SpecificationsEditor'
 import GalleryUpload from '@/components/admin/GalleryUpload'
@@ -83,7 +83,6 @@ function buildCategoryOptions(cats: Category[]): { id: string; displayName: stri
 export default function ProductForm({ categories, brands, defaultValues }: ProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [imageUrl, setImageUrl] = useState(defaultValues?.image_url || '')
   const [features, setFeatures] = useState<string[]>(defaultValues?.features || [])
   const [benefits, setBenefits] = useState<string[]>(defaultValues?.benefits || [])
   const [featuresJson, setFeaturesJson] = useState('')
@@ -110,7 +109,8 @@ export default function ProductForm({ categories, brands, defaultValues }: Produ
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    if (imageUrl) formData.set('image_url', imageUrl)
+    const mainImage = galleryImages[0] || ''
+    if (mainImage) formData.set('image_url', mainImage)
 
     formData.set('features', JSON.stringify(features))
     formData.set('benefits', JSON.stringify(benefits))
@@ -232,7 +232,16 @@ export default function ProductForm({ categories, brands, defaultValues }: Produ
 
       <div className="space-y-2">
         <Label className="text-gray-700">Imagen principal</Label>
-        <ImageUpload onUpload={setImageUrl} defaultImage={defaultValues?.image_url || ''} />
+        <p className="text-xs text-gray-500">Se usa la primera imagen de la galería</p>
+        {galleryImages[0] ? (
+          <div className="relative h-32 w-32 overflow-hidden rounded-xl border-2 border-gray-100 shadow-sm">
+            <Image src={galleryImages[0]} alt="Principal" fill className="object-cover" />
+          </div>
+        ) : (
+          <div className="flex h-32 w-32 items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50">
+            <span className="text-xs text-gray-400">Sin imagen</span>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

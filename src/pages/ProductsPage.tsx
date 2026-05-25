@@ -86,7 +86,7 @@ export default function ProductsPage({
     price: false,
     rating: false,
   })
-  const [expandedParents, setExpandedParents] = useState<string[]>([])
+  const [expandedParent, setExpandedParent] = useState<string | null>(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(
     searchParams.get('page')
@@ -145,13 +145,13 @@ export default function ProductsPage({
               const parentName = Object.entries(childrenOf).find(([, children]) =>
                 children.includes(resolved)
               )?.[0]
-              if (parentName) setExpandedParents([parentName])
+              if (parentName) setExpandedParent(parentName)
             }
           } else if (categorySlug) {
             const resolved = slugToCategory(categorySlug, allCats)
             if (resolved) {
               if (childrenOf[resolved]) {
-                setExpandedParents([resolved])
+                setExpandedParent(resolved)
               } else {
                 setSelectedCategories([resolved])
               }
@@ -291,11 +291,7 @@ export default function ProductsPage({
       if (isAlreadySelected) {
         router.push('/productos')
       } else if (isParent) {
-        setExpandedParents((prev) =>
-          prev.includes(category)
-            ? prev.filter((p) => p !== category)
-            : [...prev, category],
-        )
+        setExpandedParent((prev) => (prev === category ? null : category))
       } else {
         const parentName = Object.entries(subcategoryMap).find(([, children]) =>
           children.includes(category)
@@ -448,7 +444,7 @@ export default function ProductsPage({
                         className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50/50 text-gray-600 placeholder-gray-400 appearance-none outline-none focus:border-gray-200"
                       />
                     </div>
-                    <div className="space-y-1 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-1">
                       {dbCategories
                         .filter((cat) => !Object.values(subcategoryMap).flat().includes(cat))
                         .filter((cat) =>
@@ -460,11 +456,7 @@ export default function ProductsPage({
                         )
                         .map((parentName) => {
                           const children = subcategoryMap[parentName] || []
-                          const isExpanded = expandedParents.includes(parentName)
-                          const hasFilteredChildren = children.some((child) =>
-                            child.toLowerCase().includes(categorySearchTerm.toLowerCase()),
-                          )
-                          const showChildren = isExpanded && hasFilteredChildren
+                          const isExpanded = expandedParent === parentName
 
                           return (
                             <div key={parentName}>
@@ -500,8 +492,12 @@ export default function ProductsPage({
                                   </span>
                                 )}
                               </button>
-                              {showChildren && (
-                                <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
+                              <div
+                                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                  isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                }`}
+                              >
+                                <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5 pt-0.5">
                                   {children
                                     .filter((child) =>
                                       child.toLowerCase().includes(categorySearchTerm.toLowerCase()),
@@ -523,7 +519,7 @@ export default function ProductsPage({
                                       </label>
                                     ))}
                                 </div>
-                              )}
+                              </div>
                             </div>
                           )
                         })}
@@ -855,18 +851,14 @@ export default function ProductsPage({
                       const children =
                         subcategoryMap[parentName] || []
                       const isExpanded =
-                        expandedParents.includes(parentName)
+                        expandedParent === parentName
 
                       return (
                         <div key={parentName}>
                           <button
                             onClick={() => {
-                              setExpandedParents((prev) =>
-                                prev.includes(parentName)
-                                  ? prev.filter(
-                                      (p) => p !== parentName,
-                                    )
-                                  : [...prev, parentName],
+                              setExpandedParent((prev) =>
+                                prev === parentName ? null : parentName,
                               )
                             }}
                             className={`w-full flex items-center gap-2 py-2 rounded-lg transition-colors text-left ${
@@ -907,7 +899,11 @@ export default function ProductsPage({
                               </span>
                             )}
                           </button>
-                          {isExpanded && children.length > 0 && (
+                          <div
+                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                              isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                            }`}
+                          >
                             <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
                               {children.map((child) => (
                                 <label
@@ -931,7 +927,7 @@ export default function ProductsPage({
                                 </label>
                               ))}
                             </div>
-                          )}
+                          </div>
                         </div>
                       )
                     })}

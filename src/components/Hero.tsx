@@ -151,19 +151,10 @@ export default function Hero() {
                 src={s.mobileBackgroundImage}
                 alt={s.title}
                 fill
+                sizes="(max-width: 639px) 100vw, 0vw"
                 priority={index === 0}
-                loading={index === 0 ? 'eager' : 'lazy'}
                 className="object-cover sm:hidden"
                 style={{ width: '100%', height: '100%' }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
-                  const parent = target.parentElement
-                  if (parent) {
-                    parent.style.background =
-                      'linear-gradient(135deg, #1e40af 0%, #dc2626 100%)'
-                  }
-                }}
               />
             )}
             {/* Desktop image */}
@@ -171,19 +162,10 @@ export default function Hero() {
               src={s.backgroundImage}
               alt={s.title}
               fill
+              sizes="(min-width: 640px) 100vw, 0vw"
               priority={index === 0}
-              loading={index === 0 ? 'eager' : 'lazy'}
               className={`object-cover ${s.mobileBackgroundImage ? 'hidden sm:block' : ''}`}
-              style={{ width: '100%', height: '100%' }}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.style.display = 'none'
-                const parent = target.parentElement
-                if (parent) {
-                  parent.style.background =
-                    'linear-gradient(135deg, #1e40af 0%, #dc2626 100%)'
-                }
-              }}
+              style={{ width: '100%', height: '100%' }}              
             />
             <div className="absolute inset-0 bg-linear-to-r from-black/70" />
           </div>

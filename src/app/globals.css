@@ -2,7 +2,7 @@
 
 @theme {
    --font-sans: var(--font-plus-jakarta);
-   --breakpoint-mlg: 1200px;
+    --breakpoint-mlg: 1280px;
    --color-matheo-red: #C41E3A;
    --color-matheo-blue: #2B5F9E;
    --color-matheo-dark: #1a1a1a;
@@ -83,8 +83,13 @@
 }
 
 @keyframes shimmer {
-   0% { background-position: -200% 0; }
-   100% { background-position: 200% 0; }
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @layer base {

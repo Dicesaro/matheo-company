@@ -117,7 +117,9 @@ export default function CardProduct({
         <button
           onClick={toggleFavorite}
           className="absolute top-2 right-2 w-9 h-9 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:shadow-lg transition-all duration-300 z-10"
-          aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          aria-label={
+            isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'
+          }
         >
           <Star
             size={17}
@@ -141,11 +143,25 @@ export default function CardProduct({
             : 'justify-center py-2',
         )}
       >
+        {/* Nombre del producto */}
+        <div className="mb-3">
+          <h3
+            className={cn(
+              'text-gray-800 font-bold leading-tight line-clamp-2',
+              viewMode === 'grid'
+                ? 'text-[13px] text-left'
+                : 'text-sm md:text-base text-left',
+            )}
+          >
+            {product.name}
+          </h3>
+        </div>
+
         {/* Categoria */}
         <div className="mb-1.5">
           <span
             onClick={handleCategoryClick}
-            className="text-[11px] font-bold text-matheo-blue uppercase tracking-wider hover:underline cursor-pointer"
+            className="text-[11px] font-semibold text-matheo-blue uppercase tracking-wider hover:underline cursor-pointer"
           >
             {product.category}
           </span>
@@ -159,20 +175,6 @@ export default function CardProduct({
             </span>
           </div>
         )}
-
-        {/* Nombre del producto */}
-        <div className="mb-3">
-          <h3
-            className={cn(
-              'text-gray-800 font-semibold leading-tight line-clamp-2',
-              viewMode === 'grid'
-                ? 'text-[13px] text-left'
-                : 'text-sm md:text-base text-left',
-            )}
-          >
-            {product.name}
-          </h3>
-        </div>
 
         {/* Botones */}
         <div className="mt-auto" onClick={(e) => e.stopPropagation()}>

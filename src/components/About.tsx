@@ -5,6 +5,8 @@ import {
   Lightbulb,
   ThumbsUp,
   Settings2,
+  Eye,
+  Target,
 } from 'lucide-react'
 import CountUp from 'react-countup'
 import { useInView } from 'react-intersection-observer'
@@ -236,23 +238,17 @@ export default function About() {
         <div className="container mx-auto px-4">
           <FadeIn className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <h3 className="text-5xl font-black text-center text-matheo-blue mb-6">
+              <h3 className="text-3xl md:text-5xl font-black text-center text-matheo-blue mb-6">
                 VISIÓN:
               </h3>
-              <p className="text-gray-700 text-xl text-center leading-relaxed font-medium">
+              <p className="text-gray-700 text-base md:text-xl text-center leading-relaxed font-medium">
                 Aspiramos a ser uno de los importadores más
                 importantes en herramientas de corte y maquinarias.
               </p>
             </div>
             <div className="order-1 lg:order-2 flex justify-center">
-              <div className="relative w-72 h-72 drop-shadow-2xl hover:scale-105 transition-transform duration-500">
-                <Image
-                  src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823609/IMG-VISION_kk2p9v.png"
-                  alt="Visión Matheo"
-                  fill
-                  sizes="288px"
-                  className="object-contain"
-                />
+              <div className="flex h-48 w-48 md:h-72 md:w-72 items-center justify-center rounded-full bg-matheo-blue/10 drop-shadow-2xl hover:scale-105 transition-transform duration-500">
+                <Eye className="h-24 w-24 md:h-32 md:w-32 text-matheo-blue" strokeWidth={1} />
               </div>
             </div>
           </FadeIn>
@@ -264,21 +260,15 @@ export default function About() {
         <div className="container mx-auto px-4">
           <FadeIn className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="flex justify-center">
-              <div className="relative w-72 h-72 drop-shadow-2xl hover:scale-105 transition-transform duration-500">
-                <Image
-                  src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823609/IMG-MISION_pahxmd.png"
-                  alt="Misión Matheo"
-                  fill
-                  sizes="288px"
-                  className="object-contain"
-                />
+              <div className="flex h-48 w-48 md:h-72 md:w-72 items-center justify-center rounded-full bg-matheo-blue/10 drop-shadow-2xl hover:scale-105 transition-transform duration-500">
+                <Target className="h-24 w-24 md:h-32 md:w-32 text-matheo-blue" strokeWidth={1} />
               </div>
             </div>
             <div>
-              <h3 className="text-5xl font-black text-center text-matheo-blue mb-6">
+              <h3 className="text-3xl md:text-5xl font-black text-center text-matheo-blue mb-6">
                 MISIÓN:
               </h3>
-              <p className="text-gray-700 text-xl text-center leading-relaxed font-medium">
+              <p className="text-gray-700 text-base md:text-xl text-center leading-relaxed font-medium">
                 Nuestro objetivo es satisfacer de forma permanente,
                 creando riqueza, las necesidades y expectativas de
                 nuestros clientes, accionistas, personal y la sociedad

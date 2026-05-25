@@ -22,7 +22,7 @@ export async function generateMetadata({
   const allCats = cats?.map((c) => c.name) || []
   const categoryName = slugToCategory(categoria, allCats) || categoria
 
-  const title = `Catálogo de ${categoryName} | Herramientas Industriales MATHEO`
+  const title = `${categoryName} | Herramientas Industriales MATHEO`
   const description = `Venta y distribución de ${categoryName} para la industria metalmecánica. Cotiza precios de herramientas de alta precisión en Lima, Perú.`
   const canonical = `https://industrialcompanymatheo.com/productos/${categoria}`
 

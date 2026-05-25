@@ -244,24 +244,63 @@ export default function Navbar() {
 
     async function fetchProductsData() {
       try {
-        const { data } = await supabase
+        let result: any[] = []
+
+        const { data: featuredData } = await supabase
           .from('products')
           .select('id, name, image_url, categories(name)')
+          .eq('featured', true)
           .not('image_url', 'is', null)
           .limit(12)
 
-        if (data) {
-          setProducts(
-            data.map((p: any) => ({
-              id: p.id,
-              name: p.name,
-              image_url: p.image_url,
-              category: Array.isArray(p.categories)
-                ? p.categories[0]?.name || ''
-                : p.categories?.name || '',
-            })),
-          )
+        if (featuredData) {
+          result = featuredData.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            image_url: p.image_url,
+            category: Array.isArray(p.categories)
+              ? p.categories[0]?.name || ''
+              : p.categories?.name || '',
+          }))
         }
+
+        if (result.length < 12) {
+          const needed = 12 - result.length
+          const excludeIds = result.map((p) => p.id)
+          let fallbackData: any
+
+          if (excludeIds.length > 0) {
+            const res = await supabase
+              .from('products')
+              .select('id, name, image_url, categories(name)')
+              .not('image_url', 'is', null)
+              .not('id', 'in', `(${excludeIds.join(',')})`)
+              .limit(needed)
+            fallbackData = res.data
+          } else {
+            const res = await supabase
+              .from('products')
+              .select('id, name, image_url, categories(name)')
+              .not('image_url', 'is', null)
+              .limit(needed)
+            fallbackData = res.data
+          }
+
+          if (fallbackData) {
+            result.push(
+              ...fallbackData.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                image_url: p.image_url,
+                category: Array.isArray(p.categories)
+                  ? p.categories[0]?.name || ''
+                  : p.categories?.name || '',
+              })),
+            )
+          }
+        }
+
+        setProducts(result)
       } finally {
         setIsLoadingProducts(false)
       }
@@ -1029,8 +1068,11 @@ export default function Navbar() {
         <div className="container mx-auto px-6 py-8">
           <div className="flex gap-8">
             <div className="flex-1 flex flex-col gap-4">
+              <span className="text-xs font-black uppercase tracking-widest text-matheo-red">
+                Destacados
+              </span>
               <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="grid grid-cols-1 mlg:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 mlg:grid-cols-2 xl:grid-cols-3 gap-4 mt-1">
                   {isLoadingProducts
                     ? Array.from({ length: 9 }).map((_, i) => (
                         <div
@@ -1085,7 +1127,7 @@ export default function Navbar() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                  Explora nuestra línea completa de herramientas
+                  Productos destacados de nuestra línea de herramientas
                   industriales y de precisión.
                 </p>
               </div>
@@ -1317,9 +1359,7 @@ export default function Navbar() {
                                           className="w-full h-full object-contain"
                                         />
                                       ) : (
-                                        <span className="text-base">
-                                          🔧
-                                        </span>
+                                        <div className="h-3 w-3 rounded-full bg-green-400 shadow-[0_0_8px_2px_rgba(74,222,128,0.6)]" />
                                       )}
                                     </div>
                                     <span className="font-medium">
