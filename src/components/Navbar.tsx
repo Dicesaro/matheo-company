@@ -16,6 +16,20 @@ import { cn, generateSlug } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
+interface NavProductRow {
+  id: string
+  name: string
+  image_url: string | null
+  categories: { name: string } | { name: string }[] | null
+}
+
+interface NavProduct {
+  id: string
+  name: string
+  image_url: string | null
+  category: string
+}
+
 const navItems = [
   { name: 'Productos', href: '/productos', hasMega: 'productos' },
   { name: 'Categorías', href: '/productos', hasMega: 'categorias' },
@@ -244,7 +258,7 @@ export default function Navbar() {
 
     async function fetchProductsData() {
       try {
-        let result: any[] = []
+        let result: NavProduct[] = []
 
         const { data: featuredData } = await supabase
           .from('products')
@@ -254,7 +268,7 @@ export default function Navbar() {
           .limit(12)
 
         if (featuredData) {
-          result = featuredData.map((p: any) => ({
+          result = featuredData.map((p: NavProductRow) => ({
             id: p.id,
             name: p.name,
             image_url: p.image_url,
@@ -267,7 +281,7 @@ export default function Navbar() {
         if (result.length < 12) {
           const needed = 12 - result.length
           const excludeIds = result.map((p) => p.id)
-          let fallbackData: any
+          let fallbackData: NavProductRow[] | null
 
           if (excludeIds.length > 0) {
             const res = await supabase
@@ -288,7 +302,7 @@ export default function Navbar() {
 
           if (fallbackData) {
             result.push(
-              ...fallbackData.map((p: any) => ({
+              ...fallbackData.map((p: NavProductRow) => ({
                 id: p.id,
                 name: p.name,
                 image_url: p.image_url,
@@ -781,7 +795,7 @@ export default function Navbar() {
                               {hasSub &&
                                 hoveredParentCat === cat.name && (
                                   <div
-                                    className="absolute left-full top-0 ml-1 min-w-[200px] bg-white border border-gray-200 shadow-2xl z-50 py-2"
+                                    className="absolute left-full top-0 ml-1 min-w-50 bg-white border border-gray-200 shadow-2xl z-50 py-2"
                                     onMouseEnter={() =>
                                       setHoveredParentCat(cat.name)
                                     }

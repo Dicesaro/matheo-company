@@ -76,8 +76,6 @@ export default function ProductsPage({
       : [],
   )
 
-  const [categorySearchTerm, setCategorySearchTerm] = useState('')
-  const [brandSearchTerm, setBrandSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [isDesktopView, setIsDesktopView] = useState(true)
   const [expandedFilters, setExpandedFilters] = useState({
@@ -313,8 +311,8 @@ export default function ProductsPage({
   const toggleBrand = useCallback(
     (brand: string) => {
       const updated = selectedBrands.includes(brand)
-        ? selectedBrands.filter((b) => b !== brand)
-        : [...selectedBrands, brand]
+        ? []
+        : [brand]
 
       setSelectedBrands(updated)
 
@@ -394,7 +392,7 @@ export default function ProductsPage({
         ) : (
           <div className="flex flex-col lg:flex-row gap-12">
             <aside className="hidden lg:block lg:w-80 shrink-0">
-              <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-32">
+              <div className="bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-32">
                 <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <SlidersHorizontal
@@ -430,30 +428,9 @@ export default function ProductsPage({
                       }))
                     }
                   >
-                    <div className="mb-4 relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-matheo-blue transition-colors" />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Buscar categoría..."
-                        value={categorySearchTerm}
-                        onChange={(e) =>
-                          setCategorySearchTerm(e.target.value)
-                        }
-                        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50/50 text-gray-600 placeholder-gray-400 appearance-none outline-none focus:border-gray-200"
-                      />
-                    </div>
                     <div className="space-y-1">
                       {dbCategories
                         .filter((cat) => !Object.values(subcategoryMap).flat().includes(cat))
-                        .filter((cat) =>
-                          cat
-                            .toLowerCase()
-                            .includes(
-                              categorySearchTerm.toLowerCase(),
-                            ),
-                        )
                         .map((parentName) => {
                           const children = subcategoryMap[parentName] || []
                           const isExpanded = expandedParent === parentName
@@ -498,11 +475,7 @@ export default function ProductsPage({
                                 }`}
                               >
                                 <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5 pt-0.5">
-                                  {children
-                                    .filter((child) =>
-                                      child.toLowerCase().includes(categorySearchTerm.toLowerCase()),
-                                    )
-                                    .map((child) => (
+                                  {children.map((child) => (
                                       <label
                                         key={child}
                                         className="flex items-center gap-2 group cursor-pointer py-1 rounded-lg hover:bg-gray-50 px-2"
@@ -538,40 +511,21 @@ export default function ProductsPage({
                       }))
                     }
                   >
-                    <div className="mb-4 relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-matheo-blue transition-colors" />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Buscar marca..."
-                        value={brandSearchTerm}
-                        onChange={(e) =>
-                          setBrandSearchTerm(e.target.value)
-                        }
-                        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50/50 text-gray-600 placeholder-gray-400 appearance-none outline-none focus:border-gray-200"
-                      />
-                    </div>
                     <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-                      {dbBrands
-                        .filter((brand) =>
-                          brand
-                            .toLowerCase()
-                            .includes(brandSearchTerm.toLowerCase()),
-                        )
-                        .map((brand) => (
+                      {dbBrands.map((brand) => (
                           <label
                             key={brand}
                             className="flex items-center gap-3 group cursor-pointer"
                           >
                             <div className="relative flex items-center">
                               <input
-                                type="checkbox"
+                                type="radio"
+                                name="brand"
                                 checked={selectedBrands.includes(
                                   brand,
                                 )}
                                 onChange={() => toggleBrand(brand)}
-                                className="w-5 h-5 text-matheo-blue rounded-md border-2 border-gray-200 focus:ring-matheo-blue transition-all"
+                                className="w-5 h-5 text-matheo-blue border-2 border-gray-200 focus:ring-matheo-blue transition-all"
                               />
                             </div>
                             <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
@@ -982,10 +936,11 @@ export default function ProductsPage({
                       className="flex items-center gap-3 group cursor-pointer py-1"
                     >
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name="brand-mobile"
                         checked={selectedBrands.includes(brand)}
                         onChange={() => toggleBrand(brand)}
-                        className="w-4 h-4 text-matheo-blue rounded-md border-2 border-gray-200 focus:ring-matheo-blue transition-all"
+                        className="w-4 h-4 text-matheo-blue border-2 border-gray-200 focus:ring-matheo-blue transition-all"
                       />
                       <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
                         {brand}
