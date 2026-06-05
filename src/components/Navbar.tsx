@@ -6,7 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  ArrowRight,
+
 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
@@ -31,8 +31,9 @@ interface NavProduct {
 }
 
 const navItems = [
-  { name: 'Productos', href: '/productos', hasMega: 'productos' },
+  { name: 'Productos', href: '/productos' },
   { name: 'Categorías', href: '/productos', hasMega: 'categorias' },
+  { name: 'Marcas', href: '#' },
   { name: 'Nosotros', href: '/nosotros' },
   { name: 'Contacto', href: '/contacto' },
   {
@@ -77,8 +78,9 @@ export default function Navbar() {
   >([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
   const [isLoadingProducts, setIsLoadingProducts] = useState(true)
-  const [activeMega, setActiveMega] = useState<string | null>(null)
+
   const [isCategoriasOpen, setIsCategoriasOpen] = useState(false)
+  const [isMarcasOpen, setIsMarcasOpen] = useState(false)
   const [hoveredParentCat, setHoveredParentCat] = useState<
     string | null
   >(null)
@@ -87,12 +89,14 @@ export default function Navbar() {
   >({})
   const [isMobileProdsOpen, setIsMobileProdsOpen] = useState(false)
   const [isMobileCatsOpen, setIsMobileCatsOpen] = useState(false)
+  const [isMobileMarcasOpen, setIsMobileMarcasOpen] = useState(false)
   const [expandedMobileCat, setExpandedMobileCat] = useState<
     string | null
   >(null)
   const [products, setProducts] = useState<
     { id: string; name: string; image_url: string | null; category: string }[]
   >([])
+  const [dbBrands, setDbBrands] = useState<{ name: string; image: string | null }[]>([])
 
   const promoMessages = [
     '🚀 Importador directo — sin intermediarios, mejor precio',
@@ -118,10 +122,10 @@ export default function Navbar() {
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const megaTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+  const catTimeout = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
-  const catTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+  const marcasTimeout = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
   const searchTimeoutRef = useRef<ReturnType<
@@ -136,7 +140,6 @@ export default function Navbar() {
   if (pathname !== prevLocation) {
     setPrevLocation(pathname)
     setIsOpen(false)
-    setActiveMega(null)
   }
 
   useEffect(() => {
@@ -244,6 +247,15 @@ export default function Navbar() {
             ),
           )
         }
+
+        const { data: brandsData } = await supabase
+          .from('brands')
+          .select('name, image_url')
+          .order('name')
+
+        if (brandsData) {
+          setDbBrands(brandsData.map((b) => ({ name: b.name, image: b.image_url ?? null })))
+        }
       } finally {
         setIsLoadingCategories(false)
       }
@@ -329,15 +341,6 @@ export default function Navbar() {
   }, [])
 
   const isHome = pathname === '/'
-
-  const handleMegaEnter = (target: string) => {
-    if (megaTimeout.current) clearTimeout(megaTimeout.current)
-    setActiveMega(target)
-  }
-
-  const handleMegaLeave = () => {
-    megaTimeout.current = setTimeout(() => setActiveMega(null), 150)
-  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -776,7 +779,6 @@ export default function Navbar() {
                                 href={`/productos/${generateSlug(cat.name)}`}
                                 onClick={() => {
                                   setIsCategoriasOpen(false)
-                                  setActiveMega(null)
                                 }}
                                 className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:text-matheo-blue transition-colors"
                               >
@@ -806,7 +808,6 @@ export default function Navbar() {
                                         href={`/productos/${generateSlug(sub.name)}`}
                                         onClick={() => {
                                           setIsCategoriasOpen(false)
-                                          setActiveMega(null)
                                         }}
                                         className="block px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-matheo-blue transition-colors"
                                       >
@@ -827,7 +828,6 @@ export default function Navbar() {
                           href="/productos"
                           onClick={() => {
                             setIsCategoriasOpen(false)
-                            setActiveMega(null)
                           }}
                           className="block px-3 py-2 text-sm font-semibold text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
                         >
@@ -839,6 +839,7 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+
           </div>
 
           {/* Center: Search Bar */}
@@ -972,43 +973,74 @@ export default function Navbar() {
             {navItems
               .filter((i) => i.name !== 'Categorías')
               .map((item) => {
-                if (item.hasMega) {
+                if (item.name === 'Marcas') {
                   return (
                     <div
                       key={item.name}
                       className="relative"
-                      onMouseEnter={() =>
-                        handleMegaEnter(item.hasMega!)
-                      }
-                      onMouseLeave={handleMegaLeave}
+                      onMouseEnter={() => {
+                        if (marcasTimeout.current) clearTimeout(marcasTimeout.current)
+                        setIsMarcasOpen(true)
+                      }}
+                      onMouseLeave={() => {
+                        marcasTimeout.current = setTimeout(() => {
+                          setIsMarcasOpen(false)
+                        }, 150)
+                      }}
                     >
-                      <Link
-                        href={item.href}
+                      <button
                         className={cn(
                           'flex items-center gap-1 text-gray-700 hover:text-matheo-red font-medium transition-colors relative group py-1',
-                          pathname === item.href &&
-                            'text-matheo-red',
+                          isMarcasOpen && 'text-matheo-red',
                         )}
                       >
-                        {item.name}
+                        Marcas
                         <ChevronDown
                           size={16}
                           className={cn(
                             'transition-transform duration-200',
-                            activeMega === item.hasMega
-                              ? 'rotate-180 text-matheo-red'
-                              : '',
+                            isMarcasOpen && 'rotate-180',
                           )}
                         />
-                        <span
-                          className={cn(
-                            'absolute bottom-0 left-0 h-0.5 bg-matheo-red transition-all group-hover:w-full',
-                            pathname === item.href
-                              ? 'w-full'
-                              : 'w-0',
-                          )}
-                        />
-                      </Link>
+                        <span className="absolute bottom-0 left-0 h-0.5 bg-matheo-red transition-all group-hover:w-full w-0" />
+                      </button>
+
+                      {isMarcasOpen && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 min-w-56 bg-white border border-gray-200 shadow-2xl z-50 py-2">
+                          {dbBrands.length === 0
+                            ? Array.from({ length: 5 }).map((_, i) => (
+                                <div
+                                  key={`brand-sk-${i}`}
+                                  className="h-8 mx-2 bg-gray-100 rounded-lg animate-pulse"
+                                />
+                              ))
+                            : dbBrands.map((brand) => (
+                                <Link
+                                  key={brand.name}
+                                  href={`/productos?brand=${encodeURIComponent(brand.name)}`}
+                                  onClick={() => setIsMarcasOpen(false)}
+                                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:text-matheo-blue hover:bg-blue-50 transition-colors"
+                                >
+                                  <div className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
+                                    {brand.image ? (
+                                      <Image
+                                        src={brand.image}
+                                        alt={brand.name}
+                                        width={24}
+                                        height={24}
+                                        className="w-full h-full object-contain"
+                                      />
+                                    ) : (
+                                      <span className="text-[10px] font-bold text-matheo-blue uppercase">
+                                        {brand.name.charAt(0)}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="font-medium truncate">{brand.name}</span>
+                                </Link>
+                              ))}
+                        </div>
+                      )}
                     </div>
                   )
                 }
@@ -1067,123 +1099,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── MEGA MENU: Productos ── */}
-      <div
-        onMouseEnter={() => handleMegaEnter('productos')}
-        onMouseLeave={handleMegaLeave}
-        className={cn(
-          'hidden mlg:block absolute left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-40 overflow-hidden transition-all duration-300 ease-in-out',
-          activeMega === 'productos'
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 -translate-y-2 pointer-events-none',
-        )}
-        style={{ top: '100%' }}
-      >
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex gap-8">
-            <div className="flex-1 flex flex-col gap-4">
-              <span className="text-xs font-black uppercase tracking-widest text-matheo-red">
-                Destacados
-              </span>
-              <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="grid grid-cols-1 mlg:grid-cols-2 xl:grid-cols-3 gap-4 mt-1">
-                  {isLoadingProducts
-                    ? Array.from({ length: 9 }).map((_, i) => (
-                        <div
-                          key={`prod-skeleton-${i}`}
-                          className="group relative flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 animate-pulse"
-                        >
-                          <div className="w-14 h-14 shrink-0 rounded-2xl bg-gray-200"></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                          </div>
-                        </div>
-                      ))
-                    : products.slice(0, 12).map((prod) => (
-                        <Link
-                          key={prod.id}
-                          href={`/producto/${generateSlug(prod.category)}/${generateSlug(prod.name)}`}
-                          onClick={() => setActiveMega(null)}
-                          className="group relative flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 hover:border-matheo-red/30 hover:bg-red-50/50 transition-all duration-300 hover:shadow-xl hover:shadow-red-900/5 hover:-translate-y-0.5"
-                        >
-                          <div className="w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center bg-white border border-gray-100 p-1.5 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300 overflow-hidden">
-                            {prod.image_url ? (
-                              <Image
-                                width={100}
-                                height={100}
-                                src={prod.image_url}
-                                alt={prod.name}
-                                className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
-                              />
-                            ) : (
-                              <span className="text-xl">🔧</span>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="block font-bold text-gray-800 text-sm group-hover:text-matheo-red transition-colors truncate leading-tight">
-                              {prod.name}
-                            </span>
-                          </div>
-                        </Link>
-                      ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="w-px bg-gray-100 self-stretch" />
-
-            <div className="w-52 shrink-0 flex flex-col justify-start gap-5">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-matheo-red">
-                    Productos
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                  Productos destacados de nuestra línea de herramientas
-                  industriales y de precisión.
-                </p>
-              </div>
-
-              <Link
-                href="/productos"
-                onClick={() => setActiveMega(null)}
-                className="group inline-flex items-center justify-center gap-2 w-full bg-matheo-red hover:bg-red-800 text-white font-bold text-sm py-3 px-5 rounded-xl transition-all shadow-md hover:shadow-lg"
-              >
-                Ver todos los productos
-                <ArrowRight
-                  size={16}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
-              </Link>
-
-              <a
-                href="/catalogo.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setActiveMega(null)}
-                className="group inline-flex items-center justify-center gap-2 w-full bg-white text-matheo-red border-2 border-matheo-red hover:bg-red-50 font-bold text-sm py-2.5 px-5 rounded-xl transition-all"
-              >
-                Descargar en PDF
-              </a>
-
-              <div className="mt-6 pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-400">
-                  <span className="font-bold text-matheo-red">
-                    {products.length}
-                  </span>{' '}
-                  productos destacados
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Importador y distribuidor de herramientas
-                  industriales
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
     </nav>
 
@@ -1421,6 +1336,70 @@ export default function Navbar() {
                               </div>
                             )
                           })}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            if (item.name === 'Marcas') {
+              return (
+                <div key={item.name}>
+                  <div className="flex items-center">
+                    <span className="flex-1 py-3 px-4 text-gray-700 font-medium">
+                      {item.name}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setIsMobileMarcasOpen(!isMobileMarcasOpen)
+                      }
+                      className="p-3 text-gray-500 hover:text-matheo-red transition-colors"
+                      aria-label="Ver marcas"
+                    >
+                      <ChevronDown
+                        size={18}
+                        className={cn(
+                          'transition-transform duration-300',
+                          isMobileMarcasOpen && 'rotate-180',
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  <div
+                    className={cn(
+                      'overflow-hidden transition-all duration-300',
+                      isMobileMarcasOpen
+                        ? 'max-h-150 mb-2'
+                        : 'max-h-0',
+                    )}
+                  >
+                    <div className="ml-4 pl-4 border-l-2 border-gray-200/60 space-y-1 py-2">
+                      {dbBrands.map((brand) => (
+                        <Link
+                          key={brand.name}
+                          href={`/productos?brand=${encodeURIComponent(brand.name)}`}
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-3 py-2 px-3 text-sm text-gray-600 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
+                            {brand.image ? (
+                              <Image
+                                src={brand.image}
+                                alt={brand.name}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <span className="text-[10px] font-bold text-matheo-blue uppercase">
+                                {brand.name.charAt(0)}
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-medium">{brand.name}</span>
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 </div>

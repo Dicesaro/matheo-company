@@ -13,37 +13,49 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          )
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           )
         },
       },
-    }
+    },
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
+  // Proteger todas las rutas /admin excepto /admin/login
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/admin/login'
-      return Response.redirect(url)
+      url.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(url)
     }
   }
 
+  // Si ya está autenticado y va al login, redirigir al dashboard
   if (pathname === '/admin/login' && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/admin'
-    return Response.redirect(url)
+    return NextResponse.redirect(url)
+  }
+
+  // Proteger el endpoint de subida de imágenes
+  if (pathname.startsWith('/api/upload') && !user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/upload'],
 }

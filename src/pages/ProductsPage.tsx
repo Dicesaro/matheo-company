@@ -16,6 +16,8 @@ import {
 import { cn, generateSlug, slugToCategory } from '../lib/utils'
 import { useCustomSearchParams } from '../hooks/useCustomSearchParams'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
 import { supabase } from '../lib/supabase'
 import CardProduct from '../components/CardProduct'
 import FilterSection from '../components/FilterSection'
@@ -76,7 +78,7 @@ export default function ProductsPage({
       : [],
   )
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isDesktopView, setIsDesktopView] = useState(true)
   const [expandedFilters, setExpandedFilters] = useState({
     categories: !!searchParams.get('category') || false,
@@ -500,7 +502,7 @@ export default function ProductsPage({
                   </FilterSection>
 
                   {/* Filtro Marca */}
-                  <FilterSection
+                  {/* <FilterSection
                     title="Marca"
                     icon={Tag}
                     isOpen={expandedFilters.brands}
@@ -534,7 +536,7 @@ export default function ProductsPage({
                           </label>
                         ))}
                     </div>
-                  </FilterSection>
+                  </FilterSection> */}
                 </div>
               </div>
             </aside>
@@ -713,9 +715,9 @@ export default function ProductsPage({
                 </div>
               )}
             </main>
-          </div>
+            </div>
+                 
         )}
-      </div>
 
       {/* ── MOBILE FILTER DRAWER ── */}
       <div className="lg:hidden">
@@ -969,6 +971,7 @@ export default function ProductsPage({
           )}
         </div>
       </div>
+    </div>
     </div>
   )
 }

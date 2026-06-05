@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { LogOut, Clock } from 'lucide-react'
 
-const SESSION_DURATION_MS = 60 * 60 * 1000
+const SESSION_DURATION_MS = 15 * 60 * 1000
 const CHECK_INTERVAL_MS = 30 * 1000
 
 export default function SessionGuard({ children }: { children: React.ReactNode }) {
@@ -18,10 +18,7 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
   const router = useRouter()
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    )
+    const supabase = getBrowserClient()
 
     let ended = false
 
@@ -33,19 +30,11 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
       setShowModal(true)
     }
 
-    async function init() {
-      const { data } = await supabase.auth.getSession()
-      const session = data.session
-
-      if (!session) {
-        router.push('/admin/login')
-        return
-      }
-
+    function init() {
       const storedLoginTime = sessionStorage.getItem('admin_session_start')
 
       if (!storedLoginTime) {
-        await endSession()
+        endSession()
         return
       }
 
@@ -54,7 +43,7 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
       const remaining = Math.max(0, SESSION_DURATION_MS - elapsed)
 
       if (remaining <= 0) {
-        await endSession()
+        endSession()
         return
       }
 
@@ -75,7 +64,7 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
       if (timerRef.current) clearTimeout(timerRef.current)
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [router])
+  }, [])
 
   const handleRedirect = () => {
     setShowModal(false)

@@ -4,6 +4,9 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useInView } from 'react-intersection-observer'
+import { generateSlug } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
+import CardProduct from '@/components/CardProduct'
 
 const categories = [
   {
@@ -58,9 +61,57 @@ const categories = [
   },
 ]
 
+const carouselItems = [
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780588617/Fresas_Espiga_Hero_cz49uo.png',
+    href: '/productos/fresa-espiga-carburada',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780588618/consum_tig_ei4alo.png',
+    href: '/productos/consumibles-tig',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780588617/perforadores_k5emyn.png',
+    href: '/productos/herramientas-de-taladrado',
+  },
+  {
+    image:
+      'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780588618/consum_mig_xzna7w.png',
+    href: '/productos/consumibles-mig-mag',
+  },
+]
+
+interface ProductItem {
+  id: string
+  name: string
+  slug: string
+  categorySlug: string
+  image: string
+  category: string
+  brand: string
+  description: string
+  price?: number
+  rating?: number
+}
+
 export default function FeaturedProducts() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsToShow, setItemsToShow] = useState(4)
+  const [currentIndex2, setCurrentIndex2] = useState(0)
+  const [itemsToShow2, setItemsToShow2] = useState(3)
+  const [productItems, setProductItems] = useState<ProductItem[]>([])
+  const [currentIdxProd, setCurrentIdxProd] = useState(0)
+  const [itemsToShowProd, setItemsToShowProd] = useState(4)
+  const [taladradoItems, setTaladradoItems] = useState<ProductItem[]>([])
+  const [currentIdxTal, setCurrentIdxTal] = useState(0)
+  const [itemsToShowTal, setItemsToShowTal] = useState(4)
+  const [insertosItems, setInsertosItems] = useState<ProductItem[]>([])
+  const [currentIdxIns, setCurrentIdxIns] = useState(0)
+  const [itemsToShowIns, setItemsToShowIns] = useState(4)
+  const [currentBanner, setCurrentBanner] = useState(0)
 
   const { ref: sectionRef, inView } = useInView({
     triggerOnce: true,
@@ -69,12 +120,144 @@ export default function FeaturedProducts() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) setItemsToShow(1)
-      else setItemsToShow(4)
+      if (window.innerWidth < 768) { setItemsToShow(1); setItemsToShow2(1); setItemsToShowProd(1); setItemsToShowTal(1); setItemsToShowIns(1) }
+      else { setItemsToShow(4); setItemsToShow2(3); setItemsToShowProd(4); setItemsToShowTal(4); setItemsToShowIns(4) }
     }
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    async function fetchProducts() {
+      const { data: catData } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('name', 'Fresas Rotativas')
+        .single()
+
+      if (!catData) return
+
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
+        .eq('category_id', catData.id)
+        .not('image_url', 'is', null)
+
+      if (data) {
+        setProductItems(
+          data
+            .filter((p: Record<string, unknown>) => {
+              const cat = p.categories as { name: string } | null
+              return cat?.name
+            })
+            .map((p: Record<string, unknown>) => ({
+            id: p.id as string,
+            name: p.name as string,
+            slug: generateSlug(p.name as string),
+            categorySlug: generateSlug((p.categories as { name: string }).name),
+            image: p.image_url as string,
+            category: (p.categories as { name: string }).name,
+            brand: (p.brands as { name: string } | null)?.name ?? '',
+            description: (p.description as string) ?? '',
+            price: (p.price as number) ?? undefined,
+            rating: (p.rating as number) ?? undefined,
+          }))
+        )
+      }
+    }
+    fetchProducts()
+  }, [])
+
+  useEffect(() => {
+    async function fetchTaladrado() {
+      const { data: parent } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('name', 'Herramientas de Taladrado')
+        .single()
+
+      if (!parent) return
+
+      const { data: children } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('parent_id', parent.id)
+
+      if (!children || children.length === 0) return
+
+      const childIds = children.map(c => c.id)
+
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
+        .in('category_id', childIds)
+        .not('image_url', 'is', null)
+
+      if (data) {
+        setTaladradoItems(
+          data
+            .filter((p: Record<string, unknown>) => {
+              const cat = p.categories as { name: string } | null
+              return cat?.name
+            })
+            .map((p: Record<string, unknown>) => ({
+            id: p.id as string,
+            name: p.name as string,
+            slug: generateSlug(p.name as string),
+            categorySlug: generateSlug((p.categories as { name: string }).name),
+            image: p.image_url as string,
+            category: (p.categories as { name: string }).name,
+            brand: (p.brands as { name: string } | null)?.name ?? '',
+            description: (p.description as string) ?? '',
+            price: (p.price as number) ?? undefined,
+            rating: (p.rating as number) ?? undefined,
+          }))
+        )
+      }
+    }
+    fetchTaladrado()
+  }, [])
+
+  useEffect(() => {
+    async function fetchInsertos() {
+      const { data: catData } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('name', 'Insertos para Torneado')
+        .single()
+
+      if (!catData) return
+
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
+        .eq('category_id', catData.id)
+        .not('image_url', 'is', null)
+
+      if (data) {
+        setInsertosItems(
+          data
+            .filter((p: Record<string, unknown>) => {
+              const cat = p.categories as { name: string } | null
+              return cat?.name
+            })
+            .map((p: Record<string, unknown>) => ({
+            id: p.id as string,
+            name: p.name as string,
+            slug: generateSlug(p.name as string),
+            categorySlug: generateSlug((p.categories as { name: string }).name),
+            image: p.image_url as string,
+            category: (p.categories as { name: string }).name,
+            brand: (p.brands as { name: string } | null)?.name ?? '',
+            description: (p.description as string) ?? '',
+            price: (p.price as number) ?? undefined,
+            rating: (p.rating as number) ?? undefined,
+          }))
+        )
+      }
+    }
+    fetchInsertos()
   }, [])
 
   useEffect(() => {
@@ -86,6 +269,13 @@ export default function FeaturedProducts() {
     }, 3000)
     return () => clearInterval(timer)
   }, [itemsToShow])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev === 0 ? 1 : 0))
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [])
 
   const maxIndex = Math.max(0, categories.length - itemsToShow)
 
@@ -101,26 +291,14 @@ export default function FeaturedProducts() {
     <section
       id="productos-destacados"
       ref={sectionRef}
-      className="py-16 md:py-20 bg-linear-to-b from-white to-gray-50 overflow-hidden"
+      className="py-8 overflow-hidden"
       style={{
         opacity: inView ? 1 : 0,
         transform: inView ? 'translateY(0)' : 'translateY(30px)',
         transition: 'opacity 0.8s ease, transform 0.8s ease',
       }}
     >
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="flex flex-col items-center text-center mb-10 md:mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-matheo-blue mb-3 flex items-center justify-center gap-3">   
-              Productos Destacados
-            </h2>
-            <p className="text-base md:text-xl text-gray-600 max-w-2xl">
-              Explora nuestras categorías más populares.
-            </p>
-          </div>
-        </div>
-
+      <div className="container mx-auto px-4 md:px-20">
         {/* Carousel */}
         <div className="relative">
           <button
@@ -138,9 +316,9 @@ export default function FeaturedProducts() {
             <ChevronRight size={18} />
           </button>
 
-          <div className="overflow-hidden mx-4 md:mx-0">
+          <div className="overflow-hidden mx-4 md:mx-0 ">
             <div
-              className="flex transition-transform duration-500 ease-out will-change-transform"
+              className="flex transition-transform duration-500 ease-out will-change-transform "
               style={{
                 transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`,
               }}
@@ -153,7 +331,7 @@ export default function FeaturedProducts() {
                 >
                   <Link
                     href={cat.href}
-                    className="group block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                    className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
                   >
                     <Image
                       src={cat.image}
@@ -162,6 +340,11 @@ export default function FeaturedProducts() {
                       height={400}
                       className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <span className="bg-white text-matheo-blue font-bold text-sm px-5 py-2 rounded-full shadow-lg hover:bg-matheo-blue hover:text-white transition-colors">
+                        Ver más
+                      </span>
+                    </div>
                   </Link>
                 </div>
               ))}
@@ -169,7 +352,7 @@ export default function FeaturedProducts() {
           </div>
 
           {/* Dots mobile */}
-          <div className="flex md:hidden justify-center gap-1.5 mt-5">
+          <div className="flex md:hidden justify-center gap-1.5 mt-3">
             {Array.from({
               length: categories.length - itemsToShow + 1,
             }).map((_, index) => (
@@ -186,17 +369,441 @@ export default function FeaturedProducts() {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Ver todos */}
-        <div className="text-center mt-10 md:mt-12">
-          <Link
-            href="/productos"
-            className="inline-flex items-center justify-center gap-2 text-matheo-blue font-bold px-8 py-3 rounded-full hover:bg-blue-50 transition-all border-2 border-transparent hover:border-blue-100"
+      {/* ── Second Carousel (2 columns) ── */}
+      <div className="container mx-auto px-4 mt-8 md:px-20">
+        <div className="relative">
+          <button
+            onClick={() =>
+              setCurrentIndex2((prev) =>
+                prev <= 0
+                  ? Math.max(0, carouselItems.length - itemsToShow2)
+                  : prev - 1,
+              )
+            }
+            className="absolute -left-3 md:-left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-12 md:h-12 rounded-full bg-white/90 shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
+            aria-label="Anterior"
           >
-            Ver todos los productos
-            <ArrowRight size={20} />
-          </Link>
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={() =>
+              setCurrentIndex2((prev) =>
+                prev >=
+                Math.max(0, carouselItems.length - itemsToShow2)
+                  ? 0
+                  : prev + 1,
+              )
+            }
+            className="absolute -right-3 md:-right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-12 md:h-12 rounded-full bg-white/90 shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
+            aria-label="Siguiente"
+          >
+            <ChevronRight size={18} />
+          </button>
+
+          <div className="overflow-hidden mx-4 md:mx-0">
+            <div
+              className="flex transition-transform duration-500 ease-out will-change-transform"
+              style={{
+                transform: `translateX(-${currentIndex2 * (100 / itemsToShow2)}%)`,
+              }}
+            >
+              {carouselItems.map((item, i) => (
+                <div
+                  key={i}
+                  className="shrink-0 px-2 md:px-3"
+                  style={{ width: `${100 / itemsToShow2}%` }}
+                >
+                  <Link
+                    href={item.href}
+                    className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <Image
+                      src={item.image}
+                      alt=""
+                      width={600}
+                      height={400}
+                      className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <span className="bg-white text-matheo-blue font-bold text-sm px-5 py-2 rounded-full shadow-lg hover:bg-matheo-blue hover:text-white transition-colors">
+                        Ver más
+                      </span>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dots mobile */}
+          <div className="flex md:hidden justify-center gap-1.5 mt-3">
+            {Array.from({
+              length: carouselItems.length - itemsToShow2 + 1,
+            }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex2(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex2
+                    ? 'w-6 bg-matheo-blue'
+                    : 'w-2 bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Ir al grupo ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* Banner */}
+      <div className="container mx-auto px-4 md:px-80 py-10">
+        <Link href="/productos" className="block">
+          <Image
+            src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780591953/banner_wasaaa_gdbljq.svg"
+            alt=""
+            width={1200}
+            height={200}
+            className="w-full h-auto object-contain rounded-xl"
+          />
+        </Link>
+      </div>
+
+      {/* ── Product Cards Carousel ── */}
+      {productItems.length > 0 && (
+        <section className="bg-white py-8 md:py-12">
+          <div className="container mx-auto px-4 md:px-20">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="w-full md:w-1/4">
+                <div className="flex flex-row md:flex-col items-center justify-center md:justify-start gap-3 md:gap-4 mb-4 md:mb-0">
+                  <div className="w-12 h-12 md:w-24 md:h-24 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
+                    <Image
+                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780695165/image-removebg-preview_12_h9k0vl.png"
+                      alt="Fresas"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-base md:text-xl font-bold text-matheo-blue uppercase text-center">
+                    Fresas
+                  </h3>
+                  <Link
+                    href="/productos/herramientas-de-fresado/fresas-rotativas"
+                    className="bg-matheo-red text-white font-semibold px-4 py-1.5 md:px-6 md:py-2.5 rounded-full hover:bg-matheo-red/90 transition-colors shadow-md text-xs md:text-base whitespace-nowrap"
+                  >
+                    Ver todo
+                  </Link>
+                </div>
+              </div>
+
+              <div className="w-full md:w-3/4 relative">
+                <button
+                  onClick={() =>
+                    setCurrentIdxProd((prev) =>
+                      prev <= 0
+                        ? Math.max(
+                            0,
+                            productItems.length - itemsToShowProd,
+                          )
+                        : prev - 1,
+                    )
+                  }
+                  className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentIdxProd((prev) =>
+                      prev >=
+                      Math.max(
+                        0,
+                        productItems.length - itemsToShowProd,
+                      )
+                        ? 0
+                        : prev + 1,
+                    )
+                  }
+                  className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
+                  aria-label="Siguiente"
+                >
+                  <ChevronRight size={18} />
+                </button>
+
+                <div className="overflow-hidden mx-4 md:mx-0">
+                  <div
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{
+                      transform: `translateX(-${currentIdxProd * (100 / itemsToShowProd)}%)`,
+                    }}
+                  >
+                    {productItems.map((p) => (
+                      <div
+                        key={p.id}
+                        className="shrink-0 px-2"
+                        style={{ width: `${100 / itemsToShowProd}%` }}
+                      >
+                        <CardProduct product={p} viewMode="grid" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Product Cards Carousel: Herramientas de Taladrado ── */}
+      {taladradoItems.length > 0 && (
+        <section className="bg-white py-8 md:py-12">
+          <div className="container mx-auto px-4 md:px-20">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="w-full md:w-1/4">
+                <div className="flex flex-row md:flex-col items-center justify-center md:justify-start gap-3 md:gap-4 mb-4 md:mb-0">
+                  <div className="w-12 h-12 md:w-24 md:h-24 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
+                    <Image
+                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780695162/CNC-drilling-2-1024x806_fg4kuc.jpg"
+                      alt="Taladrado"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-base md:text-xl font-bold text-matheo-blue uppercase text-center">
+                    Taladrado
+                  </h3>
+                  <Link
+                    href="/productos/herramientas-de-taladrado"
+                    className="bg-matheo-red text-white font-semibold px-4 py-1.5 md:px-6 md:py-2.5 rounded-full hover:bg-matheo-red/90 transition-colors shadow-md text-xs md:text-base whitespace-nowrap"
+                  >
+                    Ver todo
+                  </Link>
+                </div>
+              </div>
+
+              <div className="w-full md:w-3/4 relative">
+                <button
+                  onClick={() =>
+                    setCurrentIdxTal((prev) =>
+                      prev <= 0
+                        ? Math.max(
+                            0,
+                            taladradoItems.length - itemsToShowTal,
+                          )
+                        : prev - 1,
+                    )
+                  }
+                  className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentIdxTal((prev) =>
+                      prev >=
+                      Math.max(
+                        0,
+                        taladradoItems.length - itemsToShowTal,
+                      )
+                        ? 0
+                        : prev + 1,
+                    )
+                  }
+                  className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
+                  aria-label="Siguiente"
+                >
+                  <ChevronRight size={18} />
+                </button>
+
+                <div className="overflow-hidden mx-4 md:mx-0">
+                  <div
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{
+                      transform: `translateX(-${currentIdxTal * (100 / itemsToShowTal)}%)`,
+                    }}
+                  >
+                    {taladradoItems.map((p) => (
+                      <div
+                        key={p.id}
+                        className="shrink-0 px-2"
+                        style={{ width: `${100 / itemsToShowTal}%` }}
+                      >
+                        <CardProduct product={p} viewMode="grid" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Product Cards Carousel: Insertos para Torneado ── */}
+      {insertosItems.length > 0 && (
+        <section className="bg-white py-8 md:py-12">
+          <div className="container mx-auto px-4 md:px-20">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="w-full md:w-1/4">
+                <div className="flex flex-row md:flex-col items-center justify-center md:justify-start gap-3 md:gap-4 mb-4 md:mb-0">
+                  <div className="w-12 h-12 md:w-24 md:h-24 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
+                    <Image
+                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780695156/Apmt-Cnmg-Dnmg-Milling-Inserts-Metal-Lathe-Cutting-Tool_mfzvha.avif"
+                      alt="Torneado"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-base md:text-xl font-bold text-matheo-blue uppercase text-center">
+                    Torneado
+                  </h3>
+                  <Link
+                    href="/productos/herramientas-para-torneado/insertos-para-torneado"
+                    className="bg-matheo-red text-white font-semibold px-4 py-1.5 md:px-6 md:py-2.5 rounded-full hover:bg-matheo-red/90 transition-colors shadow-md text-xs md:text-base whitespace-nowrap"
+                  >
+                    Ver todo
+                  </Link>
+                </div>
+              </div>
+
+              <div className="w-full md:w-3/4 relative">
+                <button
+                  onClick={() =>
+                    setCurrentIdxIns((prev) =>
+                      prev <= 0
+                        ? Math.max(
+                            0,
+                            insertosItems.length - itemsToShowIns,
+                          )
+                        : prev - 1,
+                    )
+                  }
+                  className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentIdxIns((prev) =>
+                      prev >=
+                      Math.max(
+                        0,
+                        insertosItems.length - itemsToShowIns,
+                      )
+                        ? 0
+                        : prev + 1,
+                    )
+                  }
+                  className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
+                  aria-label="Siguiente"
+                >
+                  <ChevronRight size={18} />
+                </button>
+
+                <div className="overflow-hidden mx-4 md:mx-0">
+                  <div
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{
+                      transform: `translateX(-${currentIdxIns * (100 / itemsToShowIns)}%)`,
+                    }}
+                  >
+                    {insertosItems.map((p) => (
+                      <div
+                        key={p.id}
+                        className="shrink-0 px-2"
+                        style={{ width: `${100 / itemsToShowIns}%` }}
+                      >
+                        <CardProduct product={p} viewMode="grid" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Ver todos */}
+      <div className="text-center mt-6 md:mt-8">
+        <Link
+          href="/productos"
+          className="inline-flex items-center justify-center gap-2 bg-matheo-red hover:bg-red-700 text-white font-bold px-10 py-4 rounded-full transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl"
+        >
+          Ver todos los productos
+          <ArrowRight size={22} />
+        </Link>
+      </div>
+
+      {/* ── Banners animados ── */}
+      <div className="relative w-full max-w-5xl mx-auto h-64 md:h-80 flex items-center justify-center overflow-hidden">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, #e7e5e4 1px, transparent 1px),
+              linear-gradient(to bottom, #e7e5e4 1px, transparent 1px)
+            `,
+            backgroundSize: '20px 20px',
+            backgroundPosition: '0 0, 0 0',
+            maskImage: `
+              repeating-linear-gradient(to right, black 0px, black 3px, transparent 3px, transparent 8px),
+              repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
+              radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)
+            `,
+            WebkitMaskImage: `
+              repeating-linear-gradient(to right, black 0px, black 3px, transparent 3px, transparent 8px),
+              repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
+              radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)
+            `,
+            maskComposite: 'intersect',
+            WebkitMaskComposite: 'source-in',
+          }}
+        />
+        {[0, 1].map((i) => {
+          const items = [
+            {
+              url: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780616714/Banner_face_agao7d.svg',
+              href: 'https://www.facebook.com/IndustrialCompanyMatheo',
+            },
+            {
+              url: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780616714/banner_titkok_gvolif.svg',
+              href: 'https://www.tiktok.com/@industrialcompanymatheo',
+            },
+          ]
+          return (
+            <div
+              key={i}
+              className="absolute inset-0 flex items-center justify-center transition-opacity duration-1000"
+              style={{
+                opacity: currentBanner === i ? 1 : 0,
+                pointerEvents: currentBanner === i ? 'auto' : 'none',
+              }}
+            >
+              <a
+                href={items[i].href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-full flex items-center justify-center"
+              >
+                <Image
+                  src={items[i].url}
+                  alt=""
+                  width={800}
+                  height={300}
+                  className="w-full h-full object-contain"
+                />
+              </a>
+            </div>
+          )
+        })}
       </div>
     </section>
   )

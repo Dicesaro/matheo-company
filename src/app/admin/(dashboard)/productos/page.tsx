@@ -30,12 +30,7 @@ export default async function ProductsPage({
 
   const allCategories = cats || []
 
-  const idToName: Record<string, string> = {}
-  for (const c of allCategories) idToName[c.id] = c.name
-
-  const categoryName = categoria && categoria !== '__all__' && idToName[categoria]
-    ? idToName[categoria]
-    : null
+  const categoryName = categoria && categoria !== '__all__' ? categoria : null
 
   let filtered = q
     ? products.filter((p) =>
