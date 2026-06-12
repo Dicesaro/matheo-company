@@ -1,8 +1,9 @@
 import { Metadata } from 'next'
-import Hero from '../components/Hero'
-import FeaturedProducts from '../components/Products'
-import CategoryProducts from '../components/CategoryProducts'
-import EmailForm from '@/components/EmailForm'
+import Hero from '@/components/sections/Hero'
+import KeyPoints from '@/components/sections/KeyPoints'
+import FeaturedProducts from '@/components/sections/Products'
+import CategoryProducts from '@/components/sections/CategoryProducts'
+import EmailForm from '@/components/sections/EmailForm'
 
 export const metadata: Metadata = {
   title:
@@ -61,6 +62,7 @@ export default function Home() {
       />
       <Hero />
       <CategoryProducts />
+      <KeyPoints />
       <FeaturedProducts />
       <EmailForm />
     </>

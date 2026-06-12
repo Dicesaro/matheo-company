@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { generateSlug } from '../lib/utils'
-import { supabase } from '../lib/supabase'
+import { generateSlug } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 
 const categoryImages: Record<string, string> = {
   Abrasivos: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779142672/Gemini_Generated_Image_mddeymddeymddeym_cva2rm.png',
@@ -13,6 +13,7 @@ const categoryImages: Record<string, string> = {
   'Herramientas de Sujeción': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144016/HERRAMIENTAS_DE_SUJECION_cgnhby.png',
   'Herramientas de Taladrado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144394/Gemini_Generated_Image_vqr2dpvqr2dpvqr2_dtwjfv.png',
   'Herramientas para Torneado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144544/HERRAMIENTAS_DE_TORNEAR_r06qng.png',
+  'Herramientas Eléctricas': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780935442/Gemini_Generated_Image_vqwdghvqwdghvqwd_kh857w.png',
   Soldadura: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144885/SOLDADURA_qxvr8r.png',
 }
 
@@ -25,6 +26,7 @@ export default function CategoryProducts() {
   const [categories, setCategories] = useState<ParentCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [itemsToShow, setItemsToShow] = useState(6)
 
   useEffect(() => {
     async function fetchParentCategories() {
@@ -52,7 +54,26 @@ export default function CategoryProducts() {
     fetchParentCategories()
   }, [])
 
-  const itemsToShow = 6
+  useEffect(() => {
+    function handleResize() {
+      const width = window.innerWidth
+      let newItemsToShow
+      if (width < 640) newItemsToShow = 2
+      else if (width < 768) newItemsToShow = 3
+      else if (width < 1024) newItemsToShow = 4
+      else newItemsToShow = 6
+      setItemsToShow((prev) => {
+        if (prev !== newItemsToShow) {
+          setCurrentIndex(0)
+        }
+        return newItemsToShow
+      })
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const maxIndex = Math.max(0, categories.length - itemsToShow)
   const slideWidth = 100 / itemsToShow
 

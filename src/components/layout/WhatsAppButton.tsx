@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { cn } from '../lib/utils'
+import { cn } from '@/lib/utils'
 
 export default function WhatsAppButton() {
   const [isOpen, setIsOpen] = useState(false)

@@ -1,9 +1,8 @@
 // src/app/producto/[categoria]/[slug]/page.tsx
-
 import { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
 import { generateSlug } from '@/lib/utils'
-import ProductDetailPage from '@/pages/ProductDetailPage'
+import ProductDetailPage from '@/views/ProductDetailPage'
 
 interface PageProps {
   params: Promise<{ slug: string; categoria: string }>

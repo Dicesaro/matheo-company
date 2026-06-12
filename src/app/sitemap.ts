@@ -34,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // ── Categorías ───────────────────────────────────────────────────
-  let categoryRoutes: MetadataRoute.Sitemap = []
+  const categoryRoutes: MetadataRoute.Sitemap = []
   try {
     const { data: categories } = await supabase
       .from('categories')

@@ -13,14 +13,14 @@ import {
   Tag,
   X,
 } from 'lucide-react'
-import { cn, generateSlug, slugToCategory } from '../lib/utils'
-import { useCustomSearchParams } from '../hooks/useCustomSearchParams'
+import { cn, generateSlug, slugToCategory } from '@/lib/utils'
+import { useCustomSearchParams } from '@/hooks/useCustomSearchParams'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { supabase } from '../lib/supabase'
-import CardProduct from '../components/CardProduct'
-import FilterSection from '../components/FilterSection'
+import { supabase } from '@/lib/supabase'
+import CardProduct from '@/components/sections/products/CardProduct'
+import FilterSection from '@/components/sections/products/FilterSection'
 
 interface ProductsPageProps {
   categorySlug?: string
@@ -153,8 +153,12 @@ export default function ProductsPage({
               if (childrenOf[resolved]) {
                 setExpandedParent(resolved)
               } else {
-                setSelectedCategories([resolved])
+                const parentName = Object.entries(childrenOf).find(([, children]) =>
+                  children.includes(resolved)
+                )?.[0]
+                if (parentName) setExpandedParent(parentName)
               }
+              setSelectedCategories([resolved])
             }
           }
         }
@@ -345,12 +349,12 @@ export default function ProductsPage({
     : 'Catálogo completo de herramientas industriales metalmecánicas en Perú: brocas, machos de roscado, fresas e insertos. Importación directa y distribución al por mayor y menor.'
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pt-32 md:pt-40 pb-20">
+    <div className="min-h-screen bg-gray-50/30 pt-36 md:pt-44 pb-20">
       <div className="container mx-auto px-4">
         {loading ? (
           <div className="flex flex-col lg:flex-row gap-12">
             <aside className="hidden lg:block lg:w-80 shrink-0">
-              <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-32 animate-pulse">
+              <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-36 animate-pulse">
                 <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100">
                   <div className="h-6 bg-gray-200 rounded w-2/3"></div>
                 </div>
@@ -394,7 +398,7 @@ export default function ProductsPage({
         ) : (
           <div className="flex flex-col lg:flex-row gap-12">
             <aside className="hidden lg:block lg:w-80 shrink-0">
-              <div className="bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-32">
+              <div className="bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-y-auto sticky top-36 max-h-[calc(100vh-8rem)]">
                 <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <SlidersHorizontal
@@ -471,11 +475,11 @@ export default function ProductsPage({
                                   </span>
                                 )}
                               </button>
-                              <div
-                                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                  isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                                }`}
-                              >
+                            <div
+                              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                isExpanded ? 'max-h-[9999px] opacity-100' : 'max-h-0 opacity-0'
+                              }`}
+                            >
                                 <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5 pt-0.5">
                                   {children.map((child) => (
                                       <label
@@ -787,14 +791,14 @@ export default function ProductsPage({
                 />
               </button>
 
-              <div
-                className={cn(
-                  'overflow-hidden transition-all duration-200',
-                  expandedFilters.categories
-                    ? 'max-h-96 pb-2'
-                    : 'max-h-0',
-                )}
-              >
+                  <div
+                    className={cn(
+                      'overflow-hidden transition-all duration-200',
+                      expandedFilters.categories
+                        ? 'max-h-[9999px] pb-2'
+                        : 'max-h-0',
+                    )}
+                  >
                 <div className="space-y-0.5">
                   {dbCategories
                     .filter(
@@ -887,68 +891,6 @@ export default function ProductsPage({
                         </div>
                       )
                     })}
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-100 my-2" />
-
-            {/* ── Marcas ── */}
-            <div className="mb-4">
-              <button
-                onClick={() =>
-                  setExpandedFilters((p) => ({
-                    ...p,
-                    brands: !p.brands,
-                  }))
-                }
-                className="w-full flex items-center justify-between py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <Tag
-                    size={20}
-                    className="text-matheo-blue"
-                    strokeWidth={1.5}
-                  />
-                  <span className="font-bold text-gray-900">
-                    Marca
-                  </span>
-                </div>
-                <ChevronDown
-                  size={18}
-                  className={cn(
-                    'text-gray-400 transition-transform duration-200',
-                    expandedFilters.brands && 'rotate-180',
-                  )}
-                />
-              </button>
-
-              <div
-                className={cn(
-                  'overflow-hidden transition-all duration-200',
-                  expandedFilters.brands
-                    ? 'max-h-96 pb-2'
-                    : 'max-h-0',
-                )}
-              >
-                <div className="space-y-2">
-                  {dbBrands.map((brand) => (
-                    <label
-                      key={brand}
-                      className="flex items-center gap-3 group cursor-pointer py-1"
-                    >
-                      <input
-                        type="radio"
-                        name="brand-mobile"
-                        checked={selectedBrands.includes(brand)}
-                        onChange={() => toggleBrand(brand)}
-                        className="w-4 h-4 text-matheo-blue border-2 border-gray-200 focus:ring-matheo-blue transition-all"
-                      />
-                      <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
-                        {brand}
-                      </span>
-                    </label>
-                  ))}
                 </div>
               </div>
             </div>

@@ -9,8 +9,8 @@ import {
   Loader2,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { cn, generateSlug } from '../lib/utils'
-import { supabase } from '../lib/supabase'
+import { cn, generateSlug } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 
 interface Product {
   id: string
@@ -120,7 +120,7 @@ export default function ProductDetailPage({
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-32 pb-20">
+      <div className="min-h-screen bg-gray-50 pt-36 pb-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-3xl font-bold text-gray-800 mb-4">
             Producto no encontrado
@@ -160,7 +160,7 @@ export default function ProductDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-white pt-24 md:pt-40 pb-20">
+    <div className="min-h-screen bg-white pt-28 md:pt-44 pb-20">
       <div className="container mx-auto px-4 max-w-6xl pt-10 md:pt-0">
         {/* Breadcrumb */}
         <div className="mb-6">

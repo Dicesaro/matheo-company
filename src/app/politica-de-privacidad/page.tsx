@@ -1,2 +1,2 @@
-import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage';
+import PrivacyPolicyPage from '@/views/PrivacyPolicyPage';
 export default function Page() { return <PrivacyPolicyPage />; }

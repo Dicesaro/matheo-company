@@ -1,13 +1,13 @@
 'use client'
 import { usePathname } from 'next/navigation'
 import { Suspense } from 'react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import WhatsAppButton from '@/components/WhatsAppButton'
-import ScrollToTop from '@/components/ScrollToTop'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
+import WhatsAppButton from '@/components/layout/WhatsAppButton'
+import ScrollToTop from '@/components/layout/ScrollToTop'
 
 function NavbarPlaceholder() {
-  return <div className="h-20 bg-gray-100" />
+  return <div className="h-36 bg-gray-100" />
 }
 
 // Rutas en las que NO se debe mostrar el Navbar, Footer ni WhatsApp

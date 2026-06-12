@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
 import { Suspense } from 'react'
 import { slugToCategory } from '@/lib/utils'
-import ProductsPage from '@/pages/ProductsPage'
+import ProductsPage from '@/views/ProductsPage'
 
 interface PageProps {
   params: Promise<{ categoria: string; subcategoria: string }>

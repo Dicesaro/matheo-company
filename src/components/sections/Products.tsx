@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useInView } from 'react-intersection-observer'
 import { generateSlug } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
-import CardProduct from '@/components/CardProduct'
+import CardProduct from '@/components/sections/products/CardProduct'
 
 const categories = [
   {
@@ -331,7 +331,7 @@ export default function FeaturedProducts() {
                 >
                   <Link
                     href={cat.href}
-                    className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                    className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 rounded-xl"
                   >
                     <Image
                       src={cat.image}
@@ -417,7 +417,7 @@ export default function FeaturedProducts() {
                 >
                   <Link
                     href={item.href}
-                    className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                    className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 rounded-xl"
                   >
                     <Image
                       src={item.image}

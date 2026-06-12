@@ -13,7 +13,7 @@ export default function AdminLayout({
   return (
     <>
       {children}
-      <Toaster />
+      <Toaster/>
     </>
   )
 }

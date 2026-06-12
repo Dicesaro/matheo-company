@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react' // ← agregar
-import ProductsPage from '@/pages/ProductsPage'
+import ProductsPage from '@/views/ProductsPage'
 
 export const metadata: Metadata = {
   title: 'Catálogo de Herramientas Industriales en Perú | MATHEO',

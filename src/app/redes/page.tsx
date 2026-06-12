@@ -1,2 +1,2 @@
-import RedesPage from '@/pages/RedesPage'
+import RedesPage from '@/views/RedesPage'
 export default function Page() { return <RedesPage /> }

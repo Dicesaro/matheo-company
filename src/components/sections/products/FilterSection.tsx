@@ -1,6 +1,6 @@
 'use client'
 import { ChevronDown } from 'lucide-react'
-import { cn } from '../lib/utils'
+import { cn } from '@/lib/utils'
 
 interface FilterSectionProps {
   title: string
@@ -42,7 +42,7 @@ export default function FilterSection({
       <div
         className={cn(
           'relative transition-all duration-300 ease-in-out overflow-hidden',
-          isOpen ? 'max-h-150 pb-6' : 'max-h-0',
+          isOpen ? 'max-h-[9999px] pb-6' : 'max-h-0',
         )}
       >
         {children}
