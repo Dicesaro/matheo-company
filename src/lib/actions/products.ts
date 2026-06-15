@@ -1,8 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { ZodError } from 'zod'
 import { createClient } from '@/lib/supabase-server'
 import { getMutationClient } from '@/lib/supabase-admin'
+import { productPayloadSchema } from '@/lib/schemas/product'
 
 export async function getProducts() {
   const supabase = await createClient()
@@ -47,12 +49,8 @@ export async function createProduct(formData: FormData) {
   const specifications = formData.get('specifications') as string
   const imagesGallery = formData.get('images_gallery') as string
 
-  if (!name?.trim()) {
-    return { error: 'El nombre es requerido' }
-  }
-
   const payload: Record<string, unknown> = {
-    name: name.trim(),
+    name: name?.trim() || '',
     description: description?.trim() || null,
     long_description: longDescription?.trim() || null,
     category_id: categoryId || null,
@@ -62,9 +60,8 @@ export async function createProduct(formData: FormData) {
     discount: discount ? Number(discount) : null,
     rating: rating ? Number(rating) : null,
     featured,
+    image_url: imageUrl || null,
   }
-
-  if (imageUrl) payload.image_url = imageUrl
 
   try {
     if (features) payload.features = JSON.parse(features)
@@ -74,6 +71,16 @@ export async function createProduct(formData: FormData) {
     if (imagesGallery) payload.images_gallery = JSON.parse(imagesGallery)
   } catch {
     return { error: 'Error al procesar los datos del formulario' }
+  }
+
+  try {
+    productPayloadSchema.parse(payload)
+  } catch (e) {
+    if (e instanceof ZodError) {
+      const firstError = e.issues[0]
+      return { error: firstError?.message || 'Datos inválidos' }
+    }
+    return { error: 'Datos inválidos' }
   }
 
   const { error } = await supabase.from('products').insert(payload)
@@ -104,12 +111,8 @@ export async function updateProduct(id: string, formData: FormData) {
   const specifications = formData.get('specifications') as string
   const imagesGallery = formData.get('images_gallery') as string
 
-  if (!name?.trim()) {
-    return { error: 'El nombre es requerido' }
-  }
-
   const payload: Record<string, unknown> = {
-    name: name.trim(),
+    name: name?.trim() || '',
     description: description?.trim() || null,
     long_description: longDescription?.trim() || null,
     category_id: categoryId || null,
@@ -119,9 +122,8 @@ export async function updateProduct(id: string, formData: FormData) {
     discount: discount ? Number(discount) : null,
     rating: rating ? Number(rating) : null,
     featured,
+    image_url: imageUrl || null,
   }
-
-  if (imageUrl) payload.image_url = imageUrl
 
   try {
     if (features) payload.features = JSON.parse(features)
@@ -136,6 +138,16 @@ export async function updateProduct(id: string, formData: FormData) {
     else payload.images_gallery = []
   } catch {
     return { error: 'Error al procesar los datos del formulario' }
+  }
+
+  try {
+    productPayloadSchema.parse(payload)
+  } catch (e) {
+    if (e instanceof ZodError) {
+      const firstError = e.issues[0]
+      return { error: firstError?.message || 'Datos inválidos' }
+    }
+    return { error: 'Datos inválidos' }
   }
 
   const { error } = await supabase

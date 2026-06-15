@@ -28,7 +28,7 @@ const slides: Slide[] = [
     title: 'HERRAMIENTAS DE FRESADO',
     subtitle: 'Herramientas de Corte de Alto Rendimiento y Precisión',
     description:
-      'Venta y distribución de fresas de carburo de tungsteno y acero rápido (HSS). La mejor calidad para acabados de precisión en metalmecánica en todo el Perú. Contamos con las mejores marcas y asesoramiento técnico especializado.',
+      'Venta y distribución de fresas de carburo de tungsteno y acero rápido (HSS). La mejor calidad para acabados de precisión en metalmecánica en todo el Perú.',
     buttonText: 'Ver Catálogo',
     buttonLink: '/productos/herramientas-de-fresado',
     backgroundImage:

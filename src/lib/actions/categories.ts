@@ -1,8 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { ZodError } from 'zod'
 import { createClient } from '@/lib/supabase-server'
 import { getMutationClient } from '@/lib/supabase-admin'
+import { categoryPayloadSchema } from '@/lib/schemas/category'
 
 export async function getCategories() {
   const supabase = await createClient()
@@ -19,16 +21,29 @@ export async function createCategory(formData: FormData) {
   const supabase = await getMutationClient()
   const name = formData.get('name') as string
   const parentId = formData.get('parent_id') as string
-
-  if (!name?.trim()) {
-    return { error: 'El nombre es requerido' }
-  }
+  const image_url = formData.get('image_url') as string
 
   const resolvedParentId = !parentId || parentId === '__none__' ? null : parentId
 
+  const payload = {
+    name: name?.trim() || '',
+    parent_id: resolvedParentId,
+    image_url: image_url || null,
+  }
+
+  try {
+    categoryPayloadSchema.parse(payload)
+  } catch (e) {
+    if (e instanceof ZodError) {
+      const firstError = e.issues[0]
+      return { error: firstError?.message || 'Datos inválidos' }
+    }
+    return { error: 'Datos inválidos' }
+  }
+
   const { error } = await supabase
     .from('categories')
-    .insert({ name: name.trim(), parent_id: resolvedParentId })
+    .insert(payload)
 
   if (error) {
     if (error.code === '23505') return { error: 'Esta categoría ya existe' }
@@ -43,16 +58,29 @@ export async function updateCategory(id: string, formData: FormData) {
   const supabase = await getMutationClient()
   const name = formData.get('name') as string
   const parentId = formData.get('parent_id') as string
-
-  if (!name?.trim()) {
-    return { error: 'El nombre es requerido' }
-  }
+  const image_url = formData.get('image_url') as string
 
   const resolvedParentId = !parentId || parentId === '__none__' ? null : parentId
 
+  const payload = {
+    name: name?.trim() || '',
+    parent_id: resolvedParentId,
+    image_url: image_url || null,
+  }
+
+  try {
+    categoryPayloadSchema.parse(payload)
+  } catch (e) {
+    if (e instanceof ZodError) {
+      const firstError = e.issues[0]
+      return { error: firstError?.message || 'Datos inválidos' }
+    }
+    return { error: 'Datos inválidos' }
+  }
+
   const { error } = await supabase
     .from('categories')
-    .update({ name: name.trim(), parent_id: resolvedParentId })
+    .update(payload)
     .eq('id', id)
 
   if (error) {
@@ -61,6 +89,7 @@ export async function updateCategory(id: string, formData: FormData) {
   }
 
   revalidatePath('/admin/categorias')
+  revalidatePath(`/admin/categorias/${id}`)
   return { success: true }
 }
 

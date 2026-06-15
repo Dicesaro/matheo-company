@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { v2 as cloudinary } from 'cloudinary'
+import { createClient } from '@/lib/supabase-server'
 
 cloudinary.config({
   cloud_name: process.env.NEXT_CLOUDINARY_CLOUD_NAME,
@@ -7,8 +8,19 @@ cloudinary.config({
   api_secret: process.env.NEXT_CLOUDINARY_API_SECRET,
 })
 
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+
 export async function POST(request: Request) {
   try {
+    // 1. Verificar autenticación
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    // 2. Validar archivo
     const formData = await request.formData()
     const file = formData.get('file') as File | null
 
@@ -16,6 +28,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se encontró el archivo' }, { status: 400 })
     }
 
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: 'Tipo de archivo no permitido. Solo JPEG, PNG y WebP' },
+        { status: 400 }
+      )
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'Archivo demasiado grande (máx 5MB)' },
+        { status: 400 }
+      )
+    }
+
+    // 3. Subir a Cloudinary
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 

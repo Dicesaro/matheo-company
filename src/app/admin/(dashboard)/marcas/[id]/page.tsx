@@ -44,7 +44,7 @@ export default async function EditBrandPage({
         </CardHeader>
         <CardContent className="p-6">
           <FormWrapper
-            action={(formData) => updateBrand(id, formData)}
+            action={updateBrand.bind(null, id)}
             redirectOnSuccess="/admin/marcas"
           >
             <div className="space-y-4">

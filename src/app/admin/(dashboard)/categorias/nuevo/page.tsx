@@ -46,6 +46,17 @@ export default async function NewCategoryPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="image_url" className="text-gray-700">URL de imagen</Label>
+                <Input
+                  id="image_url"
+                  name="image_url"
+                  placeholder="https://..."
+                  className="border-gray-200 focus-visible:ring-matheo-red"
+                />
+                <p className="text-xs text-gray-400">URL de la imagen representativa de la categoría</p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="parent_id" className="text-gray-700">Categoría padre</Label>
                 <Select name="parent_id">
                   <SelectTrigger className="border-gray-200 focus-visible:ring-matheo-red">

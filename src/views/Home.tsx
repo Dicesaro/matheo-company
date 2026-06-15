@@ -61,8 +61,8 @@ export default function Home() {
         }}
       />
       <Hero />
-      <CategoryProducts />
       <KeyPoints />
+      <CategoryProducts />
       <FeaturedProducts />
       <EmailForm />
     </>

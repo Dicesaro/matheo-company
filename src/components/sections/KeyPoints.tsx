@@ -20,7 +20,7 @@ export default function KeyPoints() {
   }, [])
 
   return (
-    <section className="bg-matheo-red py-6 md:py-8">
+    <section className=" py-6 md:py-14">
       <div className="container mx-auto px-4">
         {/* Mobile: carousel */}
         <div className="flex md:hidden justify-center overflow-hidden relative h-24 w-full">
@@ -40,12 +40,12 @@ export default function KeyPoints() {
                   opacity: i === current ? 1 : 0,
                 }}
               >
-                <Icon size={48} className="text-white shrink-0" />
+                <Icon size={48} className="text-matheo-red shrink-0" />
                 <div className="text-left">
-                  <p className="text-lg font-bold text-white leading-tight whitespace-nowrap">
+                  <p className="text-lg font-bold text-matheo-red leading-tight whitespace-nowrap">
                     {item.line1}
                   </p>
-                  <p className="text-lg font-bold text-white leading-tight whitespace-nowrap">
+                  <p className="text-lg font-bold text-matheo-red leading-tight whitespace-nowrap">
                     {item.line2}
                   </p>
                 </div>
@@ -61,14 +61,14 @@ export default function KeyPoints() {
             return (
               <div
                 key={i}
-                className="flex items-center gap-3 px-8 xl:px-12 border-l border-white/30 first:border-l-0"
+                className="flex items-center gap-3 px-8 xl:px-12 border-l border-matheo-red first:border-l-0"
               >
-                <Icon size={36} className="text-white shrink-0" />
+                <Icon size={36} className="text-matheo-red shrink-0" />
                 <div className="text-left">
-                  <p className="text-sm xl:text-base font-semibold text-white leading-tight whitespace-nowrap">
+                  <p className="text-sm xl:text-base font-semibold text-matheo-red leading-tight whitespace-nowrap">
                     {item.line1}
                   </p>
-                  <p className="text-sm xl:text-base font-semibold text-white leading-tight whitespace-nowrap">
+                  <p className="text-sm xl:text-base font-semibold text-matheo-red leading-tight whitespace-nowrap">
                     {item.line2}
                   </p>
                 </div>

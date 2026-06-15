@@ -6,11 +6,9 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Loader2,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { cn, generateSlug } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 interface Product {
   id: string
@@ -30,72 +28,14 @@ interface Product {
 }
 
 interface ProductDetailPageProps {
-  slug: string
-  categoria: string
+  product: Product | null
 }
 
 export default function ProductDetailPage({
-  slug,
-  categoria,
+  product,
 }: ProductDetailPageProps) {
-  //   const pathname = usePathname()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState<'info' | 'specs'>('info')
-
-  useEffect(() => {
-    async function fetchProduct() {
-      if (!slug) return
-      setLoading(true)
-      try {
-        // Obtenemos todos los productos y buscamos por slug generado del nombre
-        const { data, error } = await supabase
-          .from('products')
-          .select(
-            `
-            *,
-            categories (name),
-            brands (name)
-          `,
-          )
-
-        if (error) throw error
-
-        // Encontrar el producto cuyo slug coincide con la URL
-        const match = data?.find(
-          (item) => generateSlug(item.name) === slug,
-        )
-
-        if (match) {
-          setProduct({
-            id: match.id,
-            name: match.name,
-            description: match.description,
-            longDescription: match.long_description,
-            category: match.categories?.name || 'General',
-            categorySlug: generateSlug(
-              match.categories?.name || 'General',
-            ),
-            brand: match.brands?.name || 'Varios',
-            image: match.image_url,
-            images: match.images_gallery || [match.image_url],
-            features: match.features || [],
-            benefits: match.benefits || [],
-            specifications: match.specifications || [],
-            workMaterials: match.work_materials || [],
-            rating: match.rating,
-          })
-        }
-      } catch (error) {
-        console.error('Error fetching product:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProduct()
-  }, [slug])
 
   useEffect(() => {
     if (!product || product.images.length <= 1) return
@@ -106,17 +46,6 @@ export default function ProductDetailPage({
 
     return () => clearInterval(interval)
   }, [product, selectedImage])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 text-matheo-blue animate-spin mb-4" />
-        <p className="text-gray-500 font-medium">
-          Cargando detalles del producto...
-        </p>
-      </div>
-    )
-  }
 
   if (!product) {
     return (
@@ -180,7 +109,7 @@ export default function ProductDetailPage({
             </Link>
             <span className="text-gray-400">›</span>
             <Link
-              href={`/productos/${categoria}`}
+              href={`/productos/${product.categorySlug}`}
               className="text-matheo-blue hover:underline transition-colors"
             >
               {product.category}

@@ -33,7 +33,7 @@ interface NavProduct {
 const navItems = [
   { name: 'Inicio', href: '/' },
   { name: 'Productos', href: '/productos' },
-  { name: 'Categorías', href: '/productos', hasMega: 'categorias' },
+  { name: 'Categorías', href: '/categorias', hasMega: 'categorias' },
   { name: 'Marcas', href: '/marcas' },
   { name: 'Favoritos', href: '/favoritos' },
   { name: 'Nosotros', href: '/nosotros' },
@@ -77,7 +77,6 @@ export default function Navbar() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(true)
 
   const [isCategoriasOpen, setIsCategoriasOpen] = useState(false)
-  const [isMarcasOpen, setIsMarcasOpen] = useState(false)
   const [hoveredParentCat, setHoveredParentCat] = useState<
     string | null
   >(null)
@@ -96,9 +95,6 @@ export default function Navbar() {
   const [dbBrands, setDbBrands] = useState<{ name: string; image: string | null }[]>([])
 
   const catTimeout = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  )
-  const marcasTimeout = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
   const searchTimeoutRef = useRef<ReturnType<
@@ -965,7 +961,7 @@ export default function Navbar() {
                               <hr className="my-2 mx-2 border-gray-100" />
                               <div className="px-2">
                                 <Link
-                                  href="/productos"
+                                  href="/categorias"
                                   onClick={() => {
                                     setIsCategoriasOpen(false)
                                   }}

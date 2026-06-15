@@ -99,6 +99,25 @@ export default async function Page({ params }: PageProps) {
       }
     : null
 
+  const product = match
+    ? {
+        id: match.id,
+        name: match.name,
+        description: match.description,
+        longDescription: match.long_description,
+        category: match.categories?.name || 'General',
+        categorySlug: generateSlug(match.categories?.name || 'General'),
+        brand: match.brands?.name || 'Varios',
+        image: match.image_url,
+        images: match.images_gallery || [match.image_url],
+        features: match.features || [],
+        benefits: match.benefits || [],
+        specifications: match.specifications || [],
+        workMaterials: match.work_materials || [],
+        rating: match.rating,
+      }
+    : null
+
   return (
     <>
       {structuredData && (
@@ -109,7 +128,7 @@ export default async function Page({ params }: PageProps) {
           }}
         />
       )}
-      <ProductDetailPage slug={slug} categoria={categoria} />
+      <ProductDetailPage product={product} />
     </>
   )
 }
