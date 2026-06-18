@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
 import CategoriesCarousel from '@/components/sections/CategoriesCarousel'
 
+export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Categorías - Industrial Company Matheo',
   description:
