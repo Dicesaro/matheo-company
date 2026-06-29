@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { Suspense } from 'react'
 import { slugToCategory } from '@/lib/utils'
 import ProductsPage from '@/views/ProductsPage'
+import { getCatalogData } from '@/lib/queries'
 
 interface PageProps {
   params: Promise<{ categoria: string; subcategoria: string }>
@@ -46,9 +47,19 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { categoria, subcategoria } = await params
+  const { allCategories, allBrands, allProducts, parentNameMap } =
+    await getCatalogData()
+
   return (
     <Suspense fallback={null}>
-      <ProductsPage categorySlug={categoria} subcategorySlug={subcategoria} />
+      <ProductsPage
+        categorySlug={categoria}
+        subcategorySlug={subcategoria}
+        initialProducts={allProducts}
+        initialCategories={allCategories}
+        initialBrands={allBrands}
+        initialParentNameMap={parentNameMap}
+      />
     </Suspense>
   )
 }

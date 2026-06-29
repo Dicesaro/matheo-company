@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import "./globals.css";
 import AppShell from '@/components/layout/AppShell';
+import { GoogleTagManager } from '@next/third-parties/google';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -20,10 +21,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID || "";
+
   return (
     <html lang="es" className={plusJakarta.variable}>
       <body className="antialiased font-sans">
         <AppShell>{children}</AppShell>
+        {gtmId && <GoogleTagManager gtmId={gtmId} />}
       </body>
     </html>
   );

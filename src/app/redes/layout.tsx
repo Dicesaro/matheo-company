@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Nuestras Redes | MATHEO Industrial Company',
+  title: 'Nuestras Redes | Industrial Company MATHEO',
   description:
     'Síguenos en nuestras redes sociales y contáctanos por WhatsApp para asesoría técnica en herramientas industriales.',
   robots: 'noindex, nofollow',

@@ -49,14 +49,13 @@ export default function Footer() {
           src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
           width={200}
           height={20}
-          alt="MATHEO Industrial Company"
+          alt="Industrial Company MATHEO"
           className="h-16 w-auto brightness-0 invert"
         />
       </div>
       <p className="text-gray-400 mb-5 leading-relaxed text-sm md:text-base text-center md:text-left">
-        Importador y distribuidor líder de herramientas
-        industriales de precisión para la industria
-        metalmecánica en general.
+        Importador y distribuidor líder de herramientas industriales
+        de precisión para la industria metalmecánica en general.
       </p>
 
       <ul className="space-y-3 mb-5 flex flex-col items-center md:items-start">
@@ -74,10 +73,7 @@ export default function Footer() {
           </span>
         </li>
         <li className="flex items-center gap-3 text-gray-400">
-          <Phone
-            size={20}
-            className="shrink-0 text-matheo-red"
-          />
+          <Phone size={20} className="shrink-0 text-matheo-red" />
           <a
             href="tel:+51922922766"
             className="text-sm hover:text-white transition-colors"
@@ -86,10 +82,7 @@ export default function Footer() {
           </a>
         </li>
         <li className="flex items-center gap-3 text-gray-400">
-          <Mail
-            size={20}
-            className="shrink-0 text-matheo-red"
-          />
+          <Mail size={20} className="shrink-0 text-matheo-red" />
           <div className="text-sm">
             <a
               href="mailto:ventas@matheocompany.com"
@@ -121,7 +114,16 @@ export default function Footer() {
           className="w-9 h-9 bg-gray-800 hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors"
           aria-label="Facebook"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
           </svg>
         </a>
@@ -132,7 +134,16 @@ export default function Footer() {
           className="w-9 h-9 bg-gray-800 hover:bg-matheo-red rounded-lg flex items-center justify-center transition-colors"
           aria-label="TikTok"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
           </svg>
         </a>

@@ -76,12 +76,12 @@ export default function RedesPage() {
       }}
     >
       {/* Card principal */}
-      <div className="w-full max-w-[420px] flex flex-col items-center gap-6 bg-white/6 border border-white/10 backdrop-blur-xl rounded-[20px] px-8 py-10">
+      <div className="w-full max-w-105 flex flex-col items-center gap-6 bg-white/6 border border-white/10 backdrop-blur-xl rounded-[20px] px-8 py-10">
         {/* Logo + nombre */}
         <div className="flex flex-col items-center gap-3">
           {/* Avatar con borde degradado */}
           <div
-            className="w-24 h-24 rounded-full p-[3px]"
+            className="w-24 h-24 rounded-full p-0.75"
             style={{
               background: 'linear-gradient(135deg, #E31B23, #0055A5)',
             }}
@@ -89,10 +89,10 @@ export default function RedesPage() {
             <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
               <Image
                 src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
-                alt="MATHEO Industrial Company"
+                alt="Industrial Company MATHEO"
                 width={80}
                 height={80}
-                className="w-[78px] h-[78px] object-contain p-1.5"
+                className="w-19.5 h-19.5 object-contain p-1.5"
               />
             </div>
           </div>
@@ -115,7 +115,7 @@ export default function RedesPage() {
           className={`${btnBase} bg-[#25D366] py-5 rounded-2xl shadow-[0_6px_28px_rgba(37,211,102,0.4)] hover:shadow-[0_12px_40px_rgba(37,211,102,0.6)] text-[1.1rem]`}
         >
           {/* Ícono */}
-          <div className="w-[46px] h-[46px] rounded-xl flex items-center justify-center bg-white/20 shrink-0">
+          <div className="w-11.5 h-11.5 rounded-xl flex items-center justify-center bg-white/20 shrink-0">
             <svg
               viewBox="0 0 24 24"
               fill="currentColor"
@@ -151,7 +151,7 @@ export default function RedesPage() {
             rel="noopener noreferrer"
             className={`${btnBase} ${s.bg}`}
           >
-            <div className="w-[46px] h-[46px] rounded-xl flex items-center justify-center bg-white/20 shrink-0">
+            <div className="w-11.5 h-11.5 rounded-xl flex items-center justify-center bg-white/20 shrink-0">
               {s.icon}
             </div>
             <div className="flex-1">
@@ -173,7 +173,7 @@ export default function RedesPage() {
           href="/productos"
           className={`${btnBase} bg-[#0055A5]`}
         >
-          <div className="w-[46px] h-[46px] rounded-xl flex items-center justify-center bg-white/20 shrink-0">
+          <div className="w-11.5 h-11.5 rounded-xl flex items-center justify-center bg-white/20 shrink-0">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -204,7 +204,7 @@ export default function RedesPage() {
 
         {/* Footer mínimo */}
         <p className="text-white/35 text-[0.72rem] text-center leading-relaxed m-0">
-          © {new Date().getFullYear()} MATHEO Industrial Company EIRL
+          © {new Date().getFullYear()} Industrial Company MATHEO EIRL
           <br />
           Lima, Perú · Importador directo
         </p>

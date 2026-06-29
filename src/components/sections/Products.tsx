@@ -4,8 +4,6 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useInView } from 'react-intersection-observer'
-import { generateSlug } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
 import CardProduct from '@/components/sections/products/CardProduct'
 
 const categories = [
@@ -97,21 +95,29 @@ interface ProductItem {
   rating?: number
 }
 
-export default function FeaturedProducts() {
+interface FeaturedProductsProps {
+  productItems: ProductItem[]
+  taladradoItems: ProductItem[]
+  insertosItems: ProductItem[]
+  fresasCarbuItems: ProductItem[]
+}
+
+export default function FeaturedProducts({
+  productItems,
+  taladradoItems,
+  insertosItems,
+  fresasCarbuItems,
+}: FeaturedProductsProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsToShow, setItemsToShow] = useState(4)
   const [currentIndex2, setCurrentIndex2] = useState(0)
   const [itemsToShow2, setItemsToShow2] = useState(3)
-  const [productItems, setProductItems] = useState<ProductItem[]>([])
   const [currentIdxProd, setCurrentIdxProd] = useState(0)
   const [itemsToShowProd, setItemsToShowProd] = useState(4)
-  const [taladradoItems, setTaladradoItems] = useState<ProductItem[]>([])
   const [currentIdxTal, setCurrentIdxTal] = useState(0)
   const [itemsToShowTal, setItemsToShowTal] = useState(4)
-  const [insertosItems, setInsertosItems] = useState<ProductItem[]>([])
   const [currentIdxIns, setCurrentIdxIns] = useState(0)
   const [itemsToShowIns, setItemsToShowIns] = useState(4)
-  const [fresasCarbuItems, setFresasCarbuItems] = useState<ProductItem[]>([])
   const [currentIdxFresasCarb, setCurrentIdxFresasCarb] = useState(0)
   const [itemsToShowFresasCarb, setItemsToShowFresasCarb] = useState(4)
   const { ref: sectionRef, inView } = useInView({
@@ -127,179 +133,6 @@ export default function FeaturedProducts() {
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  useEffect(() => {
-    async function fetchProducts() {
-      const { data: catData } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('name', 'Fresas Rotativas')
-        .single()
-
-      if (!catData) return
-
-      const { data } = await supabase
-        .from('products')
-        .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
-        .eq('category_id', catData.id)
-        .not('image_url', 'is', null)
-
-      if (data) {
-        setProductItems(
-          data
-            .filter((p: Record<string, unknown>) => {
-              const cat = p.categories as { name: string } | null
-              return cat?.name
-            })
-            .map((p: Record<string, unknown>) => ({
-            id: p.id as string,
-            name: p.name as string,
-            slug: generateSlug(p.name as string),
-            categorySlug: generateSlug((p.categories as { name: string }).name),
-            image: p.image_url as string,
-            category: (p.categories as { name: string }).name,
-            brand: (p.brands as { name: string } | null)?.name ?? '',
-            description: (p.description as string) ?? '',
-            price: (p.price as number) ?? undefined,
-            rating: (p.rating as number) ?? undefined,
-          }))
-        )
-      }
-    }
-    fetchProducts()
-  }, [])
-
-  useEffect(() => {
-    async function fetchTaladrado() {
-      const { data: parent } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('name', 'Herramientas de Taladrado')
-        .single()
-
-      if (!parent) return
-
-      const { data: children } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('parent_id', parent.id)
-
-      if (!children || children.length === 0) return
-
-      const childIds = children.map(c => c.id)
-
-      const { data } = await supabase
-        .from('products')
-        .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
-        .in('category_id', childIds)
-        .not('image_url', 'is', null)
-
-      if (data) {
-        setTaladradoItems(
-          data
-            .filter((p: Record<string, unknown>) => {
-              const cat = p.categories as { name: string } | null
-              return cat?.name
-            })
-            .map((p: Record<string, unknown>) => ({
-            id: p.id as string,
-            name: p.name as string,
-            slug: generateSlug(p.name as string),
-            categorySlug: generateSlug((p.categories as { name: string }).name),
-            image: p.image_url as string,
-            category: (p.categories as { name: string }).name,
-            brand: (p.brands as { name: string } | null)?.name ?? '',
-            description: (p.description as string) ?? '',
-            price: (p.price as number) ?? undefined,
-            rating: (p.rating as number) ?? undefined,
-          }))
-        )
-      }
-    }
-    fetchTaladrado()
-  }, [])
-
-  useEffect(() => {
-    async function fetchInsertos() {
-      const { data: catData } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('name', 'Insertos para Torneado')
-        .single()
-
-      if (!catData) return
-
-      const { data } = await supabase
-        .from('products')
-        .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
-        .eq('category_id', catData.id)
-        .not('image_url', 'is', null)
-
-      if (data) {
-        setInsertosItems(
-          data
-            .filter((p: Record<string, unknown>) => {
-              const cat = p.categories as { name: string } | null
-              return cat?.name
-            })
-            .map((p: Record<string, unknown>) => ({
-            id: p.id as string,
-            name: p.name as string,
-            slug: generateSlug(p.name as string),
-            categorySlug: generateSlug((p.categories as { name: string }).name),
-            image: p.image_url as string,
-            category: (p.categories as { name: string }).name,
-            brand: (p.brands as { name: string } | null)?.name ?? '',
-            description: (p.description as string) ?? '',
-            price: (p.price as number) ?? undefined,
-            rating: (p.rating as number) ?? undefined,
-          }))
-        )
-      }
-    }
-    fetchInsertos()
-  }, [])
-
-  useEffect(() => {
-    async function fetchFresasCarbu() {
-      const { data: catData } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('name', 'Fresas Carburadas Rotativas')
-        .single()
-
-      if (!catData) return
-
-      const { data } = await supabase
-        .from('products')
-        .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
-        .eq('category_id', catData.id)
-        .not('image_url', 'is', null)
-
-      if (data) {
-        setFresasCarbuItems(
-          data
-            .filter((p: Record<string, unknown>) => {
-              const cat = p.categories as { name: string } | null
-              return cat?.name
-            })
-            .map((p: Record<string, unknown>) => ({
-            id: p.id as string,
-            name: p.name as string,
-            slug: generateSlug(p.name as string),
-            categorySlug: generateSlug((p.categories as { name: string }).name),
-            image: p.image_url as string,
-            category: (p.categories as { name: string }).name,
-            brand: (p.brands as { name: string } | null)?.name ?? '',
-            description: (p.description as string) ?? '',
-            price: (p.price as number) ?? undefined,
-            rating: (p.rating as number) ?? undefined,
-          }))
-        )
-      }
-    }
-    fetchFresasCarbu()
   }, [])
 
   useEffect(() => {

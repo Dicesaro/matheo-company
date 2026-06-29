@@ -38,7 +38,7 @@ const TermsConditionsPage = () => {
           <p className="mb-4">
             Todo el contenido de este sitio web, incluyendo textos,
             gráficos, logotipos, imágenes y software, es propiedad de
-            MATHEO Industrial Company EIRL o de sus proveedores de
+            Industrial Company MATHEO EIRL o de sus proveedores de
             contenido y está protegido por las leyes de propiedad
             intelectual internacionales y de Perú.
           </p>

@@ -4,6 +4,7 @@ import KeyPoints from '@/components/sections/KeyPoints'
 import FeaturedProducts from '@/components/sections/Products'
 import CategoryProducts from '@/components/sections/CategoryProducts'
 import EmailForm from '@/components/sections/EmailForm'
+import { getHomePageProducts } from '@/lib/queries'
 
 export const metadata: Metadata = {
   title:
@@ -51,7 +52,10 @@ const structuredData = {
   },
 }
 
-export default function Home() {
+export default async function Home() {
+  const { productItems, taladradoItems, insertosItems, fresasCarbuItems } =
+    await getHomePageProducts()
+
   return (
     <>
       <script
@@ -63,7 +67,12 @@ export default function Home() {
       <Hero />
       <KeyPoints />
       <CategoryProducts />
-      <FeaturedProducts />
+      <FeaturedProducts
+        productItems={productItems}
+        taladradoItems={taladradoItems}
+        insertosItems={insertosItems}
+        fresasCarbuItems={fresasCarbuItems}
+      />
       <EmailForm />
     </>
   )

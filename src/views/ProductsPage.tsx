@@ -10,22 +10,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Tag,
   X,
 } from 'lucide-react'
 import { cn, generateSlug, slugToCategory } from '@/lib/utils'
 import { useCustomSearchParams } from '@/hooks/useCustomSearchParams'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import CardProduct from '@/components/sections/products/CardProduct'
 import FilterSection from '@/components/sections/products/FilterSection'
-
-interface ProductsPageProps {
-  categorySlug?: string
-  subcategorySlug?: string
-}
 
 interface Product {
   id: string
@@ -40,30 +31,31 @@ interface Product {
   rating?: number
 }
 
-interface RawProduct {
-  id: string
-  name: string
-  description: string
-  image_url: string
-  price?: number
-  rating?: number
-  categories?: { name: string } | null
-  brands?: { name: string } | null
+interface ProductsPageProps {
+  categorySlug?: string
+  subcategorySlug?: string
+  initialProducts: Product[]
+  initialCategories: string[]
+  initialBrands: string[]
+  initialParentNameMap: Record<string, string[]>
 }
 
 export default function ProductsPage({
   categorySlug,
   subcategorySlug,
+  initialProducts,
+  initialCategories,
+  initialBrands,
+  initialParentNameMap,
 }: ProductsPageProps) {
   const [searchParams, setSearchParams] = useCustomSearchParams()
   const searchTerm = searchParams.get('q') || ''
   const router = useRouter()
 
-  const [products, setProducts] = useState<Product[]>([])
-  const [dbCategories, setDbCategories] = useState<string[]>([])
-  const [dbBrands, setDbBrands] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
-  const [parentNameMap, setParentNameMap] = useState<Record<string, string[]>>({})
+  const [products, setProducts] = useState<Product[]>(initialProducts)
+  const [dbCategories, setDbCategories] = useState<string[]>(initialCategories)
+  const [dbBrands, setDbBrands] = useState<string[]>(initialBrands)
+  const [parentNameMap, setParentNameMap] = useState<Record<string, string[]>>(initialParentNameMap)
 
   const [selectedCategories, setSelectedCategories] = useState<
     string[]
@@ -108,111 +100,29 @@ export default function ProductsPage({
   const subcategoryMap = parentNameMap
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true)
-      try {
-        const { data: cats } = await supabase
-          .from('categories')
-          .select('id, name, parent_id')
-          .order('name')
-
-        if (cats) {
-          const allCats = cats.map((c) => c.name)
-          setDbCategories(allCats)
-
-          const idToName: Record<string, string> = {}
-          for (const c of cats) idToName[c.id] = c.name
-
-          const childrenOf: Record<string, string[]> = {}
-          const parents: string[] = []
-          for (const c of cats) {
-            if (c.parent_id) {
-              const parentName = idToName[c.parent_id]
-              if (parentName) {
-                if (!childrenOf[parentName]) childrenOf[parentName] = []
-                childrenOf[parentName].push(c.name)
-              }
-            } else {
-              parents.push(c.name)
-            }
-          }
-          setParentNameMap(childrenOf)
-
-          if (subcategorySlug) {
-            const resolved = slugToCategory(subcategorySlug, allCats)
-            if (resolved) {
-              setSelectedCategories([resolved])
-              const parentName = Object.entries(childrenOf).find(([, children]) =>
-                children.includes(resolved)
-              )?.[0]
-              if (parentName) setExpandedParent(parentName)
-            }
-          } else if (categorySlug) {
-            const resolved = slugToCategory(categorySlug, allCats)
-            if (resolved) {
-              if (childrenOf[resolved]) {
-                setExpandedParent(resolved)
-              } else {
-                const parentName = Object.entries(childrenOf).find(([, children]) =>
-                  children.includes(resolved)
-                )?.[0]
-                if (parentName) setExpandedParent(parentName)
-              }
-              setSelectedCategories([resolved])
-            }
-          }
+    if (subcategorySlug) {
+      const resolved = slugToCategory(subcategorySlug, dbCategories)
+      if (resolved) {
+        setSelectedCategories([resolved])
+        const parentName = Object.entries(parentNameMap).find(([, children]) =>
+          children.includes(resolved)
+        )?.[0]
+        if (parentName) setExpandedParent(parentName)
+      }
+    } else if (categorySlug) {
+      const resolved = slugToCategory(categorySlug, dbCategories)
+      if (resolved) {
+        if (parentNameMap[resolved]) {
+          setExpandedParent(resolved)
+        } else {
+          const parentName = Object.entries(parentNameMap).find(([, children]) =>
+            children.includes(resolved)
+          )?.[0]
+          if (parentName) setExpandedParent(parentName)
         }
-
-        const { data: brandsData } = await supabase
-          .from('brands')
-          .select('name')
-          .order('name')
-
-        if (brandsData) {
-          setDbBrands(brandsData.map((b) => b.name))
-        }
-
-        const { data: prods, error } = await supabase.from('products')
-          .select(`
-            id,
-            name,
-            description,
-            image_url,
-            price,
-            rating,
-            categories (name),
-            brands (name)
-          `)
-
-        if (error) throw error
-
-        if (prods) {
-          const formatted = (prods as unknown as RawProduct[]).map(
-            (p) => ({
-              id: p.id,
-              slug: generateSlug(p.name),
-              categorySlug: generateSlug(
-                p.categories?.name || 'General',
-              ),
-              name: p.name,
-              description: p.description,
-              image: p.image_url,
-              price: p.price,
-              rating: p.rating,
-              category: p.categories?.name || 'General',
-              brand: p.brands?.name || 'Varios',
-            }),
-          )
-          setProducts(formatted)
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setLoading(false)
+        setSelectedCategories([resolved])
       }
     }
-
-    fetchData()
   }, [])
 
   useEffect(() => {
@@ -351,51 +261,6 @@ export default function ProductsPage({
   return (
      <div className="min-h-screen bg-gray-50/30 pt-28 md:pt-48 pb-20">
       <div className="container mx-auto px-4">
-        {loading ? (
-          <div className="flex flex-col lg:flex-row gap-12">
-            <aside className="hidden lg:block lg:w-80 shrink-0">
-              <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-36 animate-pulse">
-                <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100">
-                  <div className="h-6 bg-gray-200 rounded w-2/3"></div>
-                </div>
-                <div className="px-8 py-6 space-y-4">
-                  <div className="h-10 bg-gray-200 rounded w-full mb-6"></div>
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-md bg-gray-200"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </aside>
-            <main className="flex-1">
-              <div className="mb-6 animate-pulse">
-                <div className="h-8 md:h-10 bg-gray-200 rounded w-1/3 mb-4"></div>
-                <div className="h-4 md:h-5 bg-gray-200 rounded w-2/3"></div>
-              </div>
-              <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col animate-pulse"
-                  >
-                    <div className="w-full aspect-square bg-gray-200 shrink-0"></div>
-                    <div className="p-4 flex flex-col flex-1 h-50">
-                      <div className="h-4 bg-gray-200 rounded w-1/3 mb-3"></div>
-                      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                      <div className="mt-auto space-y-2">
-                        <div className="h-9 bg-gray-200 rounded"></div>
-                        <div className="h-9 bg-gray-200 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </main>
-          </div>
-        ) : (
           <div className="flex flex-col lg:flex-row gap-12">
             <aside className="hidden lg:block lg:w-80 shrink-0">
               <div className="bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-y-auto sticky top-36 max-h-[calc(100vh-8rem)]">
@@ -720,8 +585,6 @@ export default function ProductsPage({
               )}
             </main>
             </div>
-                 
-        )}
 
       {/* ── MOBILE FILTER DRAWER ── */}
       <div className="lg:hidden">

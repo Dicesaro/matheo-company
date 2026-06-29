@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { cn, generateSlug } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import { Marquee } from '@/components/ui/marquee'
 
 interface NavProductRow {
   id: string
@@ -38,6 +39,7 @@ const navItems = [
   { name: 'Favoritos', href: '/favoritos' },
   { name: 'Nosotros', href: '/nosotros' },
   { name: 'Contacto', href: '/contacto' },
+  { name: 'Ver Catálogo 📙', href: '/catalogo.pdf' },
 ]
 
 interface SearchResult {
@@ -93,6 +95,7 @@ export default function Navbar() {
     { id: string; name: string; image_url: string | null; category: string }[]
   >([])
   const [dbBrands, setDbBrands] = useState<{ name: string; image: string | null }[]>([])
+  const [allProductNames, setAllProductNames] = useState<string[]>([])
 
   const catTimeout = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -327,6 +330,20 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const hasFetchedNames = useRef(false)
+  useEffect(() => {
+    if (hasFetchedNames.current) return
+    hasFetchedNames.current = true
+    supabase
+      .from('categories')
+      .select('name')
+      .not('parent_id', 'is', null)
+      .order('name')
+      .then(({ data }) => {
+        if (data) setAllProductNames(data.map((c) => c.name))
+      })
+  }, [])
+
   const isHome = pathname === '/'
 
   const handleSearch = (e: React.FormEvent) => {
@@ -462,70 +479,268 @@ export default function Navbar() {
 
   return (
     <>
-    <nav
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled || !isHome
-          ? 'bg-white shadow-lg'
-          : 'bg-white/95 backdrop-blur-sm',
-      )}
-    >
-      {/* Red Top Bar */}
-      <div className="bg-matheo-red text-white text-center py-1.5 font-medium w-full">
-      </div>
+      <nav
+        className={cn(
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          isScrolled || !isHome
+            ? 'bg-white shadow-lg'
+            : 'bg-white/95 backdrop-blur-sm',
+        )}
+      >
+        {/* Red Top Bar */}
+        <div className="bg-matheo-red text-white font-medium w-full overflow-hidden">
+          <Marquee pauseOnHover repeat={3} className="py-1.5 [--duration:180s] [--gap:0px]">
+            {allProductNames.length > 0
+              ? allProductNames.map((name) => (
+                  <span key={name} className="flex items-center gap-0 mx-4">
+                    <span className="text-white/70 mx-2">•</span>
+                    <Link
+                      href={`/productos/${generateSlug(name)}`}
+                      className="text-sm font-semibold tracking-wide hover:text-white/80 transition-colors"
+                    >
+                      {name}
+                    </Link>
+                  </span>
+                ))
+              : Array.from({ length: 6 }).map((_, i) => (
+                  <span key={i} className="text-sm font-semibold tracking-wide text-white/60 mx-4">
+                    Cargando categorías...
+                  </span>
+                ))}
+          </Marquee>
+        </div>
 
-      {/* White Bar: Logo, Search, Email, Social */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="container mx-auto px-4">
-          {/* ── MOBILE LAYOUT ── */}
-          <div className="flex items-center justify-between mlg:hidden h-20 relative">
-            {isSearchExpanded ? (
-              <div className="flex items-center w-full gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
-                <button
-                  onClick={() => {
-                    setIsSearchExpanded(false)
-                    setSearchResults([])
-                    setSearchValue('')
-                  }}
-                  className="p-2 text-matheo-red hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ChevronLeft size={28} />
-                </button>
+        {/* White Bar: Logo, Search, Email, Social */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="container mx-auto px-4">
+            {/* ── MOBILE LAYOUT ── */}
+            <div className="flex items-center justify-between mlg:hidden h-20 relative">
+              {isSearchExpanded ? (
+                <div className="flex items-center w-full gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <button
+                    onClick={() => {
+                      setIsSearchExpanded(false)
+                      setSearchResults([])
+                      setSearchValue('')
+                    }}
+                    className="p-2 text-matheo-red hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ChevronLeft size={28} />
+                  </button>
+                  <div
+                    id="navbar-search-wrapper-mobile"
+                    className="relative flex-1"
+                  >
+                    <form
+                      onSubmit={handleSearch}
+                      className="relative group"
+                    >
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Buscar productos..."
+                        value={searchValue}
+                        onChange={handleSearchChange}
+                        className="w-full pl-4 pr-10 py-2.5 bg-white border-2 border-matheo-red/20 focus:border-matheo-red focus:outline-none transition-all text-sm"
+                      />
+                      <Search
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-matheo-red"
+                        size={20}
+                      />
+                    </form>
+                    {searchValue && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchValue('')
+                          setSearchResults([])
+                          setCategoryResults([])
+                        }}
+                        className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
+                        aria-label="Borrar búsqueda"
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
+                    {(searchResults.length > 0 ||
+                      categoryResults.length > 0) && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60">
+                        {categoryResults.length > 0 && (
+                          <>
+                            <div className="px-3 pt-2 pb-0.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-matheo-blue">
+                                Categorías
+                              </span>
+                            </div>
+                            {categoryResults.map((cat) => (
+                              <button
+                                key={cat.name}
+                                onClick={() =>
+                                  handleCategoryClick(cat.name)
+                                }
+                                className="w-full text-left px-3 py-1.5 hover:bg-blue-50/60 flex items-center gap-2 transition-colors"
+                              >
+                                <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                                  {cat.image ? (
+                                    <Image
+                                      width={40}
+                                      height={40}
+                                      src={cat.image}
+                                      alt={cat.name}
+                                      className="w-full h-full object-contain mix-blend-multiply"
+                                    />
+                                  ) : (
+                                    <span className="text-xs">
+                                      🗂️
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-sm font-semibold text-matheo-blue truncate min-w-0">
+                                  {cat.name}
+                                </span>
+                              </button>
+                            ))}
+                            {searchResults.length > 0 && (
+                              <div className="mx-3 border-t border-gray-100" />
+                            )}
+                          </>
+                        )}
+                        {searchResults.length > 0 && (
+                          <>
+                            <div className="px-3 pt-2 pb-0.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                Productos
+                              </span>
+                            </div>
+                            {searchResults.map((product) => (
+                              <button
+                                key={product.id}
+                                onClick={() =>
+                                  handleResultClick(
+                                    product.name,
+                                    product.category,
+                                  )
+                                }
+                                className="w-full text-left px-3 py-1.5 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-50 last:border-0 transition-colors"
+                              >
+                                {product.image ? (
+                                  <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                                    <Image
+                                      width={40}
+                                      height={40}
+                                      src={product.image}
+                                      alt={product.name}
+                                      className="w-full h-full object-contain mix-blend-multiply"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-6 h-6 rounded border border-transparent flex items-center justify-center shrink-0">
+                                    <Search
+                                      size={14}
+                                      className="text-gray-400"
+                                    />
+                                  </div>
+                                )}
+                                <span className="text-sm font-medium text-gray-700 truncate min-w-0">
+                                  {product.name}
+                                </span>
+                              </button>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
+                    aria-label="Toggle menu"
+                  >
+                    {isOpen ? <X size={28} /> : <Menu size={28} />}
+                  </button>
+
+                  <Link
+                    href={'/'}
+                    className="absolute left-1/2 -translate-x-1/2 shrink-0"
+                  >
+                    <Image
+                      width={100}
+                      height={100}
+                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
+                      alt="Industrial Company MATHEO"
+                      className="h-16 w-auto cursor-pointer hover:opacity-90 transition-opacity"
+                    />
+                  </Link>
+
+                  <button
+                    id="navbar-search-mobile-btn"
+                    onClick={() => {
+                      setIsSearchExpanded(true)
+                      setIsOpen(false)
+                    }}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
+                    aria-label="Buscar productos"
+                  >
+                    <Search size={28} />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* ── DESKTOP LAYOUT ── */}
+
+            <div className="hidden mlg:flex items-center justify-center h-24 ">
+              {/* Logo */}
+              <Link href={'/'} className="shrink-0">
+                <Image
+                  width={100}
+                  height={100}
+                  src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
+                  alt="Industrial Company MATHEO"
+                  className="h-20 w-auto cursor-pointer hover:opacity-90 transition-opacity"
+                />
+              </Link>
+
+              {/* Search */}
+              <div className="flex-1 flex justify-center max-w-lg mx-6">
                 <div
-                  id="navbar-search-wrapper-mobile"
-                  className="relative flex-1"
+                  id="navbar-search-wrapper-desktop"
+                  className="relative w-full"
                 >
                   <form
                     onSubmit={handleSearch}
-                    className="relative group"
+                    className="relative w-full group"
                   >
+                    <Search
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-matheo-red transition-colors"
+                      size={18}
+                    />
                     <input
+                      id="navbar-search-desktop"
                       type="text"
-                      autoFocus
-                      placeholder="Buscar productos..."
+                      placeholder="¿Qué herramienta buscas?"
                       value={searchValue}
                       onChange={handleSearchChange}
-                      className="w-full pl-4 pr-10 py-2.5 bg-white border-2 border-matheo-red/20 focus:border-matheo-red focus:outline-none transition-all text-sm"
+                      className="w-full pl-11 pr-10 py-2 bg-white border-2 border-gray-200 focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/10 focus:outline-none transition-all text-sm font-medium shadow-sm"
                     />
-                    <Search
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-matheo-red"
-                      size={20}
-                    />
+                    {searchValue && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchValue('')
+                          setSearchResults([])
+                          setCategoryResults([])
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
+                        aria-label="Borrar búsqueda"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
                   </form>
-                  {searchValue && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchValue('')
-                        setSearchResults([])
-                        setCategoryResults([])
-                      }}
-                      className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
-                      aria-label="Borrar búsqueda"
-                    >
-                      <X size={18} />
-                    </button>
-                  )}
                   {(searchResults.length > 0 ||
                     categoryResults.length > 0) && (
                     <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60">
@@ -557,7 +772,7 @@ export default function Navbar() {
                                   <span className="text-xs">🗂️</span>
                                 )}
                               </div>
-                              <span className="text-sm font-semibold text-matheo-blue truncate min-w-0">
+                              <span className="text-sm font-semibold text-matheo-blue truncate min-w-0 flex-1">
                                 {cat.name}
                               </span>
                             </button>
@@ -596,14 +811,14 @@ export default function Navbar() {
                                   />
                                 </div>
                               ) : (
-                                <div className="w-6 h-6 rounded border border-transparent flex items-center justify-center shrink-0">
+                                <div className="w-6 h-6 rounded flex items-center justify-center shrink-0">
                                   <Search
                                     size={14}
                                     className="text-gray-400"
                                   />
                                 </div>
                               )}
-                              <span className="text-sm font-medium text-gray-700 truncate min-w-0">
+                              <span className="text-sm font-medium text-gray-700 truncate min-w-0 flex-1">
                                 {product.name}
                               </span>
                             </button>
@@ -614,426 +829,296 @@ export default function Navbar() {
                   )}
                 </div>
               </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
-                  aria-label="Toggle menu"
-                >
-                  {isOpen ? <X size={28} /> : <Menu size={28} />}
-                </button>
 
-                <Link
-                  href={'/'}
-                  className="absolute left-1/2 -translate-x-1/2 shrink-0"
-                >
-                  <Image
-                    width={100}
-                    height={100}
-                    src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
-                    alt="MATHEO Industrial Company"
-                    className="h-16 w-auto cursor-pointer hover:opacity-90 transition-opacity"
-                  />
-                </Link>
-
-                <button
-                  id="navbar-search-mobile-btn"
-                  onClick={() => {
-                    setIsSearchExpanded(true)
-                    setIsOpen(false)
-                  }}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
-                  aria-label="Buscar productos"
-                >
-                  <Search size={28} />
-                </button>
-              </>
-            )}
-          </div>
-
-                 {/* ── DESKTOP LAYOUT ── */}
-                 
-          <div className="hidden mlg:flex items-center justify-center h-24 ">
-            {/* Logo */}
-            <Link href={'/'} className="shrink-0">
-              <Image
-                width={100}
-                height={100}
-                src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
-                alt="MATHEO Industrial Company"
-                className="h-20 w-auto cursor-pointer hover:opacity-90 transition-opacity"
-              />
-            </Link>
-
-            {/* Search */}
-            <div className="flex-1 flex justify-center max-w-lg mx-6">
-              <div
-                id="navbar-search-wrapper-desktop"
-                className="relative w-full"
-              >
-                <form
-                  onSubmit={handleSearch}
-                  className="relative w-full group"
-                >
-                  <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-matheo-red transition-colors"
-                    size={18}
-                  />
-                  <input
-                    id="navbar-search-desktop"
-                    type="text"
-                    placeholder="¿Qué herramienta buscas?"
-                    value={searchValue}
-                    onChange={handleSearchChange}
-                    className="w-full pl-11 pr-10 py-2 bg-white border-2 border-gray-200 focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/10 focus:outline-none transition-all text-sm font-medium shadow-sm"
-                  />
-                  {searchValue && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchValue('')
-                        setSearchResults([])
-                        setCategoryResults([])
-                      }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-matheo-red transition-colors p-0.5"
-                      aria-label="Borrar búsqueda"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </form>
-                {(searchResults.length > 0 ||
-                  categoryResults.length > 0) && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60">
-                    {categoryResults.length > 0 && (
-                      <>
-                        <div className="px-3 pt-2 pb-0.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-matheo-blue">
-                            Categorías
-                          </span>
-                        </div>
-                        {categoryResults.map((cat) => (
-                          <button
-                            key={cat.name}
-                            onClick={() =>
-                              handleCategoryClick(cat.name)
-                            }
-                            className="w-full text-left px-3 py-1.5 hover:bg-blue-50/60 flex items-center gap-2 transition-colors"
-                          >
-                            <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
-                              {cat.image ? (
-                                <Image
-                                  width={40}
-                                  height={40}
-                                  src={cat.image}
-                                  alt={cat.name}
-                                  className="w-full h-full object-contain mix-blend-multiply"
-                                />
-                              ) : (
-                                <span className="text-xs">🗂️</span>
-                              )}
-                            </div>
-                            <span className="text-sm font-semibold text-matheo-blue truncate min-w-0 flex-1">
-                              {cat.name}
-                            </span>
-                          </button>
-                        ))}
-                        {searchResults.length > 0 && (
-                          <div className="mx-3 border-t border-gray-100" />
-                        )}
-                      </>
-                    )}
-                    {searchResults.length > 0 && (
-                      <>
-                        <div className="px-3 pt-2 pb-0.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                            Productos
-                          </span>
-                        </div>
-                        {searchResults.map((product) => (
-                          <button
-                            key={product.id}
-                            onClick={() =>
-                              handleResultClick(
-                                product.name,
-                                product.category,
-                              )
-                            }
-                            className="w-full text-left px-3 py-1.5 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-50 last:border-0 transition-colors"
-                          >
-                            {product.image ? (
-                              <div className="w-6 h-6 rounded border border-gray-100 bg-white flex items-center justify-center shrink-0 overflow-hidden">
-                                <Image
-                                  width={40}
-                                  height={40}
-                                  src={product.image}
-                                  alt={product.name}
-                                  className="w-full h-full object-contain mix-blend-multiply"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-6 h-6 rounded flex items-center justify-center shrink-0">
-                                <Search
-                                  size={14}
-                                  className="text-gray-400"
-                                />
-                              </div>
-                            )}
-                            <span className="text-sm font-medium text-gray-700 truncate min-w-0 flex-1">
-                              {product.name}
-                            </span>
-                          </button>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                )}
+              {/* Email */}
+              <div className="hidden xl:flex items-center gap-3 shrink-0 ml-2">
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center shrink-0 transition-all duration-300">
+                  <Mail size={16} />
+                </div>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    Escribenos
+                  </span>
+                  <a
+                    href="mailto:ventas@matheocompany.com"
+                    className="text-xs font-semibold text-gray-700 hover:text-matheo-red transition-colors"
+                  >
+                    ventas@matheocompany.com
+                  </a>
+                </div>
               </div>
-            </div>
 
-            {/* Email */}
-            <div className="hidden xl:flex items-center gap-3 shrink-0 ml-2">
-              <div className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center shrink-0 transition-all duration-300">
-                <Mail size={16} />
-              </div>
-              <div className="flex flex-col leading-tight">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Escribenos</span>
+              {/* Separator */}
+              <div className="hidden xl:block w-px h-8 bg-gray-300 ml-4 shrink-0"></div>
+
+              {/* Social Icons + Text */}
+              <div className="hidden xl:flex items-center gap-2 shrink-0 ml-4">
                 <a
-                  href="mailto:ventas@matheocompany.com"
-                  className="text-xs font-semibold text-gray-700 hover:text-matheo-red transition-colors"
+                  href="https://www.facebook.com/IndustrialCompanyMatheo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center transition-all duration-300"
+                  aria-label="Facebook"
                 >
-                  ventas@matheocompany.com
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                  </svg>
                 </a>
+                <a
+                  href="https://www.tiktok.com/@industrialcompanymatheo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center transition-all duration-300"
+                  aria-label="TikTok"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                  </svg>
+                </a>
+                <div className="flex flex-col leading-tight ml-1">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    Siguenos
+                  </span>
+                  <span className="text-[9px] text-gray-400">
+                    Visita nuestras redes
+                  </span>
+                </div>
               </div>
             </div>
-
-            {/* Separator */}
-            <div className="hidden xl:block w-px h-8 bg-gray-300 ml-4 shrink-0"></div>
-
-            {/* Social Icons + Text */}
-            <div className="hidden xl:flex items-center gap-2 shrink-0 ml-4">
-              <a
-                href="https://www.facebook.com/IndustrialCompanyMatheo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center transition-all duration-300"
-                aria-label="Facebook"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                </svg>
-              </a>
-              <a
-                href="https://www.tiktok.com/@industrialcompanymatheo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center transition-all duration-300"
-                aria-label="TikTok"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-                </svg>
-              </a>
-              <div className="flex flex-col leading-tight ml-1">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Siguenos</span>
-                <span className="text-[9px] text-gray-400">Visita nuestras redes</span>
-              </div>
-            </div>
-
           </div>
         </div>
-      </div>
 
-      {/* Red Bar: Navigation */}
-      <div className="bg-matheo-red">
-        <div className="container mx-auto px-4">
-          <div className="hidden mlg:flex items-center pl-12 pr-12 h-12 gap-1">
-            <div className="flex items-center gap-1">
-              {navItems.filter((i) => i.name !== 'Favoritos').map((item) => {
-                if (item.hasMega === 'categorias') {
-                  return (
-                    <div
-                      key={item.name}
-                      className="relative"
-                      onMouseEnter={() => {
-                        if (catTimeout.current) clearTimeout(catTimeout.current)
-                        setIsCategoriasOpen(true)
-                      }}
-                      onMouseLeave={() => {
-                        catTimeout.current = setTimeout(() => {
-                          setIsCategoriasOpen(false)
-                          setHoveredParentCat(null)
-                        }, 150)
-                      }}
-                    >
-                      <button
+        {/* Red Bar: Navigation */}
+        <div className="bg-matheo-red">
+          <div className="container mx-auto px-4">
+            <div className="hidden mlg:flex items-center pl-12 pr-12 h-12 gap-1">
+              <div className="flex items-center gap-1">
+                {navItems
+                  .filter((i) => i.name !== 'Favoritos' && i.name !== 'Ver Catálogo 📙')
+                  .map((item) => {
+                    if (item.hasMega === 'categorias') {
+                      return (
+                        <div
+                          key={item.name}
+                          className="relative"
+                          onMouseEnter={() => {
+                            if (catTimeout.current)
+                              clearTimeout(catTimeout.current)
+                            setIsCategoriasOpen(true)
+                          }}
+                          onMouseLeave={() => {
+                            catTimeout.current = setTimeout(() => {
+                              setIsCategoriasOpen(false)
+                              setHoveredParentCat(null)
+                            }, 150)
+                          }}
+                        >
+                          <button
+                            className={cn(
+                              'flex items-center gap-1 px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
+                              isCategoriasOpen && 'text-white/80',
+                            )}
+                          >
+                            {item.name}
+                            <ChevronDown
+                              size={14}
+                              className={cn(
+                                'transition-transform duration-200',
+                                isCategoriasOpen && 'rotate-180',
+                              )}
+                            />
+                          </button>
+
+                          <div
+                            className={cn(
+                              'absolute top-full left-1/2 -translate-x-1/2 min-w-55 bg-white mt-2.5 border border-gray-200 shadow-2xl z-50 py-2 transition-all duration-200',
+                              isCategoriasOpen
+                                ? 'opacity-100 translate-y-0 pointer-events-auto'
+                                : 'opacity-0 -translate-y-1 pointer-events-none',
+                            )}
+                          >
+                            {isLoadingCategories
+                              ? Array.from({ length: 5 }).map(
+                                  (_, i) => (
+                                    <div
+                                      key={`cat-sk-${i}`}
+                                      className="h-9 mx-2 bg-gray-100 rounded-lg animate-pulse"
+                                    />
+                                  ),
+                                )
+                              : categories
+                                  .filter((c) => c.isParent)
+                                  .slice(0, 6)
+                                  .map((cat) => {
+                                    const subs =
+                                      subcategoryMap[cat.name]
+                                    const hasSub = subs?.length > 0
+                                    return (
+                                      <div
+                                        key={cat.name}
+                                        className="relative px-2 rounded-lg hover:bg-gray-50 transition-colors"
+                                        onMouseEnter={() =>
+                                          setHoveredParentCat(
+                                            cat.name,
+                                          )
+                                        }
+                                      >
+                                        <Link
+                                          href={`/productos/${generateSlug(cat.name)}`}
+                                          onClick={() => {
+                                            setIsCategoriasOpen(false)
+                                          }}
+                                          className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:text-matheo-blue transition-colors"
+                                        >
+                                          <span className="font-medium">
+                                            {cat.name}
+                                          </span>
+                                          {hasSub && (
+                                            <ChevronRight
+                                              size={14}
+                                              className="shrink-0 text-gray-300"
+                                            />
+                                          )}
+                                        </Link>
+
+                                        {hasSub &&
+                                          hoveredParentCat ===
+                                            cat.name && (
+                                            <div
+                                              className="absolute left-full top-0 ml-1 min-w-50 bg-white border border-gray-200 shadow-2xl z-50 py-2"
+                                              onMouseEnter={() =>
+                                                setHoveredParentCat(
+                                                  cat.name,
+                                                )
+                                              }
+                                            >
+                                              {subs.map((sub) => (
+                                                <Link
+                                                  key={sub.name}
+                                                  href={`/productos/${generateSlug(sub.name)}`}
+                                                  onClick={() => {
+                                                    setIsCategoriasOpen(
+                                                      false,
+                                                    )
+                                                  }}
+                                                  className="block px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-matheo-blue transition-colors"
+                                                >
+                                                  {sub.name}
+                                                </Link>
+                                              ))}
+                                            </div>
+                                          )}
+                                      </div>
+                                    )
+                                  })}
+
+                            {!isLoadingCategories && (
+                              <>
+                                <hr className="my-2 mx-2 border-gray-100" />
+                                <div className="px-2">
+                                  <Link
+                                    href="/categorias"
+                                    onClick={() => {
+                                      setIsCategoriasOpen(false)
+                                    }}
+                                    className="block px-3 py-2 text-sm font-semibold text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
+                                  >
+                                    Ver más categorías →
+                                  </Link>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    }
+
+                    if (item.name === 'Marcas') {
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className={cn(
+                            'px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
+                            pathname === item.href &&
+                              'text-white/80 underline underline-offset-4',
+                          )}
+                        >
+                          {item.name}
+                        </Link>
+                      )
+                    }
+
+                    if (item.name === 'Ver Catálogo 📙') {
+                      return (
+                        <a
+                          key={item.name}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors whitespace-nowrap"
+                        >
+                          {item.name}
+                        </a>
+                      )
+                    }
+
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
                         className={cn(
-                          'flex items-center gap-1 px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
-                          isCategoriasOpen && 'text-white/80',
+                          'px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
+                          pathname === item.href &&
+                            'text-white/80 underline underline-offset-4',
                         )}
                       >
                         {item.name}
-                        <ChevronDown
-                          size={14}
-                          className={cn(
-                            'transition-transform duration-200',
-                            isCategoriasOpen && 'rotate-180',
-                          )}
-                        />
-                      </button>
+                      </Link>
+                    )
+                  })}
+              </div>
 
-                      <div
-                        className={cn(
-                          'absolute top-full left-1/2 -translate-x-1/2 min-w-55 bg-white mt-2.5 border border-gray-200 shadow-2xl z-50 py-2 transition-all duration-200',
-                          isCategoriasOpen
-                            ? 'opacity-100 translate-y-0 pointer-events-auto'
-                            : 'opacity-0 -translate-y-1 pointer-events-none',
-                        )}
-                      >
-                        {isLoadingCategories
-                            ? Array.from({ length: 5 }).map((_, i) => (
-                                <div
-                                  key={`cat-sk-${i}`}
-                                  className="h-9 mx-2 bg-gray-100 rounded-lg animate-pulse"
-                                />
-                              ))
-                            : categories
-                                .filter((c) => c.isParent)
-                                .slice(0, 6)
-                                .map((cat) => {
-                                  const subs = subcategoryMap[cat.name]
-                                  const hasSub = subs?.length > 0
-                                  return (
-                                    <div
-                                      key={cat.name}
-                                      className="relative px-2 rounded-lg hover:bg-gray-50 transition-colors"
-                                      onMouseEnter={() =>
-                                        setHoveredParentCat(cat.name)
-                                      }
-                                    >
-                                      <Link
-                                        href={`/productos/${generateSlug(cat.name)}`}
-                                        onClick={() => {
-                                          setIsCategoriasOpen(false)
-                                        }}
-                                        className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:text-matheo-blue transition-colors"
-                                      >
-                                        <span className="font-medium">
-                                          {cat.name}
-                                        </span>
-                                        {hasSub && (
-                                          <ChevronRight
-                                            size={14}
-                                            className="shrink-0 text-gray-300"
-                                          />
-                                        )}
-                                      </Link>
-
-                                      {hasSub &&
-                                        hoveredParentCat === cat.name && (
-                                          <div
-                                            className="absolute left-full top-0 ml-1 min-w-50 bg-white border border-gray-200 shadow-2xl z-50 py-2"
-                                            onMouseEnter={() =>
-                                              setHoveredParentCat(cat.name)
-                                            }
-                                          >
-                                            {subs.map((sub) => (
-                                              <Link
-                                                key={sub.name}
-                                                href={`/productos/${generateSlug(sub.name)}`}
-                                                onClick={() => {
-                                                  setIsCategoriasOpen(false)
-                                                }}
-                                                className="block px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-matheo-blue transition-colors"
-                                              >
-                                                {sub.name}
-                                              </Link>
-                                            ))}
-                                          </div>
-                                        )}
-                                    </div>
-                                  )
-                                })}
-
-                          {!isLoadingCategories && (
-                            <>
-                              <hr className="my-2 mx-2 border-gray-100" />
-                              <div className="px-2">
-                                <Link
-                                  href="/categorias"
-                                  onClick={() => {
-                                    setIsCategoriasOpen(false)
-                                  }}
-                                  className="block px-3 py-2 text-sm font-semibold text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                  Ver más categorías →
-                                </Link>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                    </div>
-                  )
-                }
-
-                if (item.name === 'Marcas') {
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={cn(
-                        'px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
-                        pathname === item.href && 'text-white/80 underline underline-offset-4',
-                      )}
-                    >
-                      {item.name}
-                    </Link>
-                  )
-                }
-
-                if (item.name === 'Ver Catálogo 📙') {
-                  return (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors whitespace-nowrap"
-                    >
-                      {item.name}
-                    </a>
-                  )
-                }
-
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      'px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
-                      pathname === item.href && 'text-white/80 underline underline-offset-4',
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                )
-              })}
+              <a
+                href="/catalogo.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors whitespace-nowrap"
+              >
+                Ver Catálogo 📙
+              </a>
+              <Link
+                href="/favoritos"
+                className={cn(
+                  'px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
+                  pathname === '/favoritos' &&
+                    'text-white/80 underline underline-offset-4',
+                )}
+              >
+                Favoritos{favCount > 0 && ` (${favCount})`}
+              </Link>
             </div>
-
-            <Link
-              href="/favoritos"
-              className={cn(
-                'ml-auto px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
-                pathname === '/favoritos' && 'text-white/80 underline underline-offset-4',
-              )}
-            >
-              Favoritos{favCount > 0 && ` (${favCount})`}
-            </Link>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
 
       {/* ── BACKDROP ── */}
       <div
@@ -1055,7 +1140,9 @@ export default function Navbar() {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
-          <span className="font-bold text-lg text-matheo-blue">Menú</span>
+          <span className="font-bold text-lg text-matheo-blue">
+            Menú
+          </span>
           <button
             onClick={() => setIsOpen(false)}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
@@ -1135,7 +1222,9 @@ export default function Navbar() {
                                     className="w-full h-full object-contain"
                                   />
                                 ) : (
-                                  <span className="text-base">🔧</span>
+                                  <span className="text-base">
+                                    🔧
+                                  </span>
                                 )}
                               </div>
                               <span className="font-medium">
@@ -1184,9 +1273,7 @@ export default function Navbar() {
                   <div
                     className={cn(
                       'overflow-hidden transition-all duration-300',
-                      isMobileCatsOpen
-                        ? 'max-h-150 mb-2'
-                        : 'max-h-0',
+                      isMobileCatsOpen ? 'max-h-150 mb-2' : 'max-h-0',
                     )}
                   >
                     <div className="ml-4 pl-4 border-l-2 border-matheo-blue/20 space-y-1 py-2">
@@ -1200,84 +1287,93 @@ export default function Navbar() {
                               <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                             </div>
                           ))
-                        : categories.filter((c) => c.isParent).slice(0, 6).map((cat) => {
-                            const subs = subcategoryMap[cat.name]
-                            const hasSub = subs?.length > 0
-                            return (
-                              <div key={cat.name}>
-                                <div className="flex items-center">
-                                  <Link
-                                    href={`/productos/${generateSlug(cat.name)}`}
-                                    onClick={() => setIsOpen(false)}
-                                    className="flex items-center gap-3 py-2 px-3 text-sm text-gray-600 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors flex-1"
-                                  >
-                                    <div className="w-6 h-6 shrink-0 flex items-center justify-center overflow-hidden">
-                                      {cat.image ? (
-                                        <Image
-                                          width={100}
-                                          height={100}
-                                          src={cat.image}
-                                          alt={cat.name}
-                                          className="w-full h-full object-contain"
-                                        />
-                                      ) : (
-                                        <div className="h-3 w-3 rounded-full bg-green-400 shadow-[0_0_8px_2px_rgba(74,222,128,0.6)]" />
-                                      )}
-                                    </div>
-                                    <span className="font-medium">
-                                      {cat.name}
-                                    </span>
-                                  </Link>
-                                  {hasSub && (
-                                    <button
-                                      onClick={() =>
-                                        setExpandedMobileCat(
-                                          expandedMobileCat === cat.name
-                                            ? null
-                                            : cat.name,
-                                        )
-                                      }
-                                      className="p-2 text-gray-500 hover:text-matheo-red transition-colors"
-                                      aria-label="Ver subcategorías"
+                        : categories
+                            .filter((c) => c.isParent)
+                            .slice(0, 6)
+                            .map((cat) => {
+                              const subs = subcategoryMap[cat.name]
+                              const hasSub = subs?.length > 0
+                              return (
+                                <div key={cat.name}>
+                                  <div className="flex items-center">
+                                    <Link
+                                      href={`/productos/${generateSlug(cat.name)}`}
+                                      onClick={() => setIsOpen(false)}
+                                      className="flex items-center gap-3 py-2 px-3 text-sm text-gray-600 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors flex-1"
                                     >
-                                      <ChevronDown
-                                        size={16}
-                                        className={cn(
-                                          'transition-transform duration-300',
-                                          expandedMobileCat === cat.name &&
-                                            'rotate-180',
+                                      <div className="w-6 h-6 shrink-0 flex items-center justify-center overflow-hidden">
+                                        {cat.image ? (
+                                          <Image
+                                            width={100}
+                                            height={100}
+                                            src={cat.image}
+                                            alt={cat.name}
+                                            className="w-full h-full object-contain"
+                                          />
+                                        ) : (
+                                          <div className="h-3 w-3 rounded-full bg-green-400 shadow-[0_0_8px_2px_rgba(74,222,128,0.6)]" />
                                         )}
-                                      />
-                                    </button>
-                                  )}
+                                      </div>
+                                      <span className="font-medium">
+                                        {cat.name}
+                                      </span>
+                                    </Link>
+                                    {hasSub && (
+                                      <button
+                                        onClick={() =>
+                                          setExpandedMobileCat(
+                                            expandedMobileCat ===
+                                              cat.name
+                                              ? null
+                                              : cat.name,
+                                          )
+                                        }
+                                        className="p-2 text-gray-500 hover:text-matheo-red transition-colors"
+                                        aria-label="Ver subcategorías"
+                                      >
+                                        <ChevronDown
+                                          size={16}
+                                          className={cn(
+                                            'transition-transform duration-300',
+                                            expandedMobileCat ===
+                                              cat.name &&
+                                              'rotate-180',
+                                          )}
+                                        />
+                                      </button>
+                                    )}
+                                  </div>
+                                  {hasSub &&
+                                    expandedMobileCat ===
+                                      cat.name && (
+                                      <div className="ml-4 pl-4 border-l-2 border-gray-100 space-y-0.5 py-1 mb-1">
+                                        {subs.map((sub) => (
+                                          <Link
+                                            key={sub.name}
+                                            href={`/productos/${generateSlug(sub.name)}`}
+                                            onClick={() =>
+                                              setIsOpen(false)
+                                            }
+                                            className="block py-1.5 px-3 text-sm text-gray-500 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
+                                          >
+                                            {sub.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    )}
                                 </div>
-                                {hasSub &&
-                                  expandedMobileCat === cat.name && (
-                                    <div className="ml-4 pl-4 border-l-2 border-gray-100 space-y-0.5 py-1 mb-1">
-                                      {subs.map((sub) => (
-                                        <Link
-                                          key={sub.name}
-                                          href={`/productos/${generateSlug(sub.name)}`}
-                                          onClick={() => setIsOpen(false)}
-                                          className="block py-1.5 px-3 text-sm text-gray-500 hover:text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
-                                        >
-                                          {sub.name}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  )}
-                              </div>
-                            )
-                          })}
-                          {categories.filter((c) => c.isParent).length > 6 && (
-                            <Link
-                              href="/productos"
-                              onClick={() => setIsOpen(false)}
-                              className="flex items-center gap-2 py-2 px-3 text-sm font-semibold text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
-                            >
-                              Ver más categorías →
-                            </Link>
-                          )}
+                              )
+                            })}
+                      {categories.filter((c) => c.isParent).length >
+                        6 && (
+                        <Link
+                          href="/productos"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2 py-2 px-3 text-sm font-semibold text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          Ver más categorías →
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1343,7 +1439,9 @@ export default function Navbar() {
                               </span>
                             )}
                           </div>
-                          <span className="font-medium">{brand.name}</span>
+                          <span className="font-medium">
+                            {brand.name}
+                          </span>
                         </Link>
                       ))}
                       {dbBrands.length > 6 && (
@@ -1358,6 +1456,21 @@ export default function Navbar() {
                     </div>
                   </div>
                 </div>
+              )
+            }
+
+            if (item.name === 'Ver Catálogo 📙') {
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className="block py-3 text-gray-700 hover:text-matheo-red hover:bg-gray-50 px-4 rounded-lg transition-colors"
+                >
+                  {item.name}
+                </a>
               )
             }
 
