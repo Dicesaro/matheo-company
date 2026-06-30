@@ -14,6 +14,7 @@ const categoryImages: Record<string, string> = {
   'Herramientas de Taladrado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144394/Gemini_Generated_Image_vqr2dpvqr2dpvqr2_dtwjfv.png',
   'Herramientas para Torneado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144544/HERRAMIENTAS_DE_TORNEAR_r06qng.png',
   'Herramientas Eléctricas': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780935442/Gemini_Generated_Image_vqwdghvqwdghvqwd_kh857w.png',
+  'Herramientas de Medición': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1782856741/Gemini_Generated_Image_486y5g486y5g486y_tcven9.png',
   Soldadura: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144885/SOLDADURA_qxvr8r.png',
 }
 
