@@ -7,7 +7,7 @@ import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import ScrollToTop from '@/components/layout/ScrollToTop'
 
 function NavbarPlaceholder() {
-  return <div className="h-36 bg-gray-100" />
+  return <div className="h-30 bg-gray-100" />
 }
 
 // Rutas en las que NO se debe mostrar el Navbar, Footer ni WhatsApp

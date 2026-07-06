@@ -126,7 +126,7 @@ export default function About() {
   return (
     <section id="nosotros" className="w-full">
       {/* 1. HERO */}
-      <div className="relative w-full min-h-125 flex flex-col items-center pt-20 justify-center overflow-hidden">
+      <div className="relative w-full min-h-125 flex flex-col items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute inset-0">
             <Image

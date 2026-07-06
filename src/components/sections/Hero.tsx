@@ -135,7 +135,7 @@ export default function Hero() {
   return (
     <section
       id="inicio"
-      className="relative w-full h-150 sm:h-[80vh] md:h-[85vh] md:pt-24 flex items-center overflow-hidden "
+      className="relative w-full h-150 sm:h-[70vh] md:h-[65vh] flex items-center overflow-hidden"
     >
       {/* Background Images */}
       <div className="absolute inset-0">
@@ -173,7 +173,7 @@ export default function Hero() {
       </div>
 
       {/* Content — animación CSS pura al cambiar slide */}
-      <div className="container mx-auto px-4 relative z-10 pt-28 md:pt-0">
+      <div className="container mx-auto px-4 relative z-10">
           <div
             key={currentSlide} // ← key fuerza re-mount y re-anima con CSS
             className="max-w-3xl text-center sm:text-left"

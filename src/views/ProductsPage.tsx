@@ -259,11 +259,11 @@ export default function ProductsPage({
     : 'Catálogo completo de herramientas industriales metalmecánicas en Perú: brocas, machos de roscado, fresas e insertos. Importación directa y distribución al por mayor y menor.'
 
   return (
-     <div className="min-h-screen bg-gray-50/30 pt-28 md:pt-48 pb-20">
+     <div className="min-h-screen bg-gray-50/30 pb-20">
       <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-12">
             <aside className="hidden lg:block lg:w-80 shrink-0">
-              <div className="bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-y-auto sticky top-36 max-h-[calc(100vh-8rem)]">
+              <div className="bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-y-auto sticky top-0 max-h-[calc(100vh-8rem)]">
                 <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <SlidersHorizontal

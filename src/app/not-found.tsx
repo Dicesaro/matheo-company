@@ -10,7 +10,7 @@ export default function NotFound() {
   }, []);
 
   return (
-    <section className="min-h-screen pt-24 pb-12 flex flex-col items-center justify-center bg-white px-4">
+    <section className="min-h-screen pb-12 flex flex-col items-center justify-center bg-white px-4">
       <div className="max-w-6xl w-full">
         <div className="flex flex-col md:flex-row items-center justify-center mb-16">
           <div className="relative p-8 md:p-12 rounded-md flex items-center justify-center flex-1 max-w-2xl">

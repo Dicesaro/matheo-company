@@ -4,14 +4,14 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Marcas de Herramientas Industriales | MATHEO',
+  title: 'Marcas de Distribución | MATHEO',
   description:
     'Conoce todas las marcas de herramientas industriales que distribuimos en Perú. Importación directa de brocas, fresas, machos e insertos.',
   alternates: {
     canonical: 'https://industrialcompanymatheo.com/marcas',
   },
   openGraph: {
-    title: 'Marcas de Herramientas Industriales | MATHEO',
+    title: 'Marcas de Distribución | MATHEO',
     description:
       'Conoce todas las marcas de herramientas industriales que distribuimos en Perú.',
     locale: 'es_PE',
@@ -27,7 +27,7 @@ export default async function MarcasPage() {
     .order('name')
 
   return (
-    <main className="min-h-screen bg-white pt-40">
+    <main className="min-h-screen bg-white">
       <section className="container mx-auto px-4 py-10">
         {!brands || brands.length === 0 ? (
           <div className="text-center py-20">

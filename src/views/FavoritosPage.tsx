@@ -114,7 +114,7 @@ export default function FavoritosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pt-36 pb-20">
+    <div className="min-h-screen bg-gray-50/30 pb-20">
       <div className="container mx-auto px-4 pt-8">    
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">

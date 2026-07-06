@@ -6,7 +6,7 @@ export default function ContactPage() {
   return (
     <Suspense fallback={<div>Cargando...</div>}>
       <ScrollToTop />
-      <div className="pt-28 md:pt-36">
+      <div>
         <Contact />
       </div>
     </Suspense>

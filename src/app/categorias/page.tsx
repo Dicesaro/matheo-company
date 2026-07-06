@@ -17,7 +17,7 @@ export default async function CategoriesPage() {
 
   if (!cats) {
     return (
-      <div className="min-h-screen bg-white pt-36 pb-20">
+      <div className="min-h-screen bg-white pb-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-3xl font-bold text-gray-800 mb-4">
             Categorías no disponibles
@@ -57,7 +57,7 @@ export default async function CategoriesPage() {
     .filter((p) => p.children.length > 0)
 
   return (
-    <div className="min-h-screen bg-white pt-28 md:pt-44 pb-20">
+    <div className="min-h-screen bg-white pb-20">
       <div className="container mx-auto px-4 max-w-7xl">
         <h1 className="text-3xl md:text-4xl font-bold text-matheo-blue mb-2 text-center">
           Categorías
