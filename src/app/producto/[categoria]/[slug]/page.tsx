@@ -86,16 +86,6 @@ export default async function Page({ params }: PageProps) {
             ratingCount: 24,
           },
         }),
-        offers: {
-          '@type': 'Offer',
-          url: `https://industrialcompanymatheo.com/producto/${categoria}/${slug}`,
-          priceCurrency: 'PEN',
-          availability: 'https://schema.org/InStock',
-          seller: {
-            '@type': 'Organization',
-            name: 'Industrial Company MATHEO EIRL',
-          },
-        },
       }
     : null
 
