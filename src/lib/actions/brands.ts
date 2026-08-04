@@ -20,8 +20,9 @@ export async function getBrands() {
 export async function createBrand(formData: FormData) {
   const supabase = await getMutationClient()
   const name = formData.get('name') as string
+  const image_url = formData.get('image_url') as string
 
-  const payload = { name: name?.trim() || '' }
+  const payload = { name: name?.trim() || '', image_url: image_url || null }
 
   try {
     brandPayloadSchema.parse(payload)
@@ -43,14 +44,16 @@ export async function createBrand(formData: FormData) {
   }
 
   revalidatePath('/admin/marcas')
+  revalidatePath('/marcas')
   return { success: true }
 }
 
 export async function updateBrand(id: string, formData: FormData) {
   const supabase = await getMutationClient()
   const name = formData.get('name') as string
+  const image_url = formData.get('image_url') as string
 
-  const payload = { name: name?.trim() || '' }
+  const payload = { name: name?.trim() || '', image_url: image_url || null }
 
   try {
     brandPayloadSchema.parse(payload)
@@ -74,6 +77,7 @@ export async function updateBrand(id: string, formData: FormData) {
 
   revalidatePath('/admin/marcas')
   revalidatePath(`/admin/marcas/${id}`)
+  revalidatePath('/marcas')
   return { success: true }
 }
 

@@ -12,7 +12,7 @@ import CategoryFilter from '@/components/admin/CategoryFilter'
 import ClientPagination from '@/components/admin/ClientPagination'
 import { createClient } from '@/lib/supabase-server'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 7
 
 export default async function ProductsPage({
   searchParams,

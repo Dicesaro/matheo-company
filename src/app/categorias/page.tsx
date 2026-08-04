@@ -57,7 +57,7 @@ export default async function CategoriesPage() {
     .filter((p) => p.children.length > 0)
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-screen bg-white pb-20 pt-6">
       <div className="container mx-auto px-4 max-w-7xl">
         <h1 className="text-3xl md:text-4xl font-bold text-matheo-blue mb-2 text-center">
           Categorías

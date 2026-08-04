@@ -2,18 +2,16 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   Package,
   Tags,
   Building2,
-  LogOut,
   Menu,
   X,
   ChevronRight,
 } from 'lucide-react'
-import { createBrowserClient } from '@supabase/ssr'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -26,19 +24,7 @@ const mainNav = [
 
 export default function AdminSidebar() {
   const pathname = usePathname()
-  const router = useRouter()
   const [open, setOpen] = useState(false)
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/admin/login')
-    router.refresh()
-  }
 
   const isActive = (href: string) => {
     const current = pathname ?? ''
@@ -90,16 +76,6 @@ export default function AdminSidebar() {
           </div>
         </div>
       </nav>
-
-      <div className="border-t border-gray-100 p-4">
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600"
-        >
-          <LogOut className="h-4 w-4 shrink-0 text-gray-400" />
-          <span>Cerrar sesión</span>
-        </button>
-      </div>
     </div>
   )
 

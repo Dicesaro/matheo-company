@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { createBrand } from '@/lib/actions/brands'
 import FormWrapper from '@/components/admin/FormWrapper'
 import ButtonLink from '@/components/admin/ButtonLink'
+import BrandForm from '@/components/admin/BrandForm'
 
 export default function NewBrandPage() {
   return (
@@ -28,16 +27,7 @@ export default function NewBrandPage() {
         <CardContent className="p-6">
           <FormWrapper action={createBrand} redirectOnSuccess="/admin/marcas">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-700">Nombre</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Ej: Bosch"
-                  className="border-gray-200 focus-visible:ring-matheo-red"
-                  required
-                />
-              </div>
+              <BrandForm />
 
               <div className="flex gap-2 pt-2">
                 <Button type="submit" className="bg-matheo-red hover:bg-matheo-red/90 shadow-lg shadow-matheo-red/25">Guardar</Button>

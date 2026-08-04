@@ -1,4 +1,5 @@
-import { Plus, Pencil, Building2 } from 'lucide-react'
+import { Plus, Pencil, Building2, ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -7,7 +8,7 @@ import DeleteButton from '@/components/admin/DeleteButton'
 import ButtonLink from '@/components/admin/ButtonLink'
 import ClientPagination from '@/components/admin/ClientPagination'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 8
 
 export default async function BrandsPage({
   searchParams,
@@ -56,7 +57,7 @@ export default async function BrandsPage({
             <TableHeader>
               <TableRow className="border-b border-gray-50">
                 <TableHead className="h-10 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  ID
+                  Img
                 </TableHead>
                 <TableHead className="h-10 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
                   Nombre
@@ -82,8 +83,20 @@ export default async function BrandsPage({
                   key={brand.id}
                   className="border-b border-gray-50 transition-all duration-200 hover:bg-gray-50/50"
                 >
-                  <TableCell className="px-4 py-3 font-mono text-xs text-gray-400">
-                    {brand.id}
+                  <TableCell className="px-4 py-3">
+                    {brand.image_url ? (
+                      <Image
+                        src={brand.image_url}
+                        alt={brand.name}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 rounded-xl border border-gray-100 bg-white object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-gray-50">
+                        <ImageIcon className="h-4 w-4 text-gray-300" />
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="px-4 py-3 font-medium text-gray-900">
                     {brand.name}

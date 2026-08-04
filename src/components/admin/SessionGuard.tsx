@@ -6,7 +6,7 @@ import { getBrowserClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { LogOut, Clock } from 'lucide-react'
 
-const SESSION_DURATION_MS = 15 * 60 * 1000
+const SESSION_DURATION_MS = 60 * 60 * 1000
 const CHECK_INTERVAL_MS = 30 * 1000
 
 export default function SessionGuard({ children }: { children: React.ReactNode }) {

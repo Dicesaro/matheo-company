@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { updateBrand } from '@/lib/actions/brands'
 import { createClient } from '@/lib/supabase-server'
 import FormWrapper from '@/components/admin/FormWrapper'
 import ButtonLink from '@/components/admin/ButtonLink'
+import BrandForm from '@/components/admin/BrandForm'
 
 export default async function EditBrandPage({
   params,
@@ -48,16 +47,10 @@ export default async function EditBrandPage({
             redirectOnSuccess="/admin/marcas"
           >
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-700">Nombre</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  defaultValue={brand.name}
-                  className="border-gray-200 focus-visible:ring-matheo-red"
-                  required
-                />
-              </div>
+              <BrandForm
+                defaultName={brand.name}
+                defaultImageUrl={brand.image_url || ''}
+              />
 
               <div className="flex gap-2 pt-2">
                 <Button type="submit" className="bg-matheo-red hover:bg-matheo-red/90 shadow-lg shadow-matheo-red/25">Guardar cambios</Button>
