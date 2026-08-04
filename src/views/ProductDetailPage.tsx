@@ -92,7 +92,7 @@ export default function ProductDetailPage({
     <div className="min-h-screen bg-white pb-20">
       <div className="container mx-auto px-4 max-w-6xl pt-10 md:pt-0">
         {/* Breadcrumb */}
-        <div className="mb-6">
+        <div className="flex m-5">
           <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-gray-500 font-medium">
             <Link
               href={'/'}
