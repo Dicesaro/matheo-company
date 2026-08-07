@@ -14,8 +14,18 @@ export const metadata: Metadata = {
     title: 'Marcas de Distribución | MATHEO',
     description:
       'Conoce todas las marcas de herramientas industriales que distribuimos en Perú.',
-    locale: 'es_PE',
+    url: 'https://industrialcompanymatheo.com/marcas',
     siteName: 'Industrial Company MATHEO',
+    locale: 'es_PE',
+    type: 'website',
+    images: [
+      {
+        url: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1786062217/OPENGRAPH_MARCAS_yaahqo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Marcas de Distribución | MATHEO',
+      },
+    ],
   },
 }
 
