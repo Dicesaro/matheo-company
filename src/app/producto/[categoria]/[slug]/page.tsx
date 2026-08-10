@@ -77,6 +77,17 @@ export default async function Page({ params }: PageProps) {
           name: match.brands?.name || 'Varios',
         },
         category: match.categories?.name || 'General',
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: match.currency || 'PEN',
+          price: match.price ? match.price.toString() : '0.00',
+          availability:
+            match.stock > 0 || match.in_stock !== false
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+          url:
+            typeof window !== 'undefined' ? window.location.href : '',
+        },
         ...(match.rating && {
           aggregateRating: {
             '@type': 'AggregateRating',
