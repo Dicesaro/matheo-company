@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
 import {
-  Package, Tags, Building2, ArrowUpRight,
+  Package, Tags, Building2, FileText, ArrowUpRight,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -52,12 +52,21 @@ const cards = [
     iconWrapper: 'bg-emerald-100 text-emerald-600',
     badgeBg: 'bg-emerald-50 text-emerald-500',
   },
+  {
+    title: 'Facturas',
+    subtitle: 'Total de facturas',
+    icon: FileText,
+    href: '/admin/facturas',
+    gradient: 'from-amber-50 to-white',
+    iconWrapper: 'bg-amber-100 text-amber-600',
+    badgeBg: 'bg-amber-50 text-amber-500',
+  },
 ]
 
 export default async function AdminDashboardPage() {
   const stats = await getStats()
 
-  const values = [stats.totalProducts, stats.totalCategories, stats.totalBrands]
+  const values = [stats.totalProducts, stats.totalCategories, stats.totalBrands, 0]
 
   return (
     <div className="space-y-8">
@@ -70,7 +79,7 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card, i) => {
           const Icon = card.icon
           const value = values[i]

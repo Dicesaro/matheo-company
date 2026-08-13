@@ -8,6 +8,7 @@ import {
   Package,
   Tags,
   Building2,
+  FileText,
   Menu,
   X,
   ChevronRight,
@@ -20,6 +21,7 @@ const mainNav = [
   { href: '/admin/productos', label: 'Productos', icon: Package },
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/marcas', label: 'Marcas', icon: Building2 },
+  { href: '/admin/facturas', label: 'Facturas', icon: FileText },
 ]
 
 export default function AdminSidebar() {
@@ -33,7 +35,7 @@ export default function AdminSidebar() {
 
   const sidebarContent = (
     <div className="flex h-full flex-col bg-white shadow-sm">
-      <div className="flex h-16 items-center border-b border-gray-100 px-5">
+      <div className="flex h-16 justify-center items-center m-4 ">
         <Image
           src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
           alt="MATHEO"
