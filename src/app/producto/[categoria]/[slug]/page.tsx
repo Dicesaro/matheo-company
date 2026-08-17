@@ -80,13 +80,12 @@ export default async function Page({ params }: PageProps) {
         offers: {
           '@type': 'Offer',
           priceCurrency: match.currency || 'PEN',
-          price: match.price ? match.price.toString() : '0.00',
+          price: Number(match.price) > 0 ? Number(match.price).toString() : '0.01',
           availability:
             match.stock > 0 || match.in_stock !== false
               ? 'https://schema.org/InStock'
               : 'https://schema.org/OutOfStock',
-          url:
-            typeof window !== 'undefined' ? window.location.href : '',
+          url: `https://industrialcompanymatheo.com/producto/${categoria}/${slug}`,
         },
         ...(match.rating && {
           aggregateRating: {
