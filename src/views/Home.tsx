@@ -50,6 +50,44 @@ const structuredData = {
     telephone: '+51922922766',
     availableLanguage: 'Spanish',
   },
+  offers: {
+    '@type': 'AggregateOffer',
+    lowPrice: '1',
+    highPrice: '10000',
+    priceCurrency: 'PEN',
+    availability: 'https://schema.org/InStock',
+    shippingDetails: {
+      '@type': 'OfferShippingDetails',
+      shippingDestination: {
+        '@type': 'DefinedRegion',
+        addressCountry: 'PE',
+      },
+      deliveryTime: {
+        '@type': 'ShippingDeliveryTime',
+        handlingTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 1,
+          maxValue: 3,
+          unitCode: 'DAY',
+        },
+        transitTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 1,
+          maxValue: 7,
+          unitCode: 'DAY',
+        },
+      },
+    },
+    hasMerchantReturnPolicy: {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'PE',
+      returnPolicyCategory:
+        'https://schema.org/MerchantReturnFiniteReturnWindow',
+      merchantReturnDays: 30,
+      returnMethod: 'https://schema.org/ReturnByMail',
+      returnFees: 'https://schema.org/ReturnShippingFees',
+    },
+  },
 }
 
 export default async function Home() {
