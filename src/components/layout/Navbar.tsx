@@ -4,7 +4,6 @@ import {
   X,
   Search,
   ChevronLeft,
-  ChevronRight,
   ChevronDown,
   Mail,
 } from 'lucide-react'
@@ -78,10 +77,6 @@ export default function Navbar() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
   const [isLoadingProducts, setIsLoadingProducts] = useState(true)
 
-  const [isCategoriasOpen, setIsCategoriasOpen] = useState(false)
-  const [hoveredParentCat, setHoveredParentCat] = useState<
-    string | null
-  >(null)
   const [subcategoryMap, setSubcategoryMap] = useState<
     Record<string, { name: string; image: string | null }[]>
   >({})
@@ -97,9 +92,6 @@ export default function Navbar() {
   const [dbBrands, setDbBrands] = useState<{ name: string; image: string | null }[]>([])
   const [allProductNames, setAllProductNames] = useState<string[]>([])
 
-  const catTimeout = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  )
   const searchTimeoutRef = useRef<ReturnType<
     typeof setTimeout
   > | null>(null)
@@ -394,8 +386,8 @@ export default function Navbar() {
             .select(
               `id, name, image_url, brands (name), categories(name)`,
             )
-            .or(`name.ilike.%${term}%,description.ilike.%${term}%`)
-            .limit(6)
+            .ilike('name', `%${term}%`)
+            .limit(10)
 
           if (data && !error) {
             setSearchResults(
@@ -914,143 +906,6 @@ export default function Navbar() {
                 {navItems
                   .filter((i) => i.name !== 'Favoritos' && i.name !== 'Ver Catálogo 📙')
                   .map((item) => {
-                    if (item.hasMega === 'categorias') {
-                      return (
-                        <div
-                          key={item.name}
-                          className="relative"
-                          onMouseEnter={() => {
-                            if (catTimeout.current)
-                              clearTimeout(catTimeout.current)
-                            setIsCategoriasOpen(true)
-                          }}
-                          onMouseLeave={() => {
-                            catTimeout.current = setTimeout(() => {
-                              setIsCategoriasOpen(false)
-                              setHoveredParentCat(null)
-                            }, 150)
-                          }}
-                        >
-                          <button
-                            className={cn(
-                              'flex items-center gap-1 px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
-                              isCategoriasOpen && 'text-white/80',
-                            )}
-                          >
-                            {item.name}
-                            <ChevronDown
-                              size={14}
-                              className={cn(
-                                'transition-transform duration-200',
-                                isCategoriasOpen && 'rotate-180',
-                              )}
-                            />
-                          </button>
-
-                          <div
-                            className={cn(
-                              'absolute top-full left-1/2 -translate-x-1/2 min-w-55 bg-white mt-2.5 border border-gray-200 shadow-2xl z-50 py-2 transition-all duration-200',
-                              isCategoriasOpen
-                                ? 'opacity-100 translate-y-0 pointer-events-auto'
-                                : 'opacity-0 -translate-y-1 pointer-events-none',
-                            )}
-                          >
-                            {isLoadingCategories
-                              ? Array.from({ length: 5 }).map(
-                                  (_, i) => (
-                                    <div
-                                      key={`cat-sk-${i}`}
-                                      className="h-9 mx-2 bg-gray-100 rounded-lg animate-pulse"
-                                    />
-                                  ),
-                                )
-                              : categories
-                                  .filter((c) => c.isParent)
-                                  .slice(0, 6)
-                                  .map((cat) => {
-                                    const subs =
-                                      subcategoryMap[cat.name]
-                                    const hasSub = subs?.length > 0
-                                    return (
-                                      <div
-                                        key={cat.name}
-                                        className="relative px-2 rounded-lg hover:bg-gray-50 transition-colors"
-                                        onMouseEnter={() =>
-                                          setHoveredParentCat(
-                                            cat.name,
-                                          )
-                                        }
-                                      >
-                                        <Link
-                                          href={`/productos/${generateSlug(cat.name)}`}
-                                          onClick={() => {
-                                            setIsCategoriasOpen(false)
-                                          }}
-                                          className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:text-matheo-blue transition-colors"
-                                        >
-                                          <span className="font-medium">
-                                            {cat.name}
-                                          </span>
-                                          {hasSub && (
-                                            <ChevronRight
-                                              size={14}
-                                              className="shrink-0 text-gray-300"
-                                            />
-                                          )}
-                                        </Link>
-
-                                        {hasSub &&
-                                          hoveredParentCat ===
-                                            cat.name && (
-                                            <div
-                                              className="absolute left-full top-0 ml-1 min-w-50 bg-white border border-gray-200 shadow-2xl z-50 py-2"
-                                              onMouseEnter={() =>
-                                                setHoveredParentCat(
-                                                  cat.name,
-                                                )
-                                              }
-                                            >
-                                              {subs.map((sub) => (
-                                                <Link
-                                                  key={sub.name}
-                                                  href={`/productos/${generateSlug(sub.name)}`}
-                                                  onClick={() => {
-                                                    setIsCategoriasOpen(
-                                                      false,
-                                                    )
-                                                  }}
-                                                  className="block px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-matheo-blue transition-colors"
-                                                >
-                                                  {sub.name}
-                                                </Link>
-                                              ))}
-                                            </div>
-                                          )}
-                                      </div>
-                                    )
-                                  })}
-
-                            {!isLoadingCategories && (
-                              <>
-                                <hr className="my-2 mx-2 border-gray-100" />
-                                <div className="px-2">
-                                  <Link
-                                    href="/categorias"
-                                    onClick={() => {
-                                      setIsCategoriasOpen(false)
-                                    }}
-                                    className="block px-3 py-2 text-sm font-semibold text-matheo-blue hover:bg-blue-50 rounded-lg transition-colors"
-                                  >
-                                    Ver más categorías →
-                                  </Link>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    }
-
                     if (item.name === 'Marcas') {
                       return (
                         <Link

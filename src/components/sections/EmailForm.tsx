@@ -1,7 +1,34 @@
 'use client'
+import { useState } from 'react'
 import Image from 'next/image'
+import { submitContact } from '@/lib/actions/contacts'
 
 export default function EmailForm() {
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: '',
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    await submitContact({
+      name: formData.name,
+      email: formData.email,
+      subject: 'Consulta desde la web - MATHEO',
+      message: formData.message,
+    })
+
+    const body = `Nombre: ${formData.name}\nEmail: ${formData.email}\n\nMensaje:\n${formData.message}`
+    window.location.href = `mailto:ventas@matheocompany.com?subject=${encodeURIComponent('Consulta desde la web - MATHEO')}&body=${encodeURIComponent(body)}`
+
+    setFormData({ name: '', email: '', message: '' })
+    setSubmitting(false)
+  }
+
   return (
     <div className="container mx-auto px-4 md:px-20 pt-8">
       <div className="flex flex-col md:flex-row items-stretch gap-6">
@@ -24,20 +51,7 @@ export default function EmailForm() {
             Déjanos tu consulta y te responderemos a la brevedad
           </p>
           <div className="w-full bg-white rounded-2xl shadow-2xl p-4 md:p-6 border border-gray-100">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                const form = e.currentTarget as HTMLFormElement
-                const data = new FormData(form)
-                const name = data.get('name') as string
-                const email = data.get('email') as string
-                const message = data.get('message') as string
-                const subject = 'Consulta desde la web - MATHEO'
-                const body = `Nombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`
-                window.location.href = `mailto:ventas@matheocompany.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-              }}
-              className="space-y-3"
-            >
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label htmlFor="form-name" className="block text-xs font-bold text-gray-700 mb-1">
                   Nombre *
@@ -47,6 +61,8 @@ export default function EmailForm() {
                   id="form-name"
                   name="name"
                   required
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   className="w-full px-3 py-2 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all text-sm"
                   placeholder="Tu nombre"
                 />
@@ -60,6 +76,8 @@ export default function EmailForm() {
                   id="form-email"
                   name="email"
                   required
+                  value={formData.email}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                   className="w-full px-3 py-2 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all text-sm"
                   placeholder="tu@email.com"
                 />
@@ -73,15 +91,22 @@ export default function EmailForm() {
                   name="message"
                   required
                   rows={3}
+                  value={formData.message}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
                   className="w-full px-3 py-2 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all resize-none text-sm"
                   placeholder="Escribe tu mensaje aquí..."
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-matheo-red hover:bg-red-700 text-white py-2.5 rounded-xl font-bold transition-all transform hover:scale-[1.02] shadow-xl hover:shadow-2xl"
+                disabled={submitting}
+                className="w-full bg-matheo-red hover:bg-red-700 text-white py-2.5 rounded-xl font-bold transition-all transform hover:scale-[1.02] shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Enviar Mensaje
+                {submitting ? (
+                  <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  'Enviar Mensaje'
+                )}
               </button>
             </form>
           </div>

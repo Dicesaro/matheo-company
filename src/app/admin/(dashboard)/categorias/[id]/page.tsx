@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -11,6 +10,7 @@ import { updateCategory, getCategories } from '@/lib/actions/categories'
 import { createClient } from '@/lib/supabase-server'
 import FormWrapper from '@/components/admin/FormWrapper'
 import ButtonLink from '@/components/admin/ButtonLink'
+import CategoryForm from '@/components/admin/CategoryForm'
 
 export default async function EditCategoryPage({
   params,
@@ -54,28 +54,10 @@ export default async function EditCategoryPage({
             redirectOnSuccess="/admin/categorias"
           >
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-700">Nombre</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  defaultValue={category.name}
-                  className="border-gray-200 focus-visible:ring-matheo-red"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="image_url" className="text-gray-700">URL de imagen</Label>
-                <Input
-                  id="image_url"
-                  name="image_url"
-                  defaultValue={category.image_url || ''}
-                  placeholder="https://..."
-                  className="border-gray-200 focus-visible:ring-matheo-red"
-                />
-                <p className="text-xs text-gray-400">URL de la imagen representativa de la categoría</p>
-              </div>
+              <CategoryForm
+                defaultName={category.name}
+                defaultImageUrl={category.image_url || ''}
+              />
 
               <div className="space-y-2">
                 <Label htmlFor="parent_id" className="text-gray-700">Categoría padre</Label>

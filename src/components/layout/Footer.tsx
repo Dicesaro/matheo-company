@@ -73,15 +73,6 @@ export default function Footer() {
           </span>
         </li>
         <li className="flex items-center gap-3 text-gray-400">
-          <Phone size={20} className="shrink-0 text-matheo-red" />
-          <a
-            href="tel:+51922922766"
-            className="text-sm hover:text-white transition-colors"
-          >
-            +51 922 922 766
-          </a>
-        </li>
-        <li className="flex items-center gap-3 text-gray-400">
           <Mail size={20} className="shrink-0 text-matheo-red" />
           <div className="text-sm">
             <a
@@ -155,9 +146,7 @@ export default function Footer() {
     <footer className="bg-linear-to-b from-gray-900 to-black text-white">
       <div className="container mx-auto px-4 py-16">
         {/* Mobile: Company info centered, full width */}
-        <div className="md:hidden mb-10">
-          {companyInfo}
-        </div>
+        <div className="md:hidden mb-10">{companyInfo}</div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Desktop: Company Info */}
@@ -204,9 +193,9 @@ export default function Footer() {
             <p>
               © {currentYear}{' '}
               <span className="text-matheo-red font-semibold">
-                MATHEO
+                Industrial Company MATHEO EIRL.
               </span>{' '}
-              Industrial Company EIRL. Todos los derechos reservados.
+              Todos los derechos reservados.
             </p>
             <div className="flex gap-6 flex-wrap justify-center md:justify-end">
               <Link

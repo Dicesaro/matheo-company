@@ -6,21 +6,10 @@ import Image from 'next/image'
 import { generateSlug } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 
-const categoryImages: Record<string, string> = {
-  Abrasivos: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779142672/Gemini_Generated_Image_mddeymddeymddeym_cva2rm.png',
-  'Herramientas de Fresado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779143127/Gemini_Generated_Image_njqjlpnjqjlpnjqj_bnaivs.png',
-  'Herramientas de Roscado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779143464/HERRAMIENTAS_DE_ROSCADO_jkyihi.png',
-  'Herramientas de Sujeción': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144016/HERRAMIENTAS_DE_SUJECION_cgnhby.png',
-  'Herramientas de Taladrado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144394/Gemini_Generated_Image_vqr2dpvqr2dpvqr2_dtwjfv.png',
-  'Herramientas para Torneado': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144544/HERRAMIENTAS_DE_TORNEAR_r06qng.png',
-  'Herramientas Eléctricas': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780935442/Gemini_Generated_Image_vqwdghvqwdghvqwd_kh857w.png',
-  'Herramientas de Medición': 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1782856741/Gemini_Generated_Image_486y5g486y5g486y_tcven9.png',
-  Soldadura: 'https://res.cloudinary.com/ddtmb8l1k/image/upload/v1779144885/SOLDADURA_qxvr8r.png',
-}
-
 interface ParentCategory {
   id: string
   name: string
+  image_url: string | null
 }
 
 export default function CategoryProducts() {
@@ -34,7 +23,7 @@ export default function CategoryProducts() {
       try {
         const { data: allCats } = await supabase
           .from('categories')
-          .select('id, name, parent_id')
+          .select('id, name, parent_id, image_url')
           .order('name')
 
         if (allCats) {
@@ -43,7 +32,11 @@ export default function CategoryProducts() {
           )
           const parents = allCats
             .filter((c) => !subcatNames.has(c.name))
-            .map((c) => ({ id: c.id, name: c.name }))
+            .map((c) => ({
+              id: c.id,
+              name: c.name,
+              image_url: c.image_url || null,
+            }))
           setCategories(parents)
         }
       } catch {
@@ -157,9 +150,9 @@ export default function CategoryProducts() {
                     className="group block"
                   >
                     <div className="aspect-square rounded-full bg-gray-50 overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ring-1 ring-gray-100 hover:ring-matheo-blue/30">
-                      {categoryImages[cat.name] ? (
+                      {cat.image_url ? (
                         <Image
-                          src={categoryImages[cat.name]}
+                          src={cat.image_url}
                           alt={cat.name}
                           width={400}
                           height={400}

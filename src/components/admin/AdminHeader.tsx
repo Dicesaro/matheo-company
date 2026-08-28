@@ -49,7 +49,7 @@ export default function AdminHeader() {
               {initials}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden text-sm font-medium text-gray-700 sm:block max-w-[140px] truncate">
+          <span className="hidden text-sm font-medium text-gray-700 sm:block max-w-35 truncate">
             {email || 'Admin'}
           </span>
         </DropdownMenuTrigger>
@@ -59,7 +59,7 @@ export default function AdminHeader() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col gap-0.5">
                 <p className="text-sm font-medium text-gray-900">Admin</p>
-                <p className="text-xs text-gray-500 truncate max-w-[200px]">
+                <p className="text-xs text-gray-500 truncate max-w-50">
                   {email || 'admin@matheo.com'}
                 </p>
               </div>

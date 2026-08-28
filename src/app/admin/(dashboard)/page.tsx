@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase-server'
 import {
-  Package, Tags, Building2, FileText, ArrowUpRight,
+  Package, Tags, Building2, FileText, Mail, ArrowUpRight,
 } from 'lucide-react'
 import Link from 'next/link'
+import { getUnreadCount } from '@/lib/actions/contacts'
 
 async function getStats() {
   const supabase = await createClient()
@@ -53,20 +54,29 @@ const cards = [
     badgeBg: 'bg-emerald-50 text-emerald-500',
   },
   {
+    title: 'Mensajes',
+    subtitle: 'Mensajes de contacto',
+    icon: Mail,
+    href: '/admin/contactos',
+    gradient: 'from-violet-50 to-white',
+    iconWrapper: 'bg-violet-100 text-violet-600',
+    badgeBg: 'bg-violet-50 text-violet-500',
+  },
+  {
     title: 'Facturas',
     subtitle: 'Total de facturas',
-    icon: FileText,
+    icon: Mail,
     href: '/admin/facturas',
-    gradient: 'from-amber-50 to-white',
-    iconWrapper: 'bg-amber-100 text-amber-600',
-    badgeBg: 'bg-amber-50 text-amber-500',
+    gradient: 'from-yellow-50 to-white',
+    iconWrapper: 'bg-yellow-100 text-yellow-600',
+    badgeBg: 'bg-yellow-50 text-yellow-500',
   },
 ]
 
 export default async function AdminDashboardPage() {
-  const stats = await getStats()
+  const [stats, unreadCount] = await Promise.all([getStats(), getUnreadCount()])
 
-  const values = [stats.totalProducts, stats.totalCategories, stats.totalBrands, 0]
+  const values = [stats.totalProducts, stats.totalCategories, stats.totalBrands, unreadCount]
 
   return (
     <div className="space-y-8">

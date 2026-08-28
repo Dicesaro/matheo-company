@@ -2,12 +2,14 @@ export interface CategoryWithParent {
   id: string
   name: string
   parent_id: string | null
+  image_url?: string | null
 }
 
 export interface CategoryNode {
   id: string
   name: string
   parent_id: string | null
+  image_url?: string | null
   children: CategoryNode[]
 }
 

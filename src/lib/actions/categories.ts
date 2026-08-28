@@ -14,7 +14,12 @@ export async function getCategories() {
     .order('name')
 
   if (error) throw new Error(error.message)
-  return data as { id: string; name: string; parent_id: string | null }[]
+  return data as {
+    id: string
+    name: string
+    parent_id: string | null
+    image_url: string | null
+  }[]
 }
 
 export async function createCategory(formData: FormData) {

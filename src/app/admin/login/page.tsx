@@ -65,7 +65,7 @@ function LoginForm() {
         <Input
           id="email"
           type="email"
-          placeholder="admin@matheo.com"
+          placeholder="correo.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="border-gray-200 bg-white/80 focus-visible:ring-matheo-red/30 rounded-xl"

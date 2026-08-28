@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -9,6 +8,7 @@ import { ArrowLeft } from 'lucide-react'
 import { createCategory, getCategories } from '@/lib/actions/categories'
 import FormWrapper from '@/components/admin/FormWrapper'
 import ButtonLink from '@/components/admin/ButtonLink'
+import CategoryForm from '@/components/admin/CategoryForm'
 
 export default async function NewCategoryPage() {
   const allCategories = await getCategories()
@@ -34,27 +34,7 @@ export default async function NewCategoryPage() {
         <CardContent className="p-6">
           <FormWrapper action={createCategory} redirectOnSuccess="/admin/categorias">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-700">Nombre</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Ej: Herramientas de Corte"
-                  className="border-gray-200 focus-visible:ring-matheo-red"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="image_url" className="text-gray-700">URL de imagen</Label>
-                <Input
-                  id="image_url"
-                  name="image_url"
-                  placeholder="https://..."
-                  className="border-gray-200 focus-visible:ring-matheo-red"
-                />
-                <p className="text-xs text-gray-400">URL de la imagen representativa de la categoría</p>
-              </div>
+              <CategoryForm />
 
               <div className="space-y-2">
                 <Label htmlFor="parent_id" className="text-gray-700">Categoría padre</Label>

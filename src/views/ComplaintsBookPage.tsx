@@ -38,7 +38,7 @@ const ComplaintsBookPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-10">
+    <div className="container mx-auto py-10">
       <div className="max-w-3xl mx-auto">
         <div className="flex flex-col items-center gap-4 mb-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-matheo-red">

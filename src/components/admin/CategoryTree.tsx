@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronRight, FolderOpen, Pencil } from 'lucide-react'
+import { ChevronRight, FolderOpen, Pencil, Image as ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -55,6 +56,23 @@ function TreeRow({
               <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
                 {node.children.length}
               </span>
+            )}
+          </div>
+        </TableCell>
+        <TableCell className="px-4 py-3">
+          <div className="flex items-center">
+            {node.image_url ? (
+              <Image
+                src={node.image_url}
+                alt={node.name}
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-lg object-cover ring-1 ring-gray-100"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 ring-1 ring-gray-100">
+                <ImageIcon className="h-4 w-4 text-gray-300" />
+              </div>
             )}
           </div>
         </TableCell>
@@ -122,6 +140,9 @@ export default function CategoryTree({ tree, countParents, countSubcategories }:
             <TableHead className="h-10 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
               Nombre
             </TableHead>
+            <TableHead className="h-10 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+              Imagen
+            </TableHead>
             <TableHead className="h-10 w-24 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase">
               Acciones
             </TableHead>
@@ -130,7 +151,7 @@ export default function CategoryTree({ tree, countParents, countSubcategories }:
         <TableBody>
           {tree.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={3} className="h-32 text-center text-sm text-gray-400">
+              <TableCell colSpan={4} className="h-32 text-center text-sm text-gray-400">
                 <div className="flex flex-col items-center justify-center gap-2">
                   <FolderOpen className="h-8 w-8 text-gray-300" />
                   <p>No hay categorías registradas</p>

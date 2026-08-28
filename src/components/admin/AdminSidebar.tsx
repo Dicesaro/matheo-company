@@ -9,6 +9,7 @@ import {
   Tags,
   Building2,
   FileText,
+  Mail,
   Menu,
   X,
   ChevronRight,
@@ -21,10 +22,11 @@ const mainNav = [
   { href: '/admin/productos', label: 'Productos', icon: Package },
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/marcas', label: 'Marcas', icon: Building2 },
+  { href: '/admin/contactos', label: 'Mensajes', icon: Mail, badge: true },
   { href: '/admin/facturas', label: 'Facturas', icon: FileText },
 ]
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ unreadCount = 0 }: { unreadCount?: number }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -69,7 +71,17 @@ export default function AdminSidebar() {
                 >
                   <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-white' : 'text-gray-400 group-hover:text-gray-600')} />
                   <span>{item.label}</span>
-                  {active && (
+                  {'badge' in item && item.badge && unreadCount > 0 && (
+                    <span className={cn(
+                      'ml-auto inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none',
+                      active
+                        ? 'bg-white text-matheo-red'
+                        : 'bg-matheo-red text-white'
+                    )}>
+                      {unreadCount}
+                    </span>
+                  )}
+                  {active && !('badge' in item && item.badge && unreadCount > 0) && (
                     <ChevronRight className="ml-auto h-3.5 w-3.5 text-white/60" />
                   )}
                 </Link>

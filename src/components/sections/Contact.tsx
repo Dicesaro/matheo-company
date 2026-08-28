@@ -1,11 +1,11 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { Send, MapPin, Phone, Mail, ExternalLink, Play } from 'lucide-react'
+import { useState } from 'react'
+import { Send, MapPin, Mail, ExternalLink, Play } from 'lucide-react'
+import { PhoneInput } from 'react-international-phone'
+import 'react-international-phone/style.css'
+import { submitContact } from '@/lib/actions/contacts'
 
 const PHONE_NUMBER = '51922922766'
-
-// TODO: Reemplazar con las URLs reales de cada red social
-const bannerLinks = ['#', '#', '#']
 
 export default function Contact() {
   const [submitting, setSubmitting] = useState(false)
@@ -28,9 +28,17 @@ export default function Contact() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
+
+    await submitContact({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone || undefined,
+      subject: formData.subject,
+      message: formData.message,
+    })
 
     const subjectLabels: Record<string, string> = {
       cotizacion: 'Solicitud de Cotización',
@@ -39,10 +47,12 @@ export default function Contact() {
       otro: 'Otro',
     }
 
-    const message = `*Nuevo Contacto - Web*\n\n*Nombre:* ${formData.name}\n*Email:* ${formData.email}\n*Teléfono:* ${formData.phone}\n*Asunto:* ${subjectLabels[formData.subject] || formData.subject}\n*Mensaje:*\n${formData.message}`
+    const whatsappMessage = `*Nuevo Contacto - Web*\n\n*Nombre:* ${formData.name}\n*Email:* ${formData.email}\n*Teléfono:* ${formData.phone}\n*Asunto:* ${subjectLabels[formData.subject] || formData.subject}\n*Mensaje:*\n${formData.message}`
 
-    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`
     window.open(whatsappUrl, '_blank')
+
+    setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
     setSubmitting(false)
   }
 
@@ -70,15 +80,6 @@ export default function Contact() {
                     Av. Argentina N° 639 Int. Calle 10 Stand B218-B219
                     C.C. UDAMPE Lima Cercado, Perú
                   </p>
-                </div>
-              </div>
-
-              {/* Celular */}
-              <div className="flex items-start gap-4">
-                <Phone className="w-6 h-6 text-matheo-blue shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-gray-900">Celular</p>
-                  <p className="text-gray-600 text-sm">922 922 766</p>
                 </div>
               </div>
 
@@ -204,14 +205,16 @@ export default function Contact() {
                   >
                     Teléfono
                   </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
+                  <PhoneInput
+                    defaultCountry="pe"
                     value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2.5 bg-gray-50 border-2 border-transparent rounded-xl focus:border-matheo-blue focus:bg-white focus:outline-none transition-all text-sm"
-                    placeholder="+51 ..."
+                    onChange={(value) => setFormData((prev) => ({ ...prev, phone: value }))}
+                    className="phone-input-contact"
+                    inputProps={{
+                      id: 'phone',
+                      name: 'phone',
+                    }}
+                    placeholder="922 922 766"
                   />
                 </div>
               </div>
