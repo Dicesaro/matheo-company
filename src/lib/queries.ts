@@ -150,6 +150,14 @@ interface CatalogData {
   allBrands: string[]
   allProducts: CatalogProduct[]
   parentNameMap: Record<string, string[]>
+  childCategories: ChildCategory[]
+}
+
+interface ChildCategory {
+  id: string
+  name: string
+  image: string | null
+  parentName: string
 }
 
 export async function getCatalogData(): Promise<CatalogData> {
@@ -157,7 +165,7 @@ export async function getCatalogData(): Promise<CatalogData> {
 
   const catsPromise = supabase
     .from('categories')
-    .select('id, name, parent_id')
+    .select('id, name, parent_id, image_url')
     .order('name')
 
   const brandsPromise = supabase
@@ -202,6 +210,15 @@ export async function getCatalogData(): Promise<CatalogData> {
 
   const allBrands = (brandsResult.data || []).map((b) => b.name)
 
+  const childCategories: ChildCategory[] = cats
+    .filter((c) => c.parent_id)
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      image: (c as { image_url: string | null }).image_url || null,
+      parentName: idToName[c.parent_id!] || '',
+    }))
+
   type RawProduct = {
     id: string
     name: string
@@ -233,5 +250,6 @@ export async function getCatalogData(): Promise<CatalogData> {
     allBrands,
     allProducts,
     parentNameMap: childrenOf,
+    childCategories,
   }
 }

@@ -159,21 +159,22 @@ export default function FeaturedProducts({
     <section
       id="productos-destacados"
       ref={sectionRef}
-      className="py-8 overflow-hidden"
+      className="py-8 overflow-hidden px-4"
       style={{
         opacity: inView ? 1 : 0,
         transform: inView ? 'translateY(0)' : 'translateY(30px)',
         transition: 'opacity 0.8s ease, transform 0.8s ease',
       }}
     >
-      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-matheo-blue mb-4">
-        Productos Destacados
-      </h2>
-      <p className="text-center text-gray-600 text-sm md:text-base max-w-xl mx-auto mb-8">
-        Las herramientas más vendidas y mejor calificadas por nuestros
-        clientes
-      </p>
-      <div className="container mx-auto px-4 md:px-20">
+      <div className="flex flex-col items-center mb-4">
+        <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-matheo-blue mb-3">
+          Productos Destacados
+        </h2>
+        <p className="text-[10px] md:text-xl text-gray-600">
+          Las herramientas más vendidas
+        </p>
+      </div>
+      <div className="container mx-auto px-4">
         {/* Carousel */}
         <div className="relative">
           <button
@@ -247,7 +248,7 @@ export default function FeaturedProducts({
       </div>
 
       {/* ── Second Carousel (2 columns) ── */}
-      <div className="container mx-auto px-4 mt-8 md:px-20">
+      <div className="container mx-auto px-4 mt-8 ">
         <div className="relative">
           <button
             onClick={() =>
@@ -424,30 +425,7 @@ export default function FeaturedProducts({
         <section className="bg-white py-8 md:py-12">
           <div className="container mx-auto px-4 md:px-20">
             <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="w-full md:w-1/4">
-                <div className="flex flex-row md:flex-col items-center justify-center md:justify-start gap-3 md:gap-4 mb-4 md:mb-0">
-                  <div className="w-12 h-12 md:w-24 md:h-24 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
-                    <Image
-                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780695162/CNC-drilling-2-1024x806_fg4kuc.jpg"
-                      alt="Taladrado"
-                      width={96}
-                      height={96}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <h3 className="text-base md:text-xl font-bold text-matheo-blue uppercase text-center">
-                    Taladrado
-                  </h3>
-                  <Link
-                    href="/productos/herramientas-de-taladrado"
-                    className="bg-matheo-red text-white font-semibold px-4 py-1.5 md:px-6 md:py-2.5 rounded-full hover:bg-matheo-red/90 transition-colors shadow-md text-xs md:text-base whitespace-nowrap"
-                  >
-                    Ver todo
-                  </Link>
-                </div>
-              </div>
-
-              <div className="w-full md:w-3/4 relative">
+              <div className="w-full md:w-4/4 relative">
                 <button
                   onClick={() =>
                     setCurrentIdxTal((prev) =>
@@ -511,30 +489,7 @@ export default function FeaturedProducts({
         <section className="bg-white py-8 md:py-12">
           <div className="container mx-auto px-4 md:px-20">
             <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="w-full md:w-1/4">
-                <div className="flex flex-row md:flex-col items-center justify-center md:justify-start gap-3 md:gap-4 mb-4 md:mb-0">
-                  <div className="w-12 h-12 md:w-24 md:h-24 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
-                    <Image
-                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1780695156/Apmt-Cnmg-Dnmg-Milling-Inserts-Metal-Lathe-Cutting-Tool_mfzvha.avif"
-                      alt="Torneado"
-                      width={96}
-                      height={96}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <h3 className="text-base md:text-xl font-bold text-matheo-blue uppercase text-center">
-                    Torneado
-                  </h3>
-                  <Link
-                    href="/productos/herramientas-para-torneado/insertos-para-torneado"
-                    className="bg-matheo-red text-white font-semibold px-4 py-1.5 md:px-6 md:py-2.5 rounded-full hover:bg-matheo-red/90 transition-colors shadow-md text-xs md:text-base whitespace-nowrap"
-                  >
-                    Ver todo
-                  </Link>
-                </div>
-              </div>
-
-              <div className="w-full md:w-3/4 relative">
+              <div className="w-full md:w-4/4 relative">
                 <button
                   onClick={() =>
                     setCurrentIdxIns((prev) =>
@@ -598,30 +553,7 @@ export default function FeaturedProducts({
         <section className="bg-white py-8 md:py-12">
           <div className="container mx-auto px-4 md:px-20">
             <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="w-full md:w-1/4">
-                <div className="flex flex-row md:flex-col items-center justify-center md:justify-start gap-3 md:gap-4 mb-4 md:mb-0">
-                  <div className="w-12 h-12 md:w-24 md:h-24 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
-                    <Image
-                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1781404755/HTB1_S1Ba7xz61VjSZFtq6yDSVXac_zhmjoe.jpg"
-                      alt="Fresas Carburadas"
-                      width={96}
-                      height={96}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <h3 className="text-base md:text-xl font-bold text-matheo-blue uppercase text-center">
-                    Fresas
-                  </h3>
-                  <Link
-                    href="/productos/herramientas-de-fresado/fresas-carburadas-rotativas"
-                    className="bg-matheo-red text-white font-semibold px-4 py-1.5 md:px-6 md:py-2.5 rounded-full hover:bg-matheo-red/90 transition-colors shadow-md text-xs md:text-base whitespace-nowrap"
-                  >
-                    Ver todo
-                  </Link>
-                </div>
-              </div>
-
-              <div className="w-full md:w-3/4 relative">
+              <div className="w-full md:w-4/4 relative">
                 <button
                   onClick={() =>
                     setCurrentIdxFresasCarb((prev) =>

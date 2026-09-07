@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -14,7 +14,6 @@ interface ParentCategory {
 
 export default function CategoryProducts() {
   const [categories, setCategories] = useState<ParentCategory[]>([])
-  const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsToShow, setItemsToShow] = useState(6)
 
@@ -41,8 +40,6 @@ export default function CategoryProducts() {
         }
       } catch {
         // ignore
-      } finally {
-        setLoading(false)
       }
     }
     fetchParentCategories()
@@ -52,7 +49,7 @@ export default function CategoryProducts() {
     function handleResize() {
       const width = window.innerWidth
       let newItemsToShow
-      if (width < 640) newItemsToShow = 2
+      if (width < 640) newItemsToShow = 4
       else if (width < 768) newItemsToShow = 3
       else if (width < 1024) newItemsToShow = 4
       else newItemsToShow = 6
@@ -74,75 +71,63 @@ export default function CategoryProducts() {
   const prev = () => setCurrentIndex((p) => Math.max(0, p - 1))
   const next = () => setCurrentIndex((p) => Math.min(maxIndex, p + 1))
 
-  if (loading) {
-    return (
-      <section className="py-16 md:py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-matheo-blue mb-3">
-              Nuestras Categorías
-            </h2>
-            <p className="text-base md:text-xl text-gray-600">
-              Explora nuestras líneas de productos.
-            </p>
-          </div>
-          <div className="flex gap-6 justify-center max-w-5xl mx-auto">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex-1 max-w-48">
-                <div className="aspect-square rounded-full bg-gray-100 animate-pulse" />
-                <div className="h-4 bg-gray-100 rounded animate-pulse mt-4 mx-6" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    )
+  const touchStartX = useRef<number | null>(null)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    const threshold = 50
+    if (deltaX < -threshold) next()
+    else if (deltaX > threshold) prev()
   }
 
   if (categories.length === 0) return null
 
   return (
-    <section className="py-8 md:py-12 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-matheo-blue mb-3">
-            Nuestras Categorías
-          </h2>
-          <p className="text-base md:text-xl text-gray-600">
-            Explora nuestras líneas de productos.
-          </p>
-        </div>
-
+    <section className="relative z-20 mt-2 md:-mt-8 md:pb-10 pointer-events-none">
+      <div className="container mx-auto px-4 pointer-events-auto">
         <div className="relative max-w-6xl mx-auto">
           {categories.length > itemsToShow && currentIndex > 0 && (
             <button
               onClick={prev}
-              className="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
+              className="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg border border-gray-200 hidden min-[920px]:flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
               aria-label="Anterior"
             >
               <ChevronLeft size={22} />
             </button>
           )}
 
-          {categories.length > itemsToShow && currentIndex < maxIndex && (
-            <button
-              onClick={next}
-              className="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
-              aria-label="Siguiente"
-            >
-              <ChevronRight size={22} />
-            </button>
-          )}
+          {categories.length > itemsToShow &&
+            currentIndex < maxIndex && (
+              <button
+                onClick={next}
+                className="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg border border-gray-200 hidden min-[920px]:flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
+                aria-label="Siguiente"
+              >
+                <ChevronRight size={22} />
+              </button>
+            )}
 
-          <div className="overflow-hidden px-1">
+          <div
+            className="overflow-hidden px-1"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             <div
-              className="flex transition-transform duration-500 ease-out will-change-transform"
-              style={{ transform: `translateX(-${currentIndex * slideWidth}%)` }}
+              className="flex transition-transform ease-linear will-change-transform"
+              style={{
+                transform: `translateX(-${currentIndex * slideWidth}%)`,
+              }}
             >
               {categories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="shrink-0 px-2 md:px-3"
+                  className="shrink-0 px-1.5 sm:px-2 md:px-3"
                   style={{ flex: `0 0 ${slideWidth}%` }}
                 >
                   <Link
@@ -159,12 +144,12 @@ export default function CategoryProducts() {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (
-                        <span className="text-gray-300 text-5xl md:text-6xl font-bold uppercase select-none flex items-center justify-center h-full">
+                        <span className="text-gray-300 text-4xl sm:text-5xl md:text-6xl font-bold uppercase select-none flex items-center justify-center h-full">
                           {cat.name.charAt(0)}
                         </span>
                       )}
                     </div>
-                    <h3 className="text-center font-bold text-matheo-blue text-xs md:text-sm lg:text-base uppercase tracking-wide mt-3 md:mt-4 group-hover:text-matheo-red transition-colors leading-tight px-1">
+                    <h3 className="text-center font-bold text-matheo-blue text-[8px] md:text-sm lg:text-sm uppercase tracking-wide mt-3 md:mt-4 group-hover:text-matheo-red transition-colors leading-tight flex items-center justify-center min-h-8 line-clamp-2 wrap-break-words px-1">
                       {cat.name}
                     </h3>
                   </Link>

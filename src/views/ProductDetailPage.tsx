@@ -90,37 +90,8 @@ export default function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      <div className="container mx-auto px-4 max-w-6xl pt-10 md:pt-0">
-        {/* Breadcrumb */}
-        <div className="flex m-5">
-          <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-gray-500 font-medium">
-            <Link
-              href={'/'}
-              className="text-matheo-blue hover:underline transition-colors"
-            >
-              Inicio
-            </Link>
-            <span className="text-gray-400">›</span>
-            <Link
-              href={'/productos'}
-              className="text-matheo-blue hover:underline transition-colors"
-            >
-              Productos
-            </Link>
-            <span className="text-gray-400">›</span>
-            <Link
-              href={`/productos/${product.categorySlug}`}
-              className="text-matheo-blue hover:underline transition-colors"
-            >
-              {product.category}
-            </Link>
-            <span className="text-gray-400">›</span>
-            <span className="text-gray-400 truncate">
-              {product.name}
-            </span>
-          </div>
-        </div>
-
+      <div className="container mx-auto px-4 max-w-6xl pt-10 md:pt-10">
+        
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
           {/* Left Column: Image Gallery */}
           <div className="space-y-4 lg:sticky lg:top-40 h-fit w-full lg:w-1/2">

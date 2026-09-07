@@ -101,9 +101,8 @@ export default async function Home() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(structuredData),
         }}
-      />
-      <Hero />
-      <KeyPoints />
+        />
+      <Hero/>
       <CategoryProducts />
       <FeaturedProducts
         productItems={productItems}
@@ -111,7 +110,7 @@ export default async function Home() {
         insertosItems={insertosItems}
         fresasCarbuItems={fresasCarbuItems}
       />
-      <EmailForm />
+        <KeyPoints />
     </>
   )
 }
