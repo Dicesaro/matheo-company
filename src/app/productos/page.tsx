@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Page() {
-  const { allCategories, allBrands, allProducts, parentNameMap, childCategories } =
+  const { allCategories, allBrands, allProducts, parentNameMap } =
     await getCatalogData()
 
   return (
@@ -34,7 +34,6 @@ export default async function Page() {
         initialCategories={allCategories}
         initialBrands={allBrands}
         initialParentNameMap={parentNameMap}
-        initialChildCategories={childCategories}
       />
     </Suspense>
   )
