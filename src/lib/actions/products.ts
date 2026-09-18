@@ -43,6 +43,7 @@ export async function createProduct(formData: FormData) {
   const categoryId = formData.get('category_id') as string
   const brandId = formData.get('brand_id') as string
   const featured = formData.get('featured') === 'true'
+  const outOfStock = formData.get('out_of_stock') === 'true'
   const features = formData.get('features') as string
   const benefits = formData.get('benefits') as string
   const workMaterials = formData.get('work_materials') as string
@@ -60,6 +61,7 @@ export async function createProduct(formData: FormData) {
     discount: discount ? Number(discount) : null,
     rating: rating ? Number(rating) : null,
     featured,
+    out_of_stock: outOfStock,
     image_url: imageUrl || null,
   }
 
@@ -105,6 +107,7 @@ export async function updateProduct(id: string, formData: FormData) {
   const categoryId = formData.get('category_id') as string
   const brandId = formData.get('brand_id') as string
   const featured = formData.get('featured') === 'true'
+  const outOfStock = formData.get('out_of_stock') === 'true'
   const features = formData.get('features') as string
   const benefits = formData.get('benefits') as string
   const workMaterials = formData.get('work_materials') as string
@@ -122,6 +125,7 @@ export async function updateProduct(id: string, formData: FormData) {
     discount: discount ? Number(discount) : null,
     rating: rating ? Number(rating) : null,
     featured,
+    out_of_stock: outOfStock,
     image_url: imageUrl || null,
   }
 

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Page() {
-  const { allCategories, allBrands, allProducts, parentNameMap } =
+  const { allCategories, allProducts, parentNameMap } =
     await getCatalogData()
 
   return (
@@ -32,7 +32,6 @@ export default async function Page() {
       <ProductsPage
         initialProducts={allProducts}
         initialCategories={allCategories}
-        initialBrands={allBrands}
         initialParentNameMap={parentNameMap}
       />
     </Suspense>

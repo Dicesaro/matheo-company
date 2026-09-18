@@ -1,10 +1,8 @@
 'use client'
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Search,
-  List,
-  Grid3x3,
   SlidersHorizontal,
   LayoutGrid,
   ChevronLeft,
@@ -16,7 +14,7 @@ import { cn, generateSlug, slugToCategory } from '@/lib/utils'
 import { useCustomSearchParams } from '@/hooks/useCustomSearchParams'
 import { useRouter } from 'next/navigation'
 import CardProduct from '@/components/sections/products/CardProduct'
-import FilterSection from '@/components/sections/products/FilterSection'
+import CategoryFilterBar from '@/components/sections/products/CategoryFilterBar'
 
 
 interface Product {
@@ -27,9 +25,11 @@ interface Product {
   category: string
   brand: string
   image: string
+  images?: string[]
   description: string
   price?: number
   rating?: number
+  outOfStock?: boolean
 }
 
 interface ProductsPageProps {
@@ -37,7 +37,6 @@ interface ProductsPageProps {
   subcategorySlug?: string
   initialProducts: Product[]
   initialCategories: string[]
-  initialBrands: string[]
   initialParentNameMap: Record<string, string[]>
 }
 
@@ -46,7 +45,6 @@ export default function ProductsPage({
   subcategorySlug,
   initialProducts,
   initialCategories,
-  initialBrands,
   initialParentNameMap,
 }: ProductsPageProps) {
   const [searchParams, setSearchParams] = useCustomSearchParams()
@@ -55,7 +53,6 @@ export default function ProductsPage({
 
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [dbCategories, setDbCategories] = useState<string[]>(initialCategories)
-  const [dbBrands, setDbBrands] = useState<string[]>(initialBrands)
   const [parentNameMap, setParentNameMap] = useState<Record<string, string[]>>(initialParentNameMap)
 
   const [selectedCategories, setSelectedCategories] = useState<
@@ -86,7 +83,7 @@ export default function ProductsPage({
       ? parseInt(searchParams.get('page')!)
       : 1,
   )
-  const ITEMS_PER_PAGE = 16
+  const ITEMS_PER_PAGE = 15
 
   const categoryFromSlug = categorySlug
     ? slugToCategory(categorySlug, dbCategories)
@@ -186,9 +183,6 @@ export default function ProductsPage({
 
     setSelectedBrands(brandParam ? brandParam.split(',') : [])
     setCurrentPage(pageParam ? parseInt(pageParam) : 1)
-
-    if (brandParam)
-      setExpandedFilters((prev) => ({ ...prev, brands: true }))
   }, [searchParams])
 
   const clearAllFilters = () => {
@@ -225,24 +219,29 @@ export default function ProductsPage({
     [selectedCategories, subcategoryMap, isDesktopView, router],
   )
 
-  const toggleBrand = useCallback(
-    (brand: string) => {
-      const updated = selectedBrands.includes(brand)
-        ? []
-        : [brand]
+  const chipCategories = useMemo(() => {
+    const childNames = new Set(Object.values(subcategoryMap).flat())
+    const topLevel = dbCategories.filter((cat) => !childNames.has(cat))
+    return topLevel.flatMap((parent) => {
+      const children = subcategoryMap[parent] || []
+      return children.length > 0 ? children : [parent]
+    })
+  }, [dbCategories, subcategoryMap])
 
-      setSelectedBrands(updated)
-
-      const params = new URLSearchParams(searchParams)
-      if (updated.length > 0) {
-        params.set('brand', updated.join(','))
-      } else {
-        params.delete('brand')
-      }
+  const toggleChip = useCallback(
+    (category: string) => {
+      const isActive = activeCategory === category
+      const params = new URLSearchParams()
+      const q = searchParams.get('q')
+      if (q) params.set('q', q)
+      if (!isActive) params.set('category', category)
       params.delete('page')
-      setSearchParams(params)
+      const qs = params.toString()
+      router.push(qs ? `/productos?${qs}` : '/productos')
+      setSelectedCategories(isActive ? [] : [category])
+      setCurrentPage(1)
     },
-    [selectedBrands, searchParams, setSearchParams],
+    [activeCategory, searchParams, router],
   )
 
   const setPage = (page: number) => {
@@ -262,181 +261,18 @@ export default function ProductsPage({
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-50/30 pb-20 pt-6">
       <div className="container mx-auto">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <aside className="hidden lg:block lg:w-80 shrink-0">
-            <div className="bg-white shadow-xl shadow-gray-200/50 border border-gray-100 overflow-y-auto sticky top-0 max-h-[calc(100vh-8rem)]">
-              <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <SlidersHorizontal
-                    size={22}
-                    className="text-matheo-blue"
-                  />
-                  <span className="font-black text-matheo-blue uppercase tracking-wider">
-                    Filtros
-                  </span>
-                </div>
-                {(selectedCategories.length > 0 ||
-                  selectedBrands.length > 0 ||
-                  searchTerm) && (
-                  <button
-                    onClick={clearAllFilters}
-                    className="text-xs text-red-500 font-bold hover:underline"
-                  >
-                    Limpiar
-                  </button>
-                )}
-              </div>
-
-              <div className="px-8">
-                {/* Filtro Categoría */}
-                <FilterSection
-                  title="Categoría"
-                  icon={LayoutGrid}
-                  isOpen={expandedFilters.categories}
-                  onToggle={() =>
-                    setExpandedFilters((p) => ({
-                      ...p,
-                      categories: !p.categories,
-                    }))
-                  }
-                >
-                  <div className="space-y-1">
-                    {dbCategories
-                      .filter(
-                        (cat) =>
-                          !Object.values(subcategoryMap)
-                            .flat()
-                            .includes(cat),
-                      )
-                      .map((parentName) => {
-                        const children =
-                          subcategoryMap[parentName] || []
-                        const isExpanded =
-                          expandedParent === parentName
-
-                        return (
-                          <div key={parentName}>
-                            <button
-                              onClick={() =>
-                                toggleCategory(parentName)
-                              }
-                              className={`w-full flex items-center gap-2 py-1.5 rounded-lg transition-colors text-left ${
-                                selectedCategories.includes(
-                                  parentName,
-                                )
-                                  ? 'text-matheo-blue'
-                                  : 'text-gray-600 hover:text-matheo-blue'
-                              }`}
-                            >
-                              {children.length > 0 && (
-                                <ChevronRight
-                                  size={14}
-                                  className={`shrink-0 transition-transform duration-200 ${
-                                    isExpanded ? 'rotate-90' : ''
-                                  } ${
-                                    selectedCategories.includes(
-                                      parentName,
-                                    )
-                                      ? 'text-matheo-blue'
-                                      : 'text-gray-400'
-                                  }`}
-                                />
-                              )}
-                              {children.length === 0 && (
-                                <div className="w-3.5 shrink-0" />
-                              )}
-                              <span className="text-sm font-bold">
-                                {parentName}
-                              </span>
-                              {children.length > 0 && (
-                                <span
-                                  className={`text-xs ml-auto ${
-                                    isExpanded
-                                      ? 'text-matheo-blue'
-                                      : 'text-gray-400'
-                                  }`}
-                                >
-                                  {isExpanded ? '−' : '+'}
-                                </span>
-                              )}
-                            </button>
-                            <div
-                              className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                isExpanded
-                                  ? 'max-h-[9999px] opacity-100'
-                                  : 'max-h-0 opacity-0'
-                              }`}
-                            >
-                              <div className="ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5 pt-0.5">
-                                {children.map((child) => (
-                                  <label
-                                    key={child}
-                                    className="flex items-center gap-2 group cursor-pointer py-1 rounded-lg hover:bg-gray-50 px-2"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedCategories.includes(
-                                        child,
-                                      )}
-                                      onChange={() =>
-                                        toggleCategory(child)
-                                      }
-                                      className="w-4 h-4 text-matheo-blue rounded border-2 border-gray-200 focus:ring-matheo-blue transition-all"
-                                    />
-                                    <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-xs font-medium">
-                                      {child}
-                                    </span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                  </div>
-                </FilterSection>
-
-                {/* Filtro Marca */}
-                {/* <FilterSection
-                    title="Marca"
-                    icon={Tag}
-                    isOpen={expandedFilters.brands}
-                    onToggle={() =>
-                      setExpandedFilters((p) => ({
-                        ...p,
-                        brands: !p.brands,
-                      }))
-                    }
-                  >
-                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-                      {dbBrands.map((brand) => (
-                          <label
-                            key={brand}
-                            className="flex items-center gap-3 group cursor-pointer"
-                          >
-                            <div className="relative flex items-center">
-                              <input
-                                type="radio"
-                                name="brand"
-                                checked={selectedBrands.includes(
-                                  brand,
-                                )}
-                                onChange={() => toggleBrand(brand)}
-                                className="w-5 h-5 text-matheo-blue border-2 border-gray-200 focus:ring-matheo-blue transition-all"
-                              />
-                            </div>
-                            <span className="text-gray-600 group-hover:text-matheo-blue transition-colors text-sm font-bold">
-                              {brand}
-                            </span>
-                          </label>
-                        ))}
-                    </div>
-                  </FilterSection> */}
-              </div>
-            </div>
-          </aside>
-
-          <main className="flex-1 mx-2">
+        <main className="flex-1 mx-2 min-w-0">
+          <CategoryFilterBar
+            categories={chipCategories}
+            activeCategory={activeCategory}
+            onSelectCategory={toggleChip}
+            onOpenFilters={() => setIsMobileFilterOpen(true)}
+            hasActiveFilters={
+              selectedCategories.length > 0 ||
+              selectedBrands.length > 0 ||
+              Boolean(searchTerm)
+            }
+          />
             <div className="mb-6">
               <h1 className="hidden text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tight mb-2">
                 {activeCategory
@@ -447,51 +283,11 @@ export default function ProductsPage({
                 {pageDescription}
               </p>
             </div>
-
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsMobileFilterOpen(true)}
-                  className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl bg-matheo-blue text-white text-sm font-bold hover:bg-blue-700 transition-all active:scale-95"
-                >
-                  <SlidersHorizontal size={16} />
-                  Filtros
-                  {(selectedCategories.length > 0 ||
-                    selectedBrands.length > 0) && (
-                    <span className="w-2 h-2 rounded-full bg-white" />
-                  )}
-                </button>
-                <div className="lg:hidden flex bg-gray-100 p-1 rounded-xl">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={cn(
-                      'p-2 rounded-lg transition-all',
-                      viewMode === 'grid'
-                        ? 'bg-white shadow-sm text-matheo-blue'
-                        : 'text-gray-400 hover:text-gray-600',
-                    )}
-                  >
-                    <Grid3x3 size={20} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={cn(
-                      'p-2 rounded-lg transition-all',
-                      viewMode === 'list'
-                        ? 'bg-white shadow-sm text-matheo-blue'
-                        : 'text-gray-400 hover:text-gray-600',
-                    )}
-                  >
-                    <List size={20} />
-                  </button>
-                </div>
-              </div>
-            </div>
             <div
               className={cn(
                 'grid gap-4 md:gap-6',
                 viewMode === 'grid'
-                  ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
+                  ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 xl:grid-cols-5'
                   : 'grid-cols-1 lg:grid-cols-2',
               )}
             >
@@ -602,10 +398,9 @@ export default function ProductsPage({
               </div>
             )}
           </main>
-        </div>
 
-        {/* ── MOBILE FILTER DRAWER ── */}
-        <div className="lg:hidden">
+          {/* ── FILTER DRAWER ── */}
+          <div>
           {/* Backdrop */}
           <div
             className={cn(

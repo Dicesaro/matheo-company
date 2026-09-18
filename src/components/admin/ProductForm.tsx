@@ -36,6 +36,7 @@ interface ProductFormProps {
     discount?: number | null
     rating?: number | null
     featured?: boolean
+    out_of_stock?: boolean
     category_id?: string | null
     brand_id?: string | null
     features?: string[] | null
@@ -448,6 +449,17 @@ export default function ProductForm({ categories, brands, defaultValues }: Produ
           className="data-[state=checked]:bg-matheo-red data-[state=checked]:border-matheo-red"
         />
         <Label htmlFor="featured" className="text-gray-700">Producto destacado</Label>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="out_of_stock"
+          name="out_of_stock"
+          value="true"
+          defaultChecked={defaultValues?.out_of_stock || false}
+          className="data-[state=checked]:bg-red-700 data-[state=checked]:border-red-700"
+        />
+        <Label htmlFor="out_of_stock" className="text-gray-700">Producto agotado</Label>
       </div>
 
       <div className="flex gap-2 pt-2">

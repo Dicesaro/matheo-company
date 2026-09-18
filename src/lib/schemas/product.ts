@@ -19,6 +19,7 @@ export const productPayloadSchema = z.object({
   discount: z.number().min(0).max(100).nullable().optional(),
   rating: z.number().min(0).max(5).nullable().optional(),
   featured: z.boolean(),
+  out_of_stock: z.boolean().optional(),
   image_url: z.string().url('URL de imagen inválida').nullable().optional(),
   features: z.array(z.any()).nullable().optional(),
   benefits: z.array(z.any()).nullable().optional(),

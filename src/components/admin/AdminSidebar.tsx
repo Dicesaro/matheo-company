@@ -8,6 +8,7 @@ import {
   Package,
   Tags,
   Building2,
+  GalleryHorizontal,
   FileText,
   Mail,
   Menu,
@@ -22,6 +23,7 @@ const mainNav = [
   { href: '/admin/productos', label: 'Productos', icon: Package },
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/marcas', label: 'Marcas', icon: Building2 },
+  { href: '/admin/banners', label: 'Banners', icon: GalleryHorizontal },
   { href: '/admin/contactos', label: 'Mensajes', icon: Mail, badge: true },
   { href: '/admin/facturas', label: 'Facturas', icon: FileText },
 ]

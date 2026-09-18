@@ -47,7 +47,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { categoria, subcategoria } = await params
-  const { allCategories, allBrands, allProducts, parentNameMap } =
+  const { allCategories, allProducts, parentNameMap } =
     await getCatalogData()
 
   return (
@@ -57,7 +57,6 @@ export default async function Page({ params }: PageProps) {
         subcategorySlug={subcategoria}
         initialProducts={allProducts}
         initialCategories={allCategories}
-        initialBrands={allBrands}
         initialParentNameMap={parentNameMap}
       />
     </Suspense>

@@ -12,6 +12,7 @@ interface ProductItem {
   description: string
   price?: number
   rating?: number
+  outOfStock?: boolean
 }
 
 interface HomePageProducts {
@@ -35,7 +36,7 @@ export async function getHomePageProducts(): Promise<HomePageProducts> {
 
     const { data } = await supabase
       .from('products')
-      .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
+      .select('id, name, description, image_url, out_of_stock, price, rating, categories!inner(name), brands(name)')
       .eq('category_id', catData.data.id)
       .not('image_url', 'is', null)
 
@@ -44,6 +45,7 @@ export async function getHomePageProducts(): Promise<HomePageProducts> {
       name: unknown
       description: unknown
       image_url: unknown
+      out_of_stock: unknown
       price: unknown
       rating: unknown
       categories: { name: unknown } | null
@@ -64,6 +66,7 @@ export async function getHomePageProducts(): Promise<HomePageProducts> {
           description: (p.description as string) ?? '',
           price: (p.price as number) ?? undefined,
           rating: (p.rating as number) ?? undefined,
+          outOfStock: (p.out_of_stock as boolean) ?? false,
         })) || []
     )
   }
@@ -88,7 +91,7 @@ export async function getHomePageProducts(): Promise<HomePageProducts> {
 
     const { data } = await supabase
       .from('products')
-      .select('id, name, description, image_url, price, rating, categories!inner(name), brands(name)')
+      .select('id, name, description, image_url, out_of_stock, price, rating, categories!inner(name), brands(name)')
       .in('category_id', childIds)
       .not('image_url', 'is', null)
 
@@ -97,6 +100,7 @@ export async function getHomePageProducts(): Promise<HomePageProducts> {
       name: unknown
       description: unknown
       image_url: unknown
+      out_of_stock: unknown
       price: unknown
       rating: unknown
       categories: { name: unknown } | null
@@ -117,6 +121,7 @@ export async function getHomePageProducts(): Promise<HomePageProducts> {
           description: (p.description as string) ?? '',
           price: (p.price as number) ?? undefined,
           rating: (p.rating as number) ?? undefined,
+          outOfStock: (p.out_of_stock as boolean) ?? false,
         })) || []
     )
   }
@@ -140,9 +145,11 @@ interface CatalogProduct {
   category: string
   brand: string
   image: string
+  images: string[]
   description: string
   price?: number
   rating?: number
+  outOfStock?: boolean
 }
 
 interface CatalogData {
@@ -180,6 +187,8 @@ export async function getCatalogData(): Promise<CatalogData> {
       name,
       description,
       image_url,
+      images_gallery,
+      out_of_stock,
       price,
       rating,
       categories (name),
@@ -224,6 +233,8 @@ export async function getCatalogData(): Promise<CatalogData> {
     name: string
     description: string
     image_url: string
+    images_gallery?: string[]
+    out_of_stock?: boolean
     price?: number
     rating?: number
     categories?: { name: string } | null
@@ -232,18 +243,26 @@ export async function getCatalogData(): Promise<CatalogData> {
 
   const prods = (prodsResult.data || []) as unknown as RawProduct[]
 
-  const allProducts = prods.map((p) => ({
-    id: p.id,
-    slug: generateSlug(p.name),
-    categorySlug: generateSlug(p.categories?.name || 'General'),
-    name: p.name,
-    description: p.description,
-    image: p.image_url,
-    price: p.price,
-    rating: p.rating,
-    category: p.categories?.name || 'General',
-    brand: p.brands?.name || 'Varios',
-  }))
+  const allProducts = prods.map((p) => {
+    const gallery =
+      Array.isArray(p.images_gallery) && p.images_gallery.length > 0
+        ? p.images_gallery
+        : [p.image_url]
+    return {
+      id: p.id,
+      slug: generateSlug(p.name),
+      categorySlug: generateSlug(p.categories?.name || 'General'),
+      name: p.name,
+      description: p.description,
+      image: p.image_url,
+      images: gallery,
+      price: p.price,
+      rating: p.rating,
+      category: p.categories?.name || 'General',
+      brand: p.brands?.name || 'Varios',
+      outOfStock: p.out_of_stock ?? false,
+    }
+  })
 
   return {
     allCategories: allCats,

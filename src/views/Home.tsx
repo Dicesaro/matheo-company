@@ -5,6 +5,7 @@ import FeaturedProducts from '@/components/sections/Products'
 import CategoryProducts from '@/components/sections/CategoryProducts'
 import EmailForm from '@/components/sections/EmailForm'
 import { getHomePageProducts } from '@/lib/queries'
+import { getActiveBanners } from '@/lib/actions/banners'
 
 export const metadata: Metadata = {
   title:
@@ -93,6 +94,7 @@ const structuredData = {
 export default async function Home() {
   const { productItems, taladradoItems, insertosItems, fresasCarbuItems } =
     await getHomePageProducts()
+  const banners = await getActiveBanners()
 
   return (
     <>
@@ -102,7 +104,7 @@ export default async function Home() {
           __html: JSON.stringify(structuredData),
         }}
         />
-      <Hero/>
+      <Hero banners={banners} />
       <CategoryProducts />
       <FeaturedProducts
         productItems={productItems}

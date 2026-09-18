@@ -14,7 +14,7 @@ import Link from 'next/link'
 import { cn, generateSlug } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
-import { Marquee } from '@/components/ui/marquee'
+
 
 interface NavProductRow {
   id: string
@@ -31,12 +31,10 @@ interface NavProduct {
 }
 
 const navItems = [
-  { name: 'Inicio', href: '/' },
   { name: 'Productos', href: '/productos' },
   { name: 'Categorías', href: '/categorias', hasMega: 'categorias' },
   { name: 'Marcas', href: '/marcas' },
   { name: 'Favoritos', href: '/favoritos' },
-  { name: 'Nosotros', href: '/nosotros' },
   { name: 'Contacto', href: '/contacto' },
   { name: 'Ver Catálogo 📙', href: '/catalogo.pdf' },
 ]
@@ -60,7 +58,7 @@ interface SearchResultRaw {
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [searchParams, setSearchParams] = useCustomSearchParams()
   const [searchValue, setSearchValue] = useState(
     searchParams.get('q') || '',
@@ -90,7 +88,6 @@ export default function Navbar() {
     { id: string; name: string; image_url: string | null; category: string }[]
   >([])
   const [dbBrands, setDbBrands] = useState<{ name: string; image: string | null }[]>([])
-  const [allProductNames, setAllProductNames] = useState<string[]>([])
 
   const searchTimeoutRef = useRef<ReturnType<
     typeof setTimeout
@@ -132,7 +129,6 @@ export default function Navbar() {
         clearTimeout(searchTimeoutRef.current)
       }
       setSearchResults([])
-      setIsSearchExpanded(false)
       lastPushedSearch.current = currentQuery
     }
   }, [searchParams])
@@ -322,21 +318,22 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const hasFetchedNames = useRef(false)
-  useEffect(() => {
-    if (hasFetchedNames.current) return
-    hasFetchedNames.current = true
-    supabase
-      .from('categories')
-      .select('name')
-      .not('parent_id', 'is', null)
-      .order('name')
-      .then(({ data }) => {
-        if (data) setAllProductNames(data.map((c) => c.name))
-      })
-  }, [])
-
   const isHome = pathname === '/'
+  const isProductDetail = pathname.startsWith('/producto/')
+
+  const closeSearch = () => {
+    setIsSearchFocused(false)
+    setSearchResults([])
+    setCategoryResults([])
+  }
+
+  const handleSearchKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === 'Escape') {
+      closeSearch()
+    }
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -352,6 +349,7 @@ export default function Navbar() {
       lastPushedSearch.current = searchValue
       setSearchParams(params)
     }
+    closeSearch()
   }
 
   const handleSearchChange = (
@@ -404,7 +402,7 @@ export default function Navbar() {
               })),
             )
           }
-        } catch (err) {
+        } catch {
           // ignore
         }
       } else {
@@ -432,20 +430,14 @@ export default function Navbar() {
     router.push(
       `/producto/${generateSlug(category)}/${generateSlug(productName)}`,
     )
-    setSearchResults([])
-    setCategoryResults([])
     setSearchValue('')
-    setIsSearchExpanded(false)
-    setIsOpen(false)
+    closeSearch()
   }
 
   const handleCategoryClick = (catName: string) => {
     router.push(`/productos/${generateSlug(catName)}`)
-    setSearchResults([])
-    setCategoryResults([])
     setSearchValue('')
-    setIsSearchExpanded(false)
-    setIsOpen(false)
+    closeSearch()
   }
 
   useEffect(() => {
@@ -460,8 +452,7 @@ export default function Navbar() {
       const isInsideDesktop = desktopSearch?.contains(target) ?? false
       const isInsideMobile = mobileSearch?.contains(target) ?? false
       if (!isInsideDesktop && !isInsideMobile) {
-        setSearchResults([])
-        setCategoryResults([])
+        closeSearch()
       }
     }
     window.addEventListener('mousedown', handleClickOutside)
@@ -479,62 +470,58 @@ export default function Navbar() {
             : 'bg-white/95 backdrop-blur-sm',
         )}
       >
-        {/* Red Top Bar */}
-        <div className="bg-matheo-red text-white font-medium w-full overflow-hidden">
-          <Marquee pauseOnHover repeat={3} className="py-1.5 [--duration:180s] [--gap:0px]">
-            {allProductNames.length > 0
-              ? allProductNames.map((name) => (
-                  <span key={name} className="flex items-center gap-0 mx-4">
-                    <span className="text-white/70 mx-2">•</span>
-                    <Link
-                      href={`/productos/${generateSlug(name)}`}
-                      className="text-sm font-semibold tracking-wide hover:text-white/80 transition-colors"
-                    >
-                      {name}
-                    </Link>
-                  </span>
-                ))
-              : Array.from({ length: 6 }).map((_, i) => (
-                  <span key={i} className="text-sm font-semibold tracking-wide text-white/60 mx-4">
-                    Cargando categorías...
-                  </span>
-                ))}
-          </Marquee>
-        </div>
-
         {/* White Bar: Logo, Search, Email, Social */}
-        <div className="bg-white border-b border-gray-100">
+        <div className="bg-white">
           <div className="container mx-auto px-4">
             {/* ── MOBILE LAYOUT ── */}
-            <div className="flex items-center justify-between mlg:hidden h-20 relative">
-              {isSearchExpanded ? (
-                <div className="flex items-center w-full gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
-                  <button
-                    onClick={() => {
-                      setIsSearchExpanded(false)
-                      setSearchResults([])
-                      setSearchValue('')
-                    }}
-                    className="p-2 text-matheo-red hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <ChevronLeft size={28} />
-                  </button>
-                  <div
-                    id="navbar-search-wrapper-mobile"
-                    className="relative flex-1"
-                  >
+            <div className="flex items-center gap-2 mlg:hidden h-16 relative">
+              <button
+                onClick={() => (isSearchFocused ? closeSearch() : router.back())}
+                className={cn(
+                  'p-2 text-matheo-red hover:bg-gray-100 rounded-lg transition-colors shrink-0',
+                  !isSearchFocused && isHome && 'hidden',
+                )}
+                aria-label={isSearchFocused ? 'Cerrar búsqueda' : 'Volver'}
+              >
+                <ChevronLeft size={28} />
+              </button>
+
+              <Link
+                href={'/'}
+                className={cn(
+                  'shrink-0',
+                  (isSearchFocused || isProductDetail) && 'hidden',
+                )}
+              >
+                <Image
+                  width={100}
+                  height={100}
+                  src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
+                  alt="Industrial Company MATHEO"
+                  className="h-10 w-auto cursor-pointer hover:opacity-90 transition-opacity"
+                />
+              </Link>
+
+              <div
+                id="navbar-search-wrapper-mobile"
+                className={cn(
+                  'relative',
+                  isSearchFocused ? 'w-full' : 'flex-1',
+                )}
+              >
                     <form
                       onSubmit={handleSearch}
                       className="relative group"
                     >
-                      <input
-                        type="text"
-                        autoFocus
-                        placeholder="Buscar productos..."
-                        value={searchValue}
-                        onChange={handleSearchChange}
-                        className="w-full pl-4 pr-10 py-2.5 bg-white border-2 border-matheo-red/20 focus:border-matheo-red focus:outline-none transition-all text-sm"
-                      />
+<input
+                      type="text"
+                      placeholder="Buscar productos..."
+                      value={searchValue}
+                      onChange={handleSearchChange}
+                      onFocus={() => setIsSearchFocused(true)}
+                      onKeyDown={handleSearchKeyDown}
+                      className="w-full pl-4 pr-10 py-2.5 bg-white border-2 border-matheo-red/20 focus:border-matheo-red focus:outline-none transition-all text-sm rounded-full"
+                    />
                       <Search
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-matheo-red"
                         size={20}
@@ -554,9 +541,12 @@ export default function Navbar() {
                         <X size={18} />
                       </button>
                     )}
-                    {(searchResults.length > 0 ||
-                      categoryResults.length > 0) && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60">
+{(searchResults.length > 0 ||
+                  categoryResults.length > 0) && (
+                  <div
+                    onMouseDown={(e) => e.preventDefault()}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60"
+                  >
                         {categoryResults.length > 0 && (
                           <>
                             <div className="px-3 pt-2 pb-0.5">
@@ -643,56 +633,29 @@ export default function Navbar() {
                       </div>
                     )}
                   </div>
-                </div>
-              ) : (
-                <>
-                  <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
-                    aria-label="Toggle menu"
-                  >
-                    {isOpen ? <X size={28} /> : <Menu size={28} />}
-                  </button>
 
-                  <Link
-                    href={'/'}
-                    className="absolute left-1/2 -translate-x-1/2 shrink-0"
-                  >
-                    <Image
-                      width={100}
-                      height={100}
-                      src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
-                      alt="Industrial Company MATHEO"
-                      className="h-16 w-auto cursor-pointer hover:opacity-90 transition-opacity"
-                    />
-                  </Link>
-
-                  <button
-                    id="navbar-search-mobile-btn"
-                    onClick={() => {
-                      setIsSearchExpanded(true)
-                      setIsOpen(false)
-                    }}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red"
-                    aria-label="Buscar productos"
-                  >
-                    <Search size={28} />
-                  </button>
-                </>
-              )}
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={cn(
+                  'p-2 rounded-lg hover:bg-gray-100 transition-colors text-matheo-red shrink-0',
+                  isSearchFocused && 'hidden',
+                )}
+                aria-label="Toggle menu"
+              >
+                {isOpen ? <X size={28} /> : <Menu size={28} />}
+              </button>
             </div>
 
             {/* ── DESKTOP LAYOUT ── */}
-
-            <div className="hidden mlg:flex items-center justify-center h-24 ">
+            <div className="hidden mlg:flex items-center justify-center h-20 ">
               {/* Logo */}
               <Link href={'/'} className="shrink-0">
                 <Image
-                  width={100}
-                  height={100}
+                  width={80}
+                  height={80}
                   src="https://res.cloudinary.com/ddtmb8l1k/image/upload/v1774823626/MATHEO_logo_qneg7d.svg"
                   alt="Industrial Company MATHEO"
-                  className="h-20 w-auto cursor-pointer hover:opacity-90 transition-opacity"
+                  className="h-15 w-auto cursor-pointer hover:opacity-90 transition-opacity"
                 />
               </Link>
 
@@ -710,14 +673,17 @@ export default function Navbar() {
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-matheo-red transition-colors"
                       size={18}
                     />
-                    <input
-                      id="navbar-search-desktop"
-                      type="text"
-                      placeholder="¿Qué herramienta buscas?"
-                      value={searchValue}
-                      onChange={handleSearchChange}
-                      className="w-full pl-11 pr-10 py-2 bg-white border-2 border-gray-200 focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/10 focus:outline-none transition-all text-sm font-medium shadow-sm"
-                    />
+<input
+                    id="navbar-search-desktop"
+                    type="text"
+                    placeholder="¿Qué herramienta buscas?"
+                    value={searchValue}
+                    onChange={handleSearchChange}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    onKeyDown={handleSearchKeyDown}
+                    className="w-full pl-11 pr-10 py-2 bg-white border-2 border-gray-200 focus:border-matheo-red focus:shadow-lg focus:shadow-matheo-red/10 focus:outline-none transition-all text-sm font-medium shadow-sm rounded-full"
+                  />
                     {searchValue && (
                       <button
                         type="button"
@@ -735,7 +701,10 @@ export default function Navbar() {
                   </form>
                   {(searchResults.length > 0 ||
                     categoryResults.length > 0) && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60">
+                    <div
+                      onMouseDown={(e) => e.preventDefault()}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-60"
+                    >
                       {categoryResults.length > 0 && (
                         <>
                           <div className="px-3 pt-2 pb-0.5">
@@ -838,62 +807,7 @@ export default function Navbar() {
                     ventas@matheocompany.com
                   </a>
                 </div>
-              </div>
-
-              {/* Separator */}
-              <div className="hidden xl:block w-px h-8 bg-gray-300 ml-4 shrink-0"></div>
-
-              {/* Social Icons + Text */}
-              <div className="hidden xl:flex items-center gap-2 shrink-0 ml-4">
-                <a
-                  href="https://www.facebook.com/IndustrialCompanyMatheo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center transition-all duration-300"
-                  aria-label="Facebook"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                  </svg>
-                </a>
-                <a
-                  href="https://www.tiktok.com/@industrialcompanymatheo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white border-2 border-matheo-red text-matheo-red hover:bg-matheo-red hover:text-white flex items-center justify-center transition-all duration-300"
-                  aria-label="TikTok"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-                  </svg>
-                </a>
-                <div className="flex flex-col leading-tight ml-1">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                    Siguenos
-                  </span>
-                  <span className="text-[9px] text-gray-400">
-                    Visita nuestras redes
-                  </span>
-                </div>
-              </div>
+              </div>              
             </div>
           </div>
         </div>
@@ -901,10 +815,14 @@ export default function Navbar() {
         {/* Red Bar: Navigation */}
         <div className="bg-matheo-red">
           <div className="container mx-auto px-4">
-            <div className="hidden mlg:flex items-center pl-12 pr-12 h-12 gap-1">
-              <div className="flex items-center gap-1">
+            <div className="hidden mlg:flex justify-center items-center h-12 gap-1">
+              <div className="flex justify-center items-center gap-1">
                 {navItems
-                  .filter((i) => i.name !== 'Favoritos' && i.name !== 'Ver Catálogo 📙')
+                  .filter(
+                    (i) =>
+                      i.name !== 'Favoritos' &&
+                      i.name !== 'Ver Catálogo 📙',
+                  )
                   .map((item) => {
                     if (item.name === 'Marcas') {
                       return (
@@ -950,30 +868,39 @@ export default function Navbar() {
                       </Link>
                     )
                   })}
+                <a
+                  href="/catalogo.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-auto px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors whitespace-nowrap"
+                >
+                  Ver Catálogo 📙
+                </a>
+                <Link
+                  href="/favoritos"
+                  className={cn(
+                    'px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
+                    pathname === '/favoritos' &&
+                      'text-white/80 underline underline-offset-4',
+                  )}
+                >
+                  Favoritos{favCount > 0 && ` (${favCount})`}
+                </Link>
               </div>
-
-              <a
-                href="/catalogo.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-auto px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors whitespace-nowrap"
-              >
-                Ver Catálogo 📙
-              </a>
-              <Link
-                href="/favoritos"
-                className={cn(
-                  'px-3 py-1 text-sm font-semibold text-white hover:text-white/80 transition-colors',
-                  pathname === '/favoritos' &&
-                    'text-white/80 underline underline-offset-4',
-                )}
-              >
-                Favoritos{favCount > 0 && ` (${favCount})`}
-              </Link>
             </div>
           </div>
         </div>
       </nav>
+
+      {/* ── SEARCH BACKDROP ── */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/50 transition-opacity duration-200',
+          isSearchFocused
+            ? 'opacity-100 pointer-events-auto'
+            : 'opacity-0 pointer-events-none',
+        )}
+      />
 
       {/* ── BACKDROP ── */}
       <div

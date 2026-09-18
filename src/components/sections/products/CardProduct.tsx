@@ -2,8 +2,7 @@
 import { Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface Product {
@@ -14,9 +13,11 @@ interface Product {
   category: string
   brand: string
   image: string
+  images?: string[]
   description: string
   price?: number
   rating?: number
+  outOfStock?: boolean
 }
 
 interface CardProductProps {
@@ -43,6 +44,26 @@ export default function CardProduct({
   const [isFavorite, setIsFavorite] = useState(() =>
     getFavorites().includes(product.id),
   )
+  const [isHovering, setIsHovering] = useState(false)
+  const [galleryIndex, setGalleryIndex] = useState(0)
+
+  const galleryImages = product.images ?? []
+  const hasGallery = galleryImages.length > 1
+
+  useEffect(() => {
+    if (!isHovering || !hasGallery) return
+
+    const interval = setInterval(() => {
+      setGalleryIndex((prev) => (prev + 1) % galleryImages.length)
+    }, 1500)
+
+    return () => clearInterval(interval)
+  }, [isHovering, hasGallery, galleryImages.length])
+
+  const displayedImage =
+    isHovering && hasGallery
+      ? galleryImages[galleryIndex]
+      : product.image
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -66,21 +87,21 @@ export default function CardProduct({
   }
 
   const productUrl = `/producto/${product.categorySlug}/${product.slug}`
-  const categoryUrl = `/productos/${product.categorySlug}`
-  const router = useRouter()
-
-  const handleCategoryClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    router.push(categoryUrl)
-  }
 
   return (
     <Link
       key={product.id}
       href={productUrl}
+      onMouseEnter={() => {
+        setIsHovering(true)
+        if (hasGallery) setGalleryIndex((prev) => (prev > 0 ? prev : 1))
+      }}
+      onMouseLeave={() => {
+        setIsHovering(false)
+        setGalleryIndex(0)
+      }}
       className={cn(
-        'bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer rounded-xl',
+        'bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer',
         viewMode === 'grid'
           ? 'flex flex-col h-full'
           : 'flex flex-row p-4 gap-4',
@@ -92,16 +113,19 @@ export default function CardProduct({
           'relative flex items-center justify-center bg-gray-50/50 shrink-0',
           viewMode === 'grid'
             ? 'w-full aspect-square'
-            : 'w-1/3 md:w-2/5 aspect-square rounded-xl',
+            : 'w-1/3 md:w-2/5 aspect-square',
         )}
       >
         <Image
-          src={product.image}
+          src={displayedImage}
           alt={product.name}
           width={300}
           height={300}
           loading="eager"
-          className="object-contain group-hover:scale-105 transition-transform duration-500"
+          className={cn(
+            'object-contain group-hover:scale-105 transition-transform duration-500',
+            product.outOfStock && 'grayscale contrast-75',
+          )}
           style={{
             width: '100%',
             height: '100%',
@@ -114,6 +138,13 @@ export default function CardProduct({
               'https://placehold.co/300x300?text=Sin+Imagen'
           }}
         />
+        {product.outOfStock && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+            <span className="bg-black/70 text-white font-black uppercase tracking-widest text-xs md:text-sm px-3 py-1.5 rounded-md">
+              Agotado
+            </span>
+          </div>
+        )}
         {/* Star button */}
         <button
           onClick={toggleFavorite}
@@ -157,25 +188,6 @@ export default function CardProduct({
             {product.name}
           </h3>
         </div>
-
-        {/* Categoria */}
-        <div className="mb-1.5">
-          <span
-            onClick={handleCategoryClick}
-            className="text-[11px] font-semibold text-matheo-blue uppercase tracking-wider hover:underline cursor-pointer"
-          >
-            {product.category}
-          </span>
-        </div>
-
-        {/* Marca */}
-        {product.brand && (
-          <div className="mb-1">
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-              {product.brand}
-            </span>
-          </div>
-        )}
 
         {/* Botones */}
         <div className="mt-auto" onClick={(e) => e.stopPropagation()}>

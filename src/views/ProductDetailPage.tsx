@@ -7,8 +7,16 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { cn } from '@/lib/utils'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 interface Product {
   id: string
@@ -25,10 +33,139 @@ interface Product {
   specifications: { label: string; value: string }[]
   workMaterials?: string[]
   rating?: number
+  outOfStock?: boolean
 }
 
 interface ProductDetailPageProps {
   product: Product | null
+}
+
+interface ProductGalleryProps {
+  product: Product
+  selectedImage: number
+  onSelect: (index: number) => void
+  onPrev: () => void
+  onNext: () => void
+  outOfStock?: boolean
+}
+
+function ProductGallery({
+  product,
+  selectedImage,
+  onSelect,
+  onPrev,
+  onNext,
+  outOfStock = false,
+}: ProductGalleryProps) {
+  const touchStartX = useRef<number | null>(null)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+
+    if (product.images.length <= 1) return
+    if (Math.abs(deltaX) < 30) return
+
+    if (deltaX > 0) onPrev()
+    else onNext()
+  }
+
+  return (
+    <>
+      <div className="flex gap-3 lg:gap-4 w-full">
+        {/* Thumbnails (columna izquierda) */}
+        {product.images.length > 1 && (
+          <div className="hidden md:flex flex-col gap-3 overflow-y-auto overflow-x-hidden w-16 md:w-20 shrink-0 rounded-xl p-1.5 md:p-2">
+            {product.images.map((img, idx) => (
+              <button
+                key={idx}
+                onMouseEnter={() => onSelect(idx)}
+                onClick={() => onSelect(idx)}
+                className={cn(
+                  'shrink-0 aspect-square rounded-lg border-2 transition-all overflow-hidden bg-white',
+                  selectedImage === idx
+                    ? 'border-matheo-blue ring-2 ring-matheo-blue/20 shadow-md'
+                    : 'border-gray-100 opacity-60 hover:opacity-100',
+                )}
+              >
+                <Image
+                  src={img}
+                  alt=""
+                  width={80}
+                  height={80}
+                  loading="eager"
+                  style={{ width: '100%', height: '100%' }}
+                  className="object-contain"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Visor principal */}
+        <div
+          className="relative group bg-white aspect-square w-full flex-1 overflow-hidden shadow-sm"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="relative w-full h-full">
+            <Image
+              key={selectedImage}
+              src={product.images[selectedImage]}
+              alt={product.name}
+              fill
+              priority
+              loading="eager"
+              className={cn(
+                'object-cover',
+                outOfStock && 'grayscale contrast-75',
+              )}
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+            {outOfStock && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                <span className="bg-black/70 text-white font-black uppercase tracking-widest text-xl md:text-2xl px-5 py-2.5 rounded-lg">
+                  Agotado
+                </span>
+              </div>
+            )}
+          </div>
+          {product.images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onPrev()
+                }}
+                className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10 md:opacity-0 md:group-hover:opacity-100 hidden md:block"
+              >
+                <ChevronLeft size={28} strokeWidth={1.5} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onNext()
+                }}
+                className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10 md:opacity-0 md:group-hover:opacity-100 hidden md:block"
+              >
+                <ChevronRight size={28} strokeWidth={1.5} />
+              </button>
+            </>
+          )}
+          {product.images.length > 1 && (
+            <div className="absolute bottom-3 right-3 z-10 bg-black/60 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+              {selectedImage + 1}/{product.images.length}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
 }
 
 export default function ProductDetailPage({
@@ -36,16 +173,6 @@ export default function ProductDetailPage({
 }: ProductDetailPageProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState<'info' | 'specs'>('info')
-
-  useEffect(() => {
-    if (!product || product.images.length <= 1) return
-
-    const interval = setInterval(() => {
-      setSelectedImage((prev) => (prev + 1) % product.images.length)
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [product, selectedImage])
 
   if (!product) {
     return (
@@ -90,76 +217,58 @@ export default function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      <div className="container mx-auto px-4 max-w-6xl pt-10 md:pt-10">
+      {/* Left Column: Image Gallery — mobile: fuera del contenedor (sin padding) */}
+      <div className="lg:hidden">
+        <div className="flex flex-col items-center bg-white shadow-sm">
+          <ProductGallery
+            product={product}
+            selectedImage={selectedImage}
+            onSelect={setSelectedImage}
+            onPrev={prevImage}
+            onNext={nextImage}
+            outOfStock={product.outOfStock}
+          />
+        </div>
+      </div>
+
+      <div className="container mx-auto max-w-7xl px-4 pt-10 md:pt-6">
+        <Breadcrumb className="hidden md:block mb-8">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Inicio</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/productos">
+                Productos
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href={`/productos/${product.categorySlug}`}
+              >
+                {product.category}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{product.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
-          {/* Left Column: Image Gallery */}
-          <div className="space-y-4 lg:sticky lg:top-40 h-fit w-full lg:w-1/2">
-            <div className="relative group bg-white rounded-2xl aspect-square w-full overflow-hidden shadow-sm p-4 md:p-8">
-              <div className="relative w-full h-full">
-                <Image
-                  key={selectedImage}
-                  src={product.images[selectedImage]}
-                  alt={product.name}
-                  fill
-                  priority
-                  loading="eager"
-                  className="object-contain transition-all duration-500 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-              {product.images.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      prevImage()
-                    }}
-                    className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10"
-                  >
-                    <ChevronLeft size={28} strokeWidth={1.5} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      nextImage()
-                    }}
-                    className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 bg-white/80 hover:bg-white rounded-full shadow-md transition-all z-10"
-                  >
-                    <ChevronRight size={28} strokeWidth={1.5} />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {product.images.length > 1 && (
-              <div className="overflow-x-hidden w-full">
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {product.images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImage(idx)}
-                      className={cn(
-                        'shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 p-1.5 md:p-2 transition-all overflow-hidden bg-white',
-                        selectedImage === idx
-                          ? 'border-matheo-blue shadow-md'
-                          : 'border-gray-100 opacity-60 hover:opacity-100',
-                      )}
-                    >
-                      <Image
-                        src={img}
-                        alt=""
-                        width={80}
-                        height={80}
-                        loading="eager"
-                        style={{ width: '100%', height: '100%' }}
-                        className="object-contain"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Left Column: Image Gallery — desktop */}
+          <div className="hidden lg:block lg:sticky lg:top-40 h-fit w-full lg:w-1/2">
+            <ProductGallery
+              product={product}
+              selectedImage={selectedImage}
+              onSelect={setSelectedImage}
+              onPrev={prevImage}
+              onNext={nextImage}
+              outOfStock={product.outOfStock}
+            />
           </div>
 
           {/* Right Column: Info & Details */}
@@ -267,7 +376,8 @@ export default function ProductDetailPage({
 
                 <button
                   onClick={handleWhatsAppQuote}
-                  className="w-full md:w-fit bg-[#245e56] hover:bg-[#1b4a44] text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] shadow-sm"
+                  disabled={product.outOfStock}
+                  className="w-full md:w-fit bg-[#245e56] hover:bg-[#1b4a44] text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <svg
                     className="w-6 h-6"
@@ -381,7 +491,8 @@ export default function ProductDetailPage({
 
                 <button
                   onClick={handleWhatsAppQuote}
-                  className="w-full md:w-fit bg-[#245e56] hover:bg-[#1b4a44] text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] shadow-sm"
+                  disabled={product.outOfStock}
+                  className="w-full md:w-fit bg-[#245e56] hover:bg-[#1b4a44] text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <svg
                     className="w-6 h-6"

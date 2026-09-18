@@ -115,6 +115,7 @@ export default async function Page({ params }: PageProps) {
         specifications: match.specifications || [],
         workMaterials: match.work_materials || [],
         rating: match.rating,
+        outOfStock: match.out_of_stock ?? false,
       }
     : null
 

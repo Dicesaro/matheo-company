@@ -54,6 +54,7 @@ export default async function EditProductPage({
               discount: product.discount,
               rating: product.rating,
               featured: product.featured || false,
+              out_of_stock: product.out_of_stock || false,
               category_id: product.category_id,
               brand_id: product.brand_id,
               features: product.features,
