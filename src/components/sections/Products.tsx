@@ -97,16 +97,10 @@ interface ProductItem {
 
 interface FeaturedProductsProps {
   productItems: ProductItem[]
-  taladradoItems: ProductItem[]
-  insertosItems: ProductItem[]
-  fresasCarbuItems: ProductItem[]
 }
 
 export default function FeaturedProducts({
   productItems,
-  taladradoItems,
-  insertosItems,
-  fresasCarbuItems,
 }: FeaturedProductsProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsToShow, setItemsToShow] = useState(4)
@@ -114,26 +108,10 @@ export default function FeaturedProducts({
   const [itemsToShow2, setItemsToShow2] = useState(3)
   const [currentIdxProd, setCurrentIdxProd] = useState(0)
   const [itemsToShowProd, setItemsToShowProd] = useState(4)
-  const [currentIdxTal, setCurrentIdxTal] = useState(0)
-  const [itemsToShowTal, setItemsToShowTal] = useState(4)
-  const [currentIdxIns, setCurrentIdxIns] = useState(0)
-  const [itemsToShowIns, setItemsToShowIns] = useState(4)
-  const [currentIdxFresasCarb, setCurrentIdxFresasCarb] = useState(0)
-  const [itemsToShowFresasCarb, setItemsToShowFresasCarb] = useState(4)
   const { ref: sectionRef, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
   })
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) { setItemsToShow(1); setItemsToShow2(1); setItemsToShowProd(1); setItemsToShowTal(1); setItemsToShowIns(1); setItemsToShowFresasCarb(1) }
-      else { setItemsToShow(4); setItemsToShow2(3); setItemsToShowProd(4); setItemsToShowTal(4); setItemsToShowIns(4); setItemsToShowFresasCarb(4) }
-    }
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -408,202 +386,6 @@ export default function FeaturedProducts({
                         key={p.id}
                         className="shrink-0 px-2"
                         style={{ width: `${100 / itemsToShowProd}%` }}
-                      >
-                        <CardProduct product={p} viewMode="grid" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Product Cards Carousel: Herramientas de Taladrado ── */}
-      {taladradoItems.length > 0 && (
-        <section className="bg-white py-8 md:py-12">
-          <div className="container mx-auto px-4 md:px-20">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="w-full md:w-4/4 relative">
-                <button
-                  onClick={() =>
-                    setCurrentIdxTal((prev) =>
-                      prev <= 0
-                        ? Math.max(
-                            0,
-                            taladradoItems.length - itemsToShowTal,
-                          )
-                        : prev - 1,
-                    )
-                  }
-                  className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
-                  aria-label="Anterior"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  onClick={() =>
-                    setCurrentIdxTal((prev) =>
-                      prev >=
-                      Math.max(
-                        0,
-                        taladradoItems.length - itemsToShowTal,
-                      )
-                        ? 0
-                        : prev + 1,
-                    )
-                  }
-                  className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
-                  aria-label="Siguiente"
-                >
-                  <ChevronRight size={18} />
-                </button>
-
-                <div className="overflow-hidden mx-4 md:mx-0">
-                  <div
-                    className="flex transition-transform duration-500 ease-out"
-                    style={{
-                      transform: `translateX(-${currentIdxTal * (100 / itemsToShowTal)}%)`,
-                    }}
-                  >
-                    {taladradoItems.map((p) => (
-                      <div
-                        key={p.id}
-                        className="shrink-0 px-2"
-                        style={{ width: `${100 / itemsToShowTal}%` }}
-                      >
-                        <CardProduct product={p} viewMode="grid" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Product Cards Carousel: Insertos para Torneado ── */}
-      {insertosItems.length > 0 && (
-        <section className="bg-white py-8 md:py-12">
-          <div className="container mx-auto px-4 md:px-20">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="w-full md:w-4/4 relative">
-                <button
-                  onClick={() =>
-                    setCurrentIdxIns((prev) =>
-                      prev <= 0
-                        ? Math.max(
-                            0,
-                            insertosItems.length - itemsToShowIns,
-                          )
-                        : prev - 1,
-                    )
-                  }
-                  className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
-                  aria-label="Anterior"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  onClick={() =>
-                    setCurrentIdxIns((prev) =>
-                      prev >=
-                      Math.max(
-                        0,
-                        insertosItems.length - itemsToShowIns,
-                      )
-                        ? 0
-                        : prev + 1,
-                    )
-                  }
-                  className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
-                  aria-label="Siguiente"
-                >
-                  <ChevronRight size={18} />
-                </button>
-
-                <div className="overflow-hidden mx-4 md:mx-0">
-                  <div
-                    className="flex transition-transform duration-500 ease-out"
-                    style={{
-                      transform: `translateX(-${currentIdxIns * (100 / itemsToShowIns)}%)`,
-                    }}
-                  >
-                    {insertosItems.map((p) => (
-                      <div
-                        key={p.id}
-                        className="shrink-0 px-2"
-                        style={{ width: `${100 / itemsToShowIns}%` }}
-                      >
-                        <CardProduct product={p} viewMode="grid" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Product Cards Carousel: Fresas Carburadas Rotativas ── */}
-      {fresasCarbuItems.length > 0 && (
-        <section className="bg-white py-8 md:py-12">
-          <div className="container mx-auto px-4 md:px-20">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="w-full md:w-4/4 relative">
-                <button
-                  onClick={() =>
-                    setCurrentIdxFresasCarb((prev) =>
-                      prev <= 0
-                        ? Math.max(
-                            0,
-                            fresasCarbuItems.length -
-                              itemsToShowFresasCarb,
-                          )
-                        : prev - 1,
-                    )
-                  }
-                  className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
-                  aria-label="Anterior"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  onClick={() =>
-                    setCurrentIdxFresasCarb((prev) =>
-                      prev >=
-                      Math.max(
-                        0,
-                        fresasCarbuItems.length -
-                          itemsToShowFresasCarb,
-                      )
-                        ? 0
-                        : prev + 1,
-                    )
-                  }
-                  className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white transition-all"
-                  aria-label="Siguiente"
-                >
-                  <ChevronRight size={18} />
-                </button>
-
-                <div className="overflow-hidden mx-4 md:mx-0">
-                  <div
-                    className="flex transition-transform duration-500 ease-out"
-                    style={{
-                      transform: `translateX(-${currentIdxFresasCarb * (100 / itemsToShowFresasCarb)}%)`,
-                    }}
-                  >
-                    {fresasCarbuItems.map((p) => (
-                      <div
-                        key={p.id}
-                        className="shrink-0 px-2"
-                        style={{
-                          width: `${100 / itemsToShowFresasCarb}%`,
-                        }}
                       >
                         <CardProduct product={p} viewMode="grid" />
                       </div>

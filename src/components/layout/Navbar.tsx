@@ -815,7 +815,7 @@ export default function Navbar() {
         {/* Red Bar: Navigation */}
         <div className="bg-matheo-red">
           <div className="container mx-auto px-4">
-            <div className="hidden mlg:flex justify-center items-center h-12 gap-1">
+            <div className="hidden mlg:flex md:pl-29 md:pr-29 justify-center items-center h-12 gap-1">
               <div className="flex justify-center items-center gap-1">
                 {navItems
                   .filter(

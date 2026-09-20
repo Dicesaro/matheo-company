@@ -3,7 +3,6 @@ import Hero from '@/components/sections/Hero'
 import KeyPoints from '@/components/sections/KeyPoints'
 import FeaturedProducts from '@/components/sections/Products'
 import CategoryProducts from '@/components/sections/CategoryProducts'
-import EmailForm from '@/components/sections/EmailForm'
 import { getHomePageProducts } from '@/lib/queries'
 import { getActiveBanners } from '@/lib/actions/banners'
 
@@ -92,7 +91,7 @@ const structuredData = {
 }
 
 export default async function Home() {
-  const { productItems, taladradoItems, insertosItems, fresasCarbuItems } =
+  const { productItems } =
     await getHomePageProducts()
   const banners = await getActiveBanners()
 
@@ -108,9 +107,6 @@ export default async function Home() {
       <CategoryProducts />
       <FeaturedProducts
         productItems={productItems}
-        taladradoItems={taladradoItems}
-        insertosItems={insertosItems}
-        fresasCarbuItems={fresasCarbuItems}
       />
         <KeyPoints />
     </>
