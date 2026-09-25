@@ -1,11 +1,13 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Autoplay, Navigation } from 'swiper/modules'
+import 'swiper/css'
 
 interface HeroProps {
   banners: {
@@ -25,41 +27,7 @@ export default function Hero({ banners }: HeroProps) {
     mobileBackgroundImage: b.mobile_image_url || undefined,
     linkUrl: b.link_url || undefined,
   }))
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [animating, setAnimating] = useState(false)
-  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(
-    null,
-  )
-
-  const goToSlide = (index: number) => {
-    if (animating) return
-    setAnimating(true)
-    setCurrentSlide(index)
-    setTimeout(() => setAnimating(false), 800)
-  }
-
-  const prevSlide = () => {
-    goToSlide((currentSlide - 1 + slides.length) % slides.length)
-  }
-
-  const nextSlide = () => {
-    goToSlide((currentSlide + 1) % slides.length)
-  }
-
-  useEffect(() => {
-    if (slides.length === 0) return
-
-    autoPlayRef.current = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 5000)
-
-    return () => {
-      if (autoPlayRef.current) {
-        clearInterval(autoPlayRef.current)
-        autoPlayRef.current = null
-      }
-    }
-  }, [slides.length])
+  const canLoop = slides.length > 1
 
   return (
     <section
@@ -67,40 +35,55 @@ export default function Hero({ banners }: HeroProps) {
       className="relative w-full aspect-760/260 sm:aspect-video md:h-[50vh] overflow-hidden"
     >
       {slides.length > 0 && (
-          <div
-            className="absolute inset-0 h-full flex transition-transform duration-700 ease-out"
-            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-          >
-            {slides.map((s, index) => {
-              const slideContent = (
-                <>
-                  {/* Mobile image */}
-                  {s.mobileBackgroundImage && (
-                    <Image
-                      src={s.mobileBackgroundImage}
-                      alt={s.title}
-                      fill
-                      sizes="(max-width: 919px) 100vw, 0vw"
-                      priority={index === 0}
-                      className="object-cover hidden max-[919px]:block"
-                      style={{ width: '100%', height: '100%' }}
-                    />
-                  )}
-                  {/* Desktop image */}
+        <Swiper
+          modules={[Autoplay, Navigation]}
+          slidesPerView={1}
+          spaceBetween={0}
+          speed={700}
+          loop={canLoop}
+          rewind={!canLoop}
+          autoplay={
+            canLoop
+              ? { delay: 5000, disableOnInteraction: false }
+              : false
+          }
+          navigation={{
+            prevEl: '.hero-banner-prev',
+            nextEl: '.hero-banner-next',
+          }}
+          className="h-full w-full"
+        >
+          {slides.map((s, index) => {
+            const slideContent = (
+              <>
+                {/* Mobile image */}
+                {s.mobileBackgroundImage && (
                   <Image
-                    src={s.backgroundImage}
+                    src={s.mobileBackgroundImage}
                     alt={s.title}
                     fill
-                    sizes="(min-width: 920px) 100vw, 0vw"
+                    sizes="(max-width: 919px) 100vw, 0vw"
                     priority={index === 0}
-                    className={`object-cover ${s.mobileBackgroundImage ? 'hidden min-[920px]:block' : ''}`}
+                    className="object-cover hidden max-[919px]:block"
                     style={{ width: '100%', height: '100%' }}
                   />
-                </>
-              )
+                )}
+                {/* Desktop image */}
+                <Image
+                  src={s.backgroundImage}
+                  alt={s.title}
+                  fill
+                  sizes="(min-width: 920px) 100vw, 0vw"
+                  priority={index === 0}
+                  className={`object-cover ${s.mobileBackgroundImage ? 'hidden min-[920px]:block' : ''}`}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </>
+            )
 
-              return (
-                <div key={s.id} className="relative w-full h-full shrink-0">
+            return (
+              <SwiperSlide key={s.id}>
+                <div className="relative w-full h-full shrink-0">
                   {s.linkUrl ? (
                     <Link href={s.linkUrl} className="absolute inset-0 z-10">
                       {slideContent}
@@ -109,31 +92,30 @@ export default function Hero({ banners }: HeroProps) {
                     slideContent
                   )}
                 </div>
-              )
-            })}
-          </div>
-        )}
+              </SwiperSlide>
+            )
+          })}
+        </Swiper>
+      )}
 
-        {/* Prev / Next */}
-        {slides.length > 1 && (
-          <>
-            <button
-              onClick={prevSlide}
-              className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 hidden min-[920px]:flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
-              aria-label="Slide anterior"
-            >
-              <ChevronLeft size={26} strokeWidth={2.5} />
-            </button>
+      {/* Prev / Next */}
+      {slides.length > 1 && (
+        <>
+          <button
+            className="hero-banner-prev absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 hidden min-[920px]:flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
+            aria-label="Slide anterior"
+          >
+            <ChevronLeft size={26} strokeWidth={2.5} />
+          </button>
 
-            <button
-              onClick={nextSlide}
-              className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 hidden min-[920px]:flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
-              aria-label="Slide siguiente"
-            >
-              <ChevronRight size={26} strokeWidth={2.5} />
-            </button>
-          </>
-        )}
+          <button
+            className="hero-banner-next absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 hidden min-[920px]:flex items-center justify-center rounded-full bg-white/15 hover:bg-white/30 border border-white/30 text-white transition-all duration-200 hover:scale-110 shadow-xl"
+            aria-label="Slide siguiente"
+          >
+            <ChevronRight size={26} strokeWidth={2.5} />
+          </button>
+        </>
+      )}
     </section>
   )
 }

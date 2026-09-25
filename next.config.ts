@@ -24,6 +24,9 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  outputFileTracingIncludes: {
+    '/api/documento': ['./private/docs/**/*'],
+  },
   reactCompiler: true,
   images: {
     remotePatterns: [
