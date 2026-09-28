@@ -2,13 +2,18 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { submitContact } from '@/lib/actions/contacts'
+import { WHATSAPP_NUMBER } from '@/lib/company'
 
 export default function WhatsAppButton() {
   const [isOpen, setIsOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     phone: '',
-    subject: '',
+    message: '',
     accepted: false,
   })
 
@@ -25,24 +30,42 @@ export default function WhatsAppButton() {
 
   const handleClose = () => {
     setIsOpen(false)
+    setError(null)
     sessionStorage.setItem('whatsappModalClosed', 'true')
   }
 
-  const phoneNumber = '51922922766'
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.accepted) return
+    if (!formData.accepted || submitting) return
 
-    const message = `*Asesoría Técnica*\n\n*Nombre:* ${formData.name}\n*Celular:* ${formData.phone}\n*Asunto:*\n${formData.subject}`
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+    setError(null)
+    setSubmitting(true)
+
+    const result = await submitContact({
+      name: formData.name,
+      email: formData.email || undefined,
+      phone: formData.phone,
+      subject: 'asesoria_tecnica',
+      message: formData.message,
+    })
+
+    setSubmitting(false)
+
+    if (result?.error) {
+      setError(result.error)
+      return
+    }
+
+    const message = `*Asesoría Técnica*\n\n*Nombre:* ${formData.name}\n*Celular:* ${formData.phone}\n*Asunto:*\n${formData.message}`
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 
     window.open(whatsappUrl, '_blank')
     handleClose()
     setFormData({
       name: '',
+      email: '',
       phone: '',
-      subject: '',
+      message: '',
       accepted: false,
     })
   }
@@ -101,15 +124,25 @@ export default function WhatsAppButton() {
               className={inputClasses}
             />
 
+            <input
+              type="email"
+              placeholder="Email (opcional)"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, email: e.target.value }))
+              }
+              className={inputClasses}
+            />
+
             <textarea
               placeholder="Asunto"
               required
               rows={3}
-              value={formData.subject}
+              value={formData.message}
               onChange={(e) =>
                 setFormData((p) => ({
                   ...p,
-                  subject: e.target.value,
+                  message: e.target.value,
                 }))
               }
               className={cn(inputClasses, 'resize-none h-20 md:h-28')}
@@ -134,12 +167,26 @@ export default function WhatsAppButton() {
               </span>
             </label>
 
+            {error && (
+              <p
+                role="alert"
+                className="text-xs md:text-sm font-semibold text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
+              >
+                {error}
+              </p>
+            )}
+
             <div className="flex justify-center pt-1 md:pt-3">
               <button
                 type="submit"
-                className="bg-matheo-red hover:bg-red-700 text-white font-bold text-base md:text-lg px-8 py-3 rounded-lg shadow-lg hover:shadow-red-500/40 w-full transition-all active:scale-[0.98]"
+                disabled={submitting}
+                className="bg-matheo-red hover:bg-red-700 text-white font-bold text-base md:text-lg px-8 py-3 rounded-lg shadow-lg hover:shadow-red-500/40 w-full transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Enviar a WhatsApp
+                {submitting ? (
+                  <div className="w-5 h-5 mx-auto border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  'Enviar a WhatsApp'
+                )}
               </button>
             </div>
           </form>

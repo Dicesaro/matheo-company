@@ -12,6 +12,7 @@ const subjectLabels: Record<string, string> = {
   cotizacion: 'Solicitud de Cotización',
   consulta: 'Consulta de Producto',
   garantia: 'Garantía / Servicio Técnico',
+  asesoria_tecnica: 'Asesoría Técnica',
   otro: 'Otro',
 }
 
@@ -29,7 +30,7 @@ function formatDate(dateStr: string) {
 interface Contact {
   id: string
   name: string
-  email: string
+  email: string | null
   phone: string | null
   subject: string
   message: string
@@ -109,7 +110,7 @@ export default function ContactTable({
                   {contact.name}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-sm text-gray-500">
-                  {contact.email}
+                  {contact.email ?? '—'}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-sm text-gray-500">
                   {subjectLabels[contact.subject] || contact.subject}

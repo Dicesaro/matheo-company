@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { Send } from 'lucide-react'
-
-const PHONE_NUMBER = '51922922766'
+import { WHATSAPP_NUMBER } from '@/lib/company'
 
 const ComplaintsBookPage = () => {
   const [submitting, setSubmitting] = useState(false)
@@ -32,7 +31,7 @@ const ComplaintsBookPage = () => {
 
     const message = `*Libro de Reclamaciones*\n\n*Nombre:* ${formData.name}\n*Email:* ${formData.email}\n*Teléfono:* ${formData.phone}\n*Documento:* ${formData.documentType} - ${formData.documentNumber}\n*Tipo:* ${formData.type}\n*Detalle:*\n${formData.description}`
 
-    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
     setSubmitting(false)
   }

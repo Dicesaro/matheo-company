@@ -1,9 +1,12 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useInView } from 'react-intersection-observer'
+import { Swiper, SwiperSlide, type SwiperRef } from 'swiper/react'
+import { Autoplay, Navigation, Pagination } from 'swiper/modules'
+import 'swiper/css'
 import CardProduct from '@/components/sections/products/CardProduct'
 
 const categories = [
@@ -102,8 +105,6 @@ interface FeaturedProductsProps {
 export default function FeaturedProducts({
   productItems,
 }: FeaturedProductsProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [itemsToShow, setItemsToShow] = useState(4)
   const [currentIndex2, setCurrentIndex2] = useState(0)
   const [itemsToShow2, setItemsToShow2] = useState(3)
   const [currentIdxProd, setCurrentIdxProd] = useState(0)
@@ -112,26 +113,20 @@ export default function FeaturedProducts({
     triggerOnce: true,
     threshold: 0.1,
   })
+  const swiperRef = useRef<SwiperRef>(null)
+  const { ref: carouselRef, inView: carouselInView } = useInView({
+    threshold: 0.15,
+  })
+
+  const canLoop = categories.length > 4
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const max = Math.max(0, categories.length - itemsToShow)
-        return prev >= max ? 0 : prev + 1
-      })
-    }, 3000)
-    return () => clearInterval(timer)
-  }, [itemsToShow])
-
-  const maxIndex = Math.max(0, categories.length - itemsToShow)
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1))
-  }
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
-  }
+    if (!canLoop) return
+    const autoplay = swiperRef.current?.swiper.autoplay
+    if (!autoplay) return
+    if (carouselInView) autoplay.start()
+    else autoplay.stop()
+  }, [canLoop, carouselInView])
 
   return (
     <section
@@ -154,75 +149,75 @@ export default function FeaturedProducts({
       </div>
       <div className="container mx-auto px-4">
         {/* Carousel */}
-        <div className="relative">
+        <div className="relative" ref={carouselRef}>
           <button
-            onClick={prevSlide}
-            className="absolute -left-3 md:-left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-12 md:h-12 rounded-full bg-white/90 shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
+            className="categories-banner-prev absolute -left-3 md:-left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-12 md:h-12 rounded-full bg-white/90 shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
             aria-label="Anterior"
           >
             <ChevronLeft size={18} />
           </button>
           <button
-            onClick={nextSlide}
-            className="absolute -right-3 md:-right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-12 md:h-12 rounded-full bg-white/90 shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
+            className="categories-banner-next absolute -right-3 md:-right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-12 md:h-12 rounded-full bg-white/90 shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-matheo-blue hover:text-white hover:border-matheo-blue transition-all"
             aria-label="Siguiente"
           >
             <ChevronRight size={18} />
           </button>
 
-          <div className="overflow-hidden mx-4 md:mx-0 ">
-            <div
-              className="flex transition-transform duration-500 ease-out will-change-transform "
-              style={{
-                transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`,
-              }}
-            >
-              {categories.map((cat, i) => (
-                <div
-                  key={i}
-                  className="shrink-0 px-2 md:px-3"
-                  style={{ width: `${100 / itemsToShow}%` }}
+          <Swiper
+            ref={swiperRef}
+            modules={[Autoplay, Navigation, Pagination]}
+            slidesPerView={2}
+            spaceBetween={16}
+            speed={500}
+            loop={canLoop}
+            rewind={!canLoop}
+            grabCursor
+            autoplay={
+              canLoop
+                ? { delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }
+                : false
+            }
+            navigation={{
+              prevEl: '.categories-banner-prev',
+              nextEl: '.categories-banner-next',
+            }}
+            pagination={{
+              el: '#categories-banner-pagination',
+              clickable: true,
+            }}
+            breakpoints={{
+              768: { slidesPerView: 3, spaceBetween: 24 },
+              1024: { slidesPerView: 4, spaceBetween: 24 },
+            }}
+            className="mx-4 md:mx-0"
+          >
+            {categories.map((cat) => (
+              <SwiperSlide key={cat.image}>
+                <Link
+                  href={cat.href}
+                  className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 rounded-xl"
                 >
-                  <Link
-                    href={cat.href}
-                    className="group relative block overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 rounded-xl"
-                  >
-                    <Image
-                      src={cat.image}
-                      alt=""
-                      width={400}
-                      height={400}
-                      className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <span className="bg-white text-matheo-blue font-bold text-sm px-5 py-2 rounded-full shadow-lg hover:bg-matheo-blue hover:text-white transition-colors">
-                        Ver más
-                      </span>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Dots mobile */}
-          <div className="flex md:hidden justify-center gap-1.5 mt-3">
-            {Array.from({
-              length: categories.length - itemsToShow + 1,
-            }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex
-                    ? 'w-6 bg-matheo-blue'
-                    : 'w-2 bg-gray-300 hover:bg-gray-400'
-                }`}
-                aria-label={`Ir a la categoría ${index + 1}`}
-              />
+                  <Image
+                    src={cat.image}
+                    alt=""
+                    width={400}
+                    height={400}
+                    className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="bg-white text-matheo-blue font-bold text-sm px-5 py-2 rounded-full shadow-lg hover:bg-matheo-blue hover:text-white transition-colors">
+                      Ver más
+                    </span>
+                  </div>
+                </Link>
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
         </div>
+        <div
+          id="categories-banner-pagination"
+          className="products-carousel-pagination flex md:hidden justify-center gap-1.5 mt-3"
+        />
       </div>
 
       {/* ── Second Carousel (2 columns) ── */}

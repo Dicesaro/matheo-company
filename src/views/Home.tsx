@@ -5,6 +5,7 @@ import FeaturedProducts from '@/components/sections/Products'
 import CategoryProducts from '@/components/sections/CategoryProducts'
 import { getHomePageProducts } from '@/lib/queries'
 import { getActiveBanners } from '@/lib/actions/banners'
+import { WHATSAPP_NUMBER } from '@/lib/company'
 
 export const metadata: Metadata = {
   title:
@@ -47,7 +48,7 @@ const structuredData = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'sales',
-    telephone: '+51922922766',
+    telephone: `+${WHATSAPP_NUMBER}`,
     availableLanguage: 'Spanish',
   },
   offers: {

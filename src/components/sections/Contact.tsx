@@ -4,8 +4,7 @@ import { Send, MapPin, Mail, ExternalLink, Play } from 'lucide-react'
 import { PhoneInput } from 'react-international-phone'
 import 'react-international-phone/style.css'
 import { submitContact } from '@/lib/actions/contacts'
-
-const PHONE_NUMBER = '51922922766'
+import { WHATSAPP_NUMBER } from '@/lib/company'
 
 export default function Contact() {
   const [submitting, setSubmitting] = useState(false)
@@ -44,12 +43,13 @@ export default function Contact() {
       cotizacion: 'Solicitud de Cotización',
       consulta: 'Consulta de Producto',
       garantia: 'Garantía / Servicio Técnico',
+      asesoria_tecnica: 'Asesoría Técnica',
       otro: 'Otro',
     }
 
     const whatsappMessage = `*Nuevo Contacto - Web*\n\n*Nombre:* ${formData.name}\n*Email:* ${formData.email}\n*Teléfono:* ${formData.phone}\n*Asunto:* ${subjectLabels[formData.subject] || formData.subject}\n*Mensaje:*\n${formData.message}`
 
-    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`
     window.open(whatsappUrl, '_blank')
 
     setFormData({ name: '', email: '', phone: '', subject: '', message: '' })

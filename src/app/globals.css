@@ -184,6 +184,18 @@
 }
 
 @layer components {
+   .products-carousel-pagination>span {
+      @apply h-2 w-2 rounded-full bg-gray-300 transition-all duration-300;
+   }
+
+   .products-carousel-pagination>span:hover {
+      @apply bg-gray-400;
+   }
+
+   .products-carousel-pagination>span.swiper-pagination-bullet-active {
+      @apply w-6 bg-matheo-blue;
+   }
+
    .phone-input-contact {
       @apply w-full;
    }

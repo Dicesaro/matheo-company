@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useState, useRef } from 'react'
 import { cn } from '@/lib/utils'
+import { WHATSAPP_NUMBER } from '@/lib/company'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -197,9 +198,8 @@ export default function ProductDetailPage({
     const message = encodeURIComponent(
       `${currentImage}\n\n*${product.name.toUpperCase()}*\n\nHola , quisiera cotizar su producto`,
     )
-    const phoneNumber = '51922922766'
     window.open(
-      `https://wa.me/${phoneNumber}?text=${message}`,
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`,
       '_blank',
     )
   }

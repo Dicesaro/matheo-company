@@ -10,6 +10,7 @@ import {
   ChevronDown,
   X,
 } from 'lucide-react'
+import { WHATSAPP_NUMBER } from '@/lib/company'
 import { cn, generateSlug, slugToCategory } from '@/lib/utils'
 import { useCustomSearchParams } from '@/hooks/useCustomSearchParams'
 import { useRouter } from 'next/navigation'
@@ -297,7 +298,7 @@ export default function ProductsPage({
                     `${prod.image}\n\n*${prod.name.toUpperCase()}*\n\nHola , quisiera cotizar su producto`,
                   )
                   window.open(
-                    `https://wa.me/51922922766?text=${message}`,
+                    `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`,
                     '_blank',
                   )
                 }

@@ -12,6 +12,7 @@ const subjectLabels: Record<string, string> = {
   cotizacion: 'Solicitud de Cotización',
   consulta: 'Consulta de Producto',
   garantia: 'Garantía / Servicio Técnico',
+  asesoria_tecnica: 'Asesoría Técnica',
   otro: 'Otro',
 }
 
@@ -30,7 +31,7 @@ function formatDate(dateStr: string) {
 interface Contact {
   id: string
   name: string
-  email: string
+  email: string | null
   phone: string | null
   subject: string
   message: string
@@ -87,20 +88,22 @@ export default function ContactDetailModal({
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="rounded-xl bg-gray-100 p-2.5">
-                <Mail className="h-4 w-4 text-gray-500" />
+            {contact.email && (
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-gray-100 p-2.5">
+                  <Mail className="h-4 w-4 text-gray-500" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Email</p>
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="text-sm font-medium text-matheo-blue hover:underline"
+                  >
+                    {contact.email}
+                  </a>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Email</p>
-                <a
-                  href={`mailto:${contact.email}`}
-                  className="text-sm font-medium text-matheo-blue hover:underline"
-                >
-                  {contact.email}
-                </a>
-              </div>
-            </div>
+            )}
 
             {contact.phone && (
               <div className="flex items-start gap-3">

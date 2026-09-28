@@ -8,7 +8,7 @@ import { contactPayloadSchema } from '@/lib/schemas/contact'
 
 export async function submitContact(data: {
   name: string
-  email: string
+  email?: string | null
   phone?: string
   subject: string
   message: string
@@ -17,7 +17,7 @@ export async function submitContact(data: {
 
   const payload = {
     name: data.name?.trim() || '',
-    email: data.email?.trim() || '',
+    email: data.email?.trim() || null,
     phone: data.phone?.trim() || null,
     subject: data.subject?.trim() || '',
     message: data.message?.trim() || '',

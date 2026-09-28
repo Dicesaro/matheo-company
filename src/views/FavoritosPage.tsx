@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { WHATSAPP_NUMBER } from '@/lib/company'
 
 interface Product {
   id: string
@@ -108,7 +109,7 @@ export default function FavoritosPage() {
       `${product.image}\n\n*${product.name.toUpperCase()}*\n\nHola , quisiera cotizar su producto`,
     )
     window.open(
-      `https://wa.me/51922922766?text=${message}`,
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`,
       '_blank',
     )
   }

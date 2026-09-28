@@ -1,9 +1,7 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-
-const PHONE = '51922922766'
-const WA_URL = `https://wa.me/${PHONE}`
+import { WHATSAPP_LINK } from '@/lib/company'
 
 // Clases base compartidas por todos los botones de redes
 const btnBase =
@@ -109,7 +107,7 @@ export default function RedesPage() {
         {/* ── WhatsApp (botón destacado) ── */}
         <a
           id="redes-whatsapp-btn"
-          href={WA_URL}
+            href={WHATSAPP_LINK}
           target="_blank"
           rel="noopener noreferrer"
           className={`${btnBase} bg-[#25D366] py-5 rounded-2xl shadow-[0_6px_28px_rgba(37,211,102,0.4)] hover:shadow-[0_12px_40px_rgba(37,211,102,0.6)] text-[1.1rem]`}
