@@ -14,6 +14,9 @@ import {
   Menu,
   X,
   ChevronRight,
+  Users,
+  Wallet,
+  Clock,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -24,6 +27,12 @@ const mainNav = [
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/marcas', label: 'Marcas', icon: Building2 },
   { href: '/admin/banners', label: 'Banners', icon: GalleryHorizontal },
+  { href: '/admin/clientes', label: 'Clientes', icon: Users },
+  { href: '/admin/cuenta-corriente', label: 'Cuenta corriente', icon: Wallet },
+  { href: '/admin/cuenta-yape', label: 'Cuenta Yape', icon: Wallet },
+  { href: '/admin/cuenta-leonel', label: 'Cuenta Leonel', icon: Wallet },
+  { href: '/admin/wuardadito-mercaderia', label: 'Wuardadito Mercadería', icon: Wallet },
+  { href: '/admin/wuardadito-empresa', label: 'Wuardadito Empresa', icon: Wallet },
   { href: '/admin/contactos', label: 'Mensajes', icon: Mail, badge: true },
   { href: '/admin/facturas', label: 'Facturas', icon: FileText },
 ]
