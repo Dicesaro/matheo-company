@@ -29,6 +29,7 @@ const mainNav = [
   { href: '/admin/banners', label: 'Banners', icon: GalleryHorizontal },
   { href: '/admin/clientes', label: 'Clientes', icon: Users },
   { href: '/admin/cuenta-corriente', label: 'Cuenta corriente', icon: Wallet },
+  { href: '/admin/asistencias', label: 'Asistencias', icon: Clock },
   { href: '/admin/cuenta-yape', label: 'Cuenta Yape', icon: Wallet },
   { href: '/admin/cuenta-leonel', label: 'Cuenta Leonel', icon: Wallet },
   { href: '/admin/wuardadito-mercaderia', label: 'Wuardadito Mercadería', icon: Wallet },

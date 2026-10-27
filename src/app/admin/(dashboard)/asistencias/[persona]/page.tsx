@@ -22,6 +22,7 @@ function formatTime(iso: string | null) {
   return new Date(iso).toLocaleTimeString('es-PE', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'America/Lima',
   })
 }
 

@@ -11,21 +11,42 @@ function minutesToDate(dateStr: string, timeStr: string): Date {
   return new Date(y, mo - 1, d, h, mm, 0, 0)
 }
 
+function getMinutesSinceMidnightInLima(iso: string): number {
+  try {
+    const date = new Date(iso)
+    const formatter = new Intl.DateTimeFormat('es-PE', {
+      timeZone: 'America/Lima',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+    const parts = formatter.formatToParts(date)
+    const hour = Number(parts.find((p) => p.type === 'hour')?.value || '0')
+    const minute = Number(parts.find((p) => p.type === 'minute')?.value || '0')
+    return hour * 60 + minute
+  } catch {
+    const date = new Date(iso)
+    const utc = date.getTime() + date.getTimezoneOffset() * 60000
+    const lima = new Date(utc - 5 * 60 * 60000)
+    return lima.getHours() * 60 + lima.getMinutes()
+  }
+}
+
 export function getLateMinutes(checkInIso: string, shiftStart: string, dateStr: string): number {
-  const checkIn = new Date(checkInIso)
-  const shiftStartDate = minutesToDate(dateStr, shiftStart)
-  const diffMs = checkIn.getTime() - shiftStartDate.getTime()
-  if (diffMs <= 0) return 0
-  return Math.round(diffMs / 60000)
+  const checkInMins = getMinutesSinceMidnightInLima(checkInIso)
+  const shiftStartMins = parseTimeToMinutes(shiftStart)
+  const diff = checkInMins - shiftStartMins
+  if (diff <= 0) return 0
+  return diff
 }
 
 export function getOvertimeMinutes(checkOutIso: string | null, shiftEnd: string, dateStr: string): number {
   if (!checkOutIso) return 0
-  const checkOut = new Date(checkOutIso)
-  const shiftEndDate = minutesToDate(dateStr, shiftEnd)
-  const diffMs = checkOut.getTime() - shiftEndDate.getTime()
-  if (diffMs <= 0) return 0
-  return Math.round(diffMs / 60000)
+  const checkOutMins = getMinutesSinceMidnightInLima(checkOutIso)
+  const shiftEndMins = parseTimeToMinutes(shiftEnd)
+  const diff = checkOutMins - shiftEndMins
+  if (diff <= 0) return 0
+  return diff
 }
 
 export function formatMinutes(minutes: number): string {
