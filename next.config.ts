@@ -29,13 +29,14 @@ const nextConfig: NextConfig = {
   },
   reactCompiler: true,
   images: {
+    loader: 'custom',
+    loaderFile: './src/lib/cloudinary-loader.ts',
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
     ],
-    formats: ['image/avif', 'image/webp'],
   },
   compress: true,
   poweredByHeader: false,
